@@ -1,3 +1,4 @@
+```markdown
 # Doctype
 
 > The Self-Maintaining Documentation System
@@ -19,12 +20,18 @@ Doctype is the ultimate guardrail for conceptual documentation. By leveraging Ab
 - Supports: functions, classes, interfaces, types, enums, variables
 - Normalizes signatures for consistent comparison
 - Filters exported vs. private symbols
+- Supports both file and inline code analysis
 
 ### Signature Hasher
 - Generates SHA256 hashes from code signatures
 - Deterministic: same signature always produces same hash
-- Batch processing support
+- Batch processing support (hashMany)
 - Hash comparison utilities
+
+### Type Definitions
+- Comprehensive TypeScript interfaces for consistent API interaction
+- Includes `CodeSignature`, `SignatureHash`, `CodeRef`, `DoctypeMapEntry`, `DoctypeMap`
+- `SymbolType` enum for all supported constructs
 
 ## Installation
 
@@ -156,3 +163,4 @@ For complete project architecture and roadmap, see [CLAUDE.md](./CLAUDE.md).
 ## License
 
 MIT
+```
