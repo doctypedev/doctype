@@ -1,0 +1,48 @@
+{
+  "name": "doctype",
+  "version": "0.1.0",
+  "description": "The Self-Maintaining Documentation System - Automatically update documentation when code changes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "doctype": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "documentation",
+    "ast",
+    "typescript",
+    "automation",
+    "drift-detection"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ts-morph": "^21.0.1",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/yargs": "^17.0.32",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "@vitest/coverage-v8": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitest": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
