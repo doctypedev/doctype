@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "entries": [
+    {
+      "id": "ast-analyzer-class",
+      "codeRef": {
+        "filePath": "src/core/ast-analyzer.ts",
+        "symbolName": "ASTAnalyzer"
+      },
+      "codeSignatureHash": "a2f0cc7e66d372899d047ad3726ce515a302aa1ef81f08069be8c83f633cf152",
+      "docRef": {
+        "filePath": "docs/API.md",
+        "startLine": 9,
+        "endLine": 71
+      },
+      "originalMarkdownContent": "The ASTAnalyzer class provides methods to analyze TypeScript files and extract symbol signatures...",
+      "lastUpdated": 1764235430704
+    },
+    {
+      "id": "signature-hasher-class",
+      "codeRef": {
+        "filePath": "src/core/signature-hasher.ts",
+        "symbolName": "SignatureHasher"
+      },
+      "codeSignatureHash": "21cd1dacf5bff3c741b73f2880dee729206d928f05d50503c4a21cfd9b365966",
+      "docRef": {
+        "filePath": "docs/API.md",
+        "startLine": 75,
+        "endLine": 133
+      },
+      "originalMarkdownContent": "The SignatureHasher class generates deterministic SHA256 hashes from code signatures...",
+      "lastUpdated": 1764235430731
+    },
+    {
+      "id": "map-manager-class",
+      "codeRef": {
+        "filePath": "src/content/map-manager.ts",
+        "symbolName": "DoctypeMapManager"
+      },
+      "codeSignatureHash": "18a45eb559217111395a840ab7c3ecb289d58186b28c9336d67e4166d7341ef8",
+      "docRef": {
+        "filePath": "docs/API.md",
+        "startLine": 137,
+        "endLine": 209
+      },
+      "originalMarkdownContent": "The DoctypeMapManager class manages the doctype-map.json file...",
+      "lastUpdated": 1764235430757
+    },
+    {
+      "id": "cli-detect-drift",
+      "codeRef": {
+        "filePath": "src/cli/drift-detector.ts",
+        "symbolName": "detectDrift"
+      },
+      "codeSignatureHash": "60cf82f7bd9cf387f25810804239b77af19b5bb8c2f1449f1026b16496faa596",
+      "docRef": {
+        "filePath": "docs/API.md",
+        "startLine": 213,
+        "endLine": 255
+      },
+      "originalMarkdownContent": "Centralized drift detection logic used by both check and fix commands...",
+      "lastUpdated": 1732708800000
+    }
+  ]
+}
