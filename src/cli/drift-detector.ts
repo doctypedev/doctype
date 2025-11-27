@@ -5,7 +5,7 @@
  * by comparing current code signatures with saved hashes
  */
 
-import { DoctypeMapManager } from '../content/map-manager';
+import { DoctypeMapManager } from '../content';
 import { ASTAnalyzer } from '../core/ast-analyzer';
 import { SignatureHasher } from '../core/signature-hasher';
 import { CodeSignature, DoctypeMapEntry } from '../core/types';
