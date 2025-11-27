@@ -29,6 +29,9 @@ jobs:
       - name: Build CLI only (skip tests)
         run: npm run build
 
+      - name: Make CLI executable
+        run: chmod +x dist/cli/index.js
+
       - name: Run Doctype Check
         run: npx doctype check --verbose
         continue-on-error: true
