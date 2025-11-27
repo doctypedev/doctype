@@ -6,7 +6,8 @@ import {
   ClassDeclaration,
   MethodDeclaration,
   ParameterDeclaration,
-  PropertyDeclaration
+  PropertyDeclaration,
+  FunctionDeclaration
 } from 'ts-morph';
 import { CodeSignature, SymbolType } from './types';
 
@@ -71,7 +72,7 @@ export class ASTAnalyzer {
       .map((fn) => ({
         symbolName: fn.getName() || '<anonymous>',
         symbolType: SymbolType.FUNCTION,
-        signatureText: this.normalizeFunctionSignature(fn.getText()),
+        signatureText: this.normalizeFunctionSignature(fn),
         isExported: true,
       }));
   }
@@ -160,10 +161,19 @@ export class ASTAnalyzer {
     return node.getChildrenOfKind(SyntaxKind.ExportKeyword).length > 0;
   }
 
-  private normalizeFunctionSignature(text: string): string {
-    // Remove function body, keep only signature
-    const match = text.match(/^(export\s+)?(async\s+)?function\s+\w+[^{]*/);
-    return match ? this.normalizeText(match[0]) : this.normalizeText(text);
+  private normalizeFunctionSignature(fn: FunctionDeclaration): string {
+    const body = fn.getBody();
+    if (body) {
+      // Get text from start of function to start of body
+      // We use getFullText() to ensure we are working with the same coordinate system if needed,
+      // but here we want the text relative to the node.
+      // fn.getText() returns the text of the node.
+      // We need the length of the signature part.
+      const signatureLength = body.getStart() - fn.getStart();
+      const text = fn.getText().substring(0, signatureLength);
+      return this.normalizeText(text);
+    }
+    return this.normalizeText(fn.getText());
   }
 
   private normalizeClassSignature(cls: ClassDeclaration): string {
