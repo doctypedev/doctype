@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/doctype_logo.png" alt="Doctype Logo" width="200" />
+</p>
+
 # Doctype
 
 > **The Self-Maintaining Documentation System**
