@@ -13,17 +13,17 @@ The `DoctypeMapManager` class provides methods to manage a collection of `Doctyp
 
 ### `save(): void`
 
-This method saves the current state of the `DoctypeMapManager` instance. It does not take any parameters and does not return any value.
+Saves the current state of the `DoctypeMapManager` instance. It does not take any parameters and does not return any value.
 
 ### `getEntries(): DoctypeMapEntry[]`
 
-This method returns all entries in the `DoctypeMapManager` instance.
+Returns all entries in the `DoctypeMapManager` instance.
 
 **Returns:** An array of `DoctypeMapEntry` objects.
 
 ### `getEntryById(id: string): DoctypeMapEntry`
 
-This method retrieves a specific entry by its ID.
+Retrieves a specific entry by its ID.
 
 **Parameters:**
 - `id: string` - The ID of the entry to retrieve.
@@ -32,7 +32,7 @@ This method retrieves a specific entry by its ID.
 
 ### `getEntriesByCodeRef(filePath: string, symbolName: string): DoctypeMapEntry[]`
 
-This method retrieves entries by their code reference.
+Retrieves entries by their code reference.
 
 **Parameters:**
 - `filePath: string` - The file path of the code reference.
@@ -42,7 +42,7 @@ This method retrieves entries by their code reference.
 
 ### `getEntriesByDocFile(filePath: string): DoctypeMapEntry[]`
 
-This method retrieves entries by their documentation file.
+Retrieves entries by their documentation file.
 
 **Parameters:**
 - `filePath: string` - The file path of the documentation file.
@@ -51,14 +51,14 @@ This method retrieves entries by their documentation file.
 
 ### `addEntry(entry: DoctypeMapEntry): void`
 
-This method adds a new entry to the `DoctypeMapManager` instance.
+Adds a new entry to the `DoctypeMapManager` instance.
 
 **Parameters:**
 - `entry: DoctypeMapEntry` - The entry to add.
 
 ### `updateEntry(id: string, updates: Partial<DoctypeMapEntry>): void`
 
-This method updates an existing entry in the `DoctypeMapManager` instance.
+Updates an existing entry in the `DoctypeMapManager` instance.
 
 **Parameters:**
 - `id: string` - The ID of the entry to update.
@@ -66,7 +66,7 @@ This method updates an existing entry in the `DoctypeMapManager` instance.
 
 ### `removeEntry(id: string): boolean`
 
-This method removes an entry from the `DoctypeMapManager` instance.
+Removes an entry from the `DoctypeMapManager` instance.
 
 **Parameters:**
 - `id: string` - The ID of the entry to remove.
@@ -75,7 +75,7 @@ This method removes an entry from the `DoctypeMapManager` instance.
 
 ### `hasDrift(id: string, currentHash: string): boolean`
 
-This method checks if an entry has drifted.
+Checks if an entry has drifted.
 
 **Parameters:**
 - `id: string` - The ID of the entry to check.
@@ -85,7 +85,7 @@ This method checks if an entry has drifted.
 
 ### `getDriftedEntries(currentHashes: Map<string, string>): DoctypeMapEntry[]`
 
-This method retrieves all entries that have drifted.
+Retrieves all entries that have drifted.
 
 **Parameters:**
 - `currentHashes: Map<string, string>` - A map of current hashes.
@@ -94,23 +94,23 @@ This method retrieves all entries that have drifted.
 
 ### `getEntryCount(): number`
 
-This method returns the number of entries in the `DoctypeMapManager` instance.
+Returns the number of entries in the `DoctypeMapManager` instance.
 
 **Returns:** The number of entries.
 
 ### `clear(): void`
 
-This method clears all entries in the `DoctypeMapManager` instance. It does not take any parameters and does not return any value.
+Clears all entries in the `DoctypeMapManager` instance. It does not take any parameters and does not return any value.
 
 ### `getVersion(): string`
 
-This method returns the version of the `DoctypeMapManager` instance.
+Returns the version of the `DoctypeMapManager` instance.
 
 **Returns:** The version as a string.
 
 ### `export(): DoctypeMap`
 
-This method exports the current state of the `DoctypeMapManager` instance.
+Exports the current state of the `DoctypeMapManager` instance.
 
 **Returns:** A `DoctypeMap` object representing the current state.
 

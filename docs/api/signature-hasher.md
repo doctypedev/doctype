@@ -5,12 +5,89 @@ Generates deterministic SHA256 hashes from code signatures for drift detection.
 ## Overview
 
 <!-- doctype:start id="b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e" code_ref="src/core/signature-hasher.ts#SignatureHasher" -->
-The SignatureHasher class provides deterministic hash generation for code signatures. It uses SHA256 to create a unique fingerprint of a symbol's public API, enabling reliable drift detection.
+# SignatureHasher Class
 
-The hasher normalizes signatures before hashing to ensure:
-- Whitespace differences don't affect the hash
-- Comment changes don't trigger false positives
-- Only meaningful API changes are detected
+The `SignatureHasher` class is designed to hash code signatures and compare them. It provides four methods: `hash`, `hashMany`, `compare`, and `hashText`.
+
+## Methods
+
+### hash
+
+The `hash` method takes a `CodeSignature` as a parameter and returns a `SignatureHash`.
+
+```typescript
+hash(signature: CodeSignature): SignatureHash
+```
+
+**Parameters:**
+
+- `signature` (`CodeSignature`): The code signature to be hashed.
+
+**Returns:**
+
+- `SignatureHash`: The hashed version of the provided code signature.
+
+### hashMany
+
+The `hashMany` method takes an array of `CodeSignature` and returns an array of `SignatureHash`.
+
+```typescript
+hashMany(signatures: CodeSignature[]): SignatureHash[]
+```
+
+**Parameters:**
+
+- `signatures` (`CodeSignature[]`): An array of code signatures to be hashed.
+
+**Returns:**
+
+- `SignatureHash[]`: An array of hashed versions of the provided code signatures.
+
+### compare
+
+The `compare` method takes two strings as parameters and returns a boolean indicating whether the two strings are identical.
+
+```typescript
+compare(hash1: string, hash2: string): boolean
+```
+
+**Parameters:**
+
+- `hash1` (`string`): The first string to be compared.
+- `hash2` (`string`): The second string to be compared.
+
+**Returns:**
+
+- `boolean`: `true` if the two strings are identical, `false` otherwise.
+
+### hashText
+
+The `hashText` method takes a string as a parameter and returns a hashed version of the string.
+
+```typescript
+hashText(signatureText: string): string
+```
+
+**Parameters:**
+
+- `signatureText` (`string`): The text to be hashed.
+
+**Returns:**
+
+- `string`: The hashed version of the provided text.
+
+## Usage Example
+
+```typescript
+let hasher = new SignatureHasher();
+let signature = new CodeSignature('functionName', ['param1', 'param2']);
+let hash = hasher.hash(signature);
+let hashText = hasher.hashText('functionName(param1, param2)');
+let comparison = hasher.compare(hash, hashText);
+console.log(comparison); // Outputs: true
+```
+
+In this example, we create a new instance of `SignatureHasher`, hash a `CodeSignature` object, hash a string of text, and then compare the two hashes. The `compare` method returns `true` because the hashes are identical.
 <!-- doctype:end id="b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e" -->
 
 ## Installation

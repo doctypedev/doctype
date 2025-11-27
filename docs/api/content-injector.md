@@ -92,6 +92,9 @@ const result = injector.injectIntoFile(filePath, anchorId, newContent, true);
 
 console.log(result); // Logs the InjectionResult object
 ```
+
+## File Location
+`src/content/content-injector.ts`
 <!-- doctype:end id="b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0e" -->
 
 ## Installation

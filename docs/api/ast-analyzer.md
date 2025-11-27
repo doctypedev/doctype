@@ -5,15 +5,48 @@ Analyzes TypeScript source files to extract code signatures using the TypeScript
 ## Overview
 
 <!-- doctype:start id="c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f" code_ref="src/core/ast-analyzer.ts#ASTAnalyzer" -->
-The ASTAnalyzer class is the core component for deterministic code analysis. It uses ts-morph (a wrapper around the TypeScript Compiler API) to parse TypeScript files and extract public API signatures from exported symbols.
+# ASTAnalyzer Class
 
-Supported symbol types:
-- Functions and arrow functions
-- Classes (with properties and methods)
-- Interfaces
-- Type aliases
-- Enums
-- Exported variables and constants
+The `ASTAnalyzer` class is used for analyzing TypeScript/JavaScript code. It provides methods to analyze code from a file or a string.
+
+## Methods
+
+### analyzeFile(filePath: string): CodeSignature[]
+
+This method is used to analyze TypeScript/JavaScript code from a file.
+
+#### Parameters
+
+- `filePath` (string): The path to the file that contains the TypeScript/JavaScript code to be analyzed.
+
+#### Return
+
+Returns an array of `CodeSignature` objects. Each `CodeSignature` represents a signature of a function or a method in the analyzed code.
+
+### analyzeCode(code: string): CodeSignature[]
+
+This method is used to analyze TypeScript/JavaScript code from a string.
+
+#### Parameters
+
+- `code` (string): A string that contains the TypeScript/JavaScript code to be analyzed.
+
+#### Return
+
+Returns an array of `CodeSignature` objects. Each `CodeSignature` represents a signature of a function or a method in the analyzed code.
+
+## Usage Example
+
+```typescript
+const analyzer = new ASTAnalyzer();
+const codeSignatures = analyzer.analyzeFile('path/to/your/file.ts');
+
+for (const signature of codeSignatures) {
+    console.log(signature.toString());
+}
+```
+
+In this example, we create a new instance of `ASTAnalyzer`, analyze a TypeScript file, and then print out the signatures of all functions and methods in the file.
 <!-- doctype:end id="c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f" -->
 
 ## Installation

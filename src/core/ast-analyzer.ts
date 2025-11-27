@@ -211,6 +211,7 @@ export class ASTAnalyzer {
     return text
       .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
       .replace(/\/\/.*/g, '') // Remove single-line comments
+      .replace(/import\(".*?"\)\./g, '') // Remove absolute import paths from types
       .replace(/\s+/g, ' ') // Normalize whitespace to single space
       .replace(/\s*([:()[\]{},;])\s*/g, '$1') // Remove whitespace around punctuation
       .replace(/\s*:\s*/g, ': ') // Ensure consistent spacing after colons
