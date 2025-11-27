@@ -1,65 +1,95 @@
 {
-  "version": "1.0.0",
+  "version": "1.0",
   "entries": [
     {
-      "id": "ast-analyzer-class",
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "codeRef": {
+        "filePath": "src/cli/check.ts",
+        "symbolName": "checkCommand"
+      },
+      "codeSignatureHash": "834d841a0878511bc393222b9fd9dc7a841bdeff42924af13a59b95e158a68ce",
+      "docRef": {
+        "filePath": "docs/cli/check.md",
+        "startLine": 88,
+        "endLine": 99
+      },
+      "originalMarkdownContent": "The check command performs the following steps:\n\n1. Loads the doctype-map.json file using DoctypeMapManager\n2. For each entry in the map:\n   - Reads the source file specified in code_ref\n   - Analyzes the symbol using ASTAnalyzer\n   - Calculates the current signature hash using SignatureHasher\n   - Compares with the saved hash\n3. Reports all detected drifts\n4. Exits with appropriate status code",
+      "lastUpdated": 1764259025172
+    },
+    {
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "codeRef": {
+        "filePath": "src/cli/fix.ts",
+        "symbolName": "fixCommand"
+      },
+      "codeSignatureHash": "33c444cb7aa89dac2c18682f513857f7b079a7f14174c7bbc2344dcc340bf322",
+      "docRef": {
+        "filePath": "docs/cli/fix.md",
+        "startLine": 107,
+        "endLine": 119
+      },
+      "originalMarkdownContent": "The fix command performs the following steps:\n\n1. Runs drift detection using DriftDetector\n2. For each drifted entry:\n   - Extracts old and new code signatures\n   - Prepares context for GenAI (Phase 4)\n   - Updates the hash in doctype-map.json\n3. In Phase 4, will also:\n   - Generate new documentation content via LLM\n   - Inject content using ContentInjector\n   - Optionally commit changes to git",
+      "lastUpdated": 1764259025252
+    },
+    {
+      "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
       "codeRef": {
         "filePath": "src/core/ast-analyzer.ts",
         "symbolName": "ASTAnalyzer"
       },
       "codeSignatureHash": "a2f0cc7e66d372899d047ad3726ce515a302aa1ef81f08069be8c83f633cf152",
       "docRef": {
-        "filePath": "docs/API.md",
-        "startLine": 9,
-        "endLine": 71
+        "filePath": "docs/api/ast-analyzer.md",
+        "startLine": 6,
+        "endLine": 16
       },
-      "originalMarkdownContent": "The ASTAnalyzer class provides methods to analyze TypeScript files and extract symbol signatures...",
-      "lastUpdated": 1764235430704
+      "originalMarkdownContent": "The ASTAnalyzer class is the core component for deterministic code analysis. It uses ts-morph (a wrapper around the TypeScript Compiler API) to parse TypeScript files and extract public API signatures from exported symbols.\n\nSupported symbol types:\n- Functions and arrow functions\n- Classes (with properties and methods)\n- Interfaces\n- Type aliases\n- Enums\n- Exported variables and constants",
+      "lastUpdated": 1764259025257
     },
     {
-      "id": "signature-hasher-class",
+      "id": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
       "codeRef": {
         "filePath": "src/core/signature-hasher.ts",
         "symbolName": "SignatureHasher"
       },
       "codeSignatureHash": "21cd1dacf5bff3c741b73f2880dee729206d928f05d50503c4a21cfd9b365966",
       "docRef": {
-        "filePath": "docs/API.md",
-        "startLine": 75,
-        "endLine": 133
+        "filePath": "docs/api/signature-hasher.md",
+        "startLine": 6,
+        "endLine": 13
       },
-      "originalMarkdownContent": "The SignatureHasher class generates deterministic SHA256 hashes from code signatures...",
-      "lastUpdated": 1764235430731
+      "originalMarkdownContent": "The SignatureHasher class provides deterministic hash generation for code signatures. It uses SHA256 to create a unique fingerprint of a symbol's public API, enabling reliable drift detection.\n\nThe hasher normalizes signatures before hashing to ensure:\n- Whitespace differences don't affect the hash\n- Comment changes don't trigger false positives\n- Only meaningful API changes are detected",
+      "lastUpdated": 1764259025259
     },
     {
-      "id": "map-manager-class",
+      "id": "d6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0a",
       "codeRef": {
         "filePath": "src/content/map-manager.ts",
         "symbolName": "DoctypeMapManager"
       },
-      "codeSignatureHash": "18a45eb559217111395a840ab7c3ecb289d58186b28c9336d67e4166d7341ef8",
+      "codeSignatureHash": "f0cbb38e9bfcd1f702542414b87226640e116722e69e846cbc2c1572de177ce2",
       "docRef": {
-        "filePath": "docs/API.md",
-        "startLine": 137,
-        "endLine": 209
+        "filePath": "docs/api/map-manager.md",
+        "startLine": 6,
+        "endLine": 14
       },
-      "originalMarkdownContent": "The DoctypeMapManager class manages the doctype-map.json file...",
-      "lastUpdated": 1764235430757
+      "originalMarkdownContent": "The DoctypeMapManager class provides CRUD operations for the doctype-map.json file. This file tracks all documentation anchors, their associated code references, signature hashes, and original content.\n\nKey responsibilities:\n- Load and save doctype-map.json\n- Add, update, query, and remove entries\n- Detect drift by comparing current vs saved hashes\n- Maintain data integrity and handle errors",
+      "lastUpdated": 1764259025263
     },
     {
-      "id": "cli-detect-drift",
+      "id": "b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0e",
       "codeRef": {
-        "filePath": "src/cli/drift-detector.ts",
-        "symbolName": "detectDrift"
+        "filePath": "src/content/content-injector.ts",
+        "symbolName": "ContentInjector"
       },
-      "codeSignatureHash": "60cf82f7bd9cf387f25810804239b77af19b5bb8c2f1449f1026b16496faa596",
+      "codeSignatureHash": "b97345c280969eb8764310ace0a4afbdd5b3aa219e3d16d830fda5db5a9846e2",
       "docRef": {
-        "filePath": "docs/API.md",
-        "startLine": 213,
-        "endLine": 255
+        "filePath": "docs/api/content-injector.md",
+        "startLine": 6,
+        "endLine": 15
       },
-      "originalMarkdownContent": "Centralized drift detection logic used by both check and fix commands...",
-      "lastUpdated": 1732708800000
+      "originalMarkdownContent": "The ContentInjector class provides safe content injection into Markdown files. It replaces content between Doctype anchor tags while preserving the anchor comments themselves.\n\nKey features:\n- Preserves anchor structure and IDs\n- Preview mode (dry-run without file writes)\n- Batch injection support\n- Anchor validation before injection\n- Detailed injection reports",
+      "lastUpdated": 1764259025270
     }
   ]
 }

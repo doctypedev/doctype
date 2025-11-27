@@ -7,19 +7,44 @@ export default defineConfig({
   appearance: 'dark', // Force dark theme
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: '/logo.svg',
 
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/markdown-examples' }
+      { text: 'Docs', link: '/guide/getting-started' }
     ],
 
     sidebar: [
       {
-        text: 'Examples',
+        text: 'Introduction',
+        collapsed: false,
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'API Examples', link: '/api-examples' }
+          { text: 'Getting Started', link: '/guide/getting-started' },
+          { text: 'Core Concepts', link: '/guide/core-concepts' }
+        ]
+      },
+      {
+        text: 'CLI Commands',
+        collapsed: false,
+        items: [
+          { text: 'doctype check', link: '/cli/check' },
+          { text: 'doctype fix', link: '/cli/fix' }
+        ]
+      },
+      {
+        text: 'Core Modules',
+        collapsed: false,
+        items: [
+          { text: 'ASTAnalyzer', link: '/api/ast-analyzer' },
+          { text: 'SignatureHasher', link: '/api/signature-hasher' }
+        ]
+      },
+      {
+        text: 'Content & Mapping',
+        collapsed: false,
+        items: [
+          { text: 'MarkdownParser', link: '/api/markdown-parser' },
+          { text: 'DoctypeMapManager', link: '/api/map-manager' },
+          { text: 'ContentInjector', link: '/api/content-injector' }
         ]
       }
     ],
@@ -31,6 +56,10 @@ export default defineConfig({
     // Brand color for buttons and accents
     outline: {
       level: [2, 3]
+    },
+
+    search: {
+      provider: 'local'
     }
   },
 
