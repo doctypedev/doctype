@@ -5,8 +5,13 @@
  *
  * Commands:
  * - check: Verify documentation is in sync with code
- * - fix: Update documentation when drift is detected
+ * - fix: Update documentation when drift is detected (with AI-powered generation)
+ *
+ * Phase 4: Now with AI-powered documentation generation using OpenAI or Gemini APIs
  */
+
+// Load environment variables from .env file
+import 'dotenv/config';
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -92,13 +97,18 @@ yargs(hideBin(process.argv))
         .option('auto-commit', {
           alias: 'a',
           type: 'boolean',
-          description: 'Automatically commit changes (not yet implemented)',
+          description: 'Automatically commit changes with git',
           default: false,
         })
         .option('interactive', {
           alias: 'i',
           type: 'boolean',
-          description: 'Prompt before each fix (not yet implemented)',
+          description: 'Prompt before each fix (future feature)',
+          default: false,
+        })
+        .option('no-ai', {
+          type: 'boolean',
+          description: 'Disable AI-generated content (use placeholder instead)',
           default: false,
         });
     },
@@ -109,6 +119,7 @@ yargs(hideBin(process.argv))
         dryRun: argv['dry-run'] as boolean,
         autoCommit: argv['auto-commit'] as boolean,
         interactive: argv.interactive as boolean,
+        noAI: argv['no-ai'] as boolean,
       };
 
       const result = await fixCommand(options);
@@ -128,9 +139,11 @@ yargs(hideBin(process.argv))
   // Help and examples
   .example('$0 check', 'Check for documentation drift')
   .example('$0 check --verbose', 'Check with detailed output')
-  .example('$0 fix', 'Fix detected drift')
-  .example('$0 fix --dry-run', 'Preview fixes without writing')
-  .example('$0 fix --auto-commit', 'Fix and commit changes (Phase 4)')
+  .example('$0 fix', 'Fix detected drift with AI-generated docs')
+  .example('$0 fix --dry-run', 'Preview AI-generated docs without writing')
+  .example('$0 fix --auto-commit', 'Fix and commit changes automatically')
+  .example('$0 fix --no-ai', 'Fix using placeholder content (no AI)')
+  .example('$0 fix --verbose', 'Fix with detailed AI generation logs')
 
   .demandCommand(1, 'You must provide a command (check or fix)')
   .strict()

@@ -120,4 +120,6 @@ export interface FixOptions {
   autoCommit?: boolean;
   /** Interactive mode (prompt before each fix) */
   interactive?: boolean;
+  /** Disable AI-generated content (use placeholder instead) - Phase 4 */
+  noAI?: boolean;
 }
