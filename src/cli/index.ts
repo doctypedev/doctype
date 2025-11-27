@@ -4,6 +4,7 @@
  * Doctype CLI - Main entry point
  *
  * Commands:
+ * - init: Initialize Doctype configuration for your project
  * - check: Verify documentation is in sync with code
  * - fix: Update documentation when drift is detected (with AI-powered generation)
  *
@@ -17,7 +18,8 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { checkCommand } from './check';
 import { fixCommand } from './fix';
-import { CheckOptions, FixOptions } from './types';
+import { initCommand } from './init';
+import { CheckOptions, FixOptions, InitOptions } from './types';
 
 // Parse command line arguments
 yargs(hideBin(process.argv))
@@ -26,6 +28,30 @@ yargs(hideBin(process.argv))
   .version('0.1.0')
   .alias('v', 'version')
   .alias('h', 'help')
+
+  // Init command
+  .command(
+    'init',
+    'Initialize Doctype configuration for your project',
+    (yargs) => {
+      return yargs.option('verbose', {
+        type: 'boolean',
+        description: 'Enable verbose logging',
+        default: false,
+      });
+    },
+    async (argv) => {
+      const options: InitOptions = {
+        verbose: argv.verbose as boolean,
+      };
+
+      const result = await initCommand(options);
+
+      if (!result.success) {
+        process.exit(1);
+      }
+    }
+  )
 
   // Check command
   .command(
@@ -36,8 +62,7 @@ yargs(hideBin(process.argv))
         .option('map', {
           alias: 'm',
           type: 'string',
-          description: 'Path to doctype-map.json',
-          default: './doctype-map.json',
+          description: 'Path to doctype-map.json (overrides config)',
         })
         .option('verbose', {
           type: 'boolean',
@@ -80,8 +105,7 @@ yargs(hideBin(process.argv))
         .option('map', {
           alias: 'm',
           type: 'string',
-          description: 'Path to doctype-map.json',
-          default: './doctype-map.json',
+          description: 'Path to doctype-map.json (overrides config)',
         })
         .option('verbose', {
           type: 'boolean',
@@ -137,6 +161,7 @@ yargs(hideBin(process.argv))
   )
 
   // Help and examples
+  .example('$0 init', 'Initialize Doctype for your project')
   .example('$0 check', 'Check for documentation drift')
   .example('$0 check --verbose', 'Check with detailed output')
   .example('$0 fix', 'Fix detected drift with AI-generated docs')
@@ -145,7 +170,7 @@ yargs(hideBin(process.argv))
   .example('$0 fix --no-ai', 'Fix using placeholder content (no AI)')
   .example('$0 fix --verbose', 'Fix with detailed AI generation logs')
 
-  .demandCommand(1, 'You must provide a command (check or fix)')
+  .demandCommand(1, 'You must provide a command (init, check, or fix)')
   .strict()
   .recommendCommands()
   .showHelpOnFail(true)

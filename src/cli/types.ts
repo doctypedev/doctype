@@ -123,3 +123,37 @@ export interface FixOptions {
   /** Disable AI-generated content (use placeholder instead) - Phase 4 */
   noAI?: boolean;
 }
+
+/**
+ * Options for the init command
+ */
+export interface InitOptions {
+  /** Verbose output */
+  verbose?: boolean;
+}
+
+/**
+ * Result of an init operation
+ */
+export interface InitResult {
+  /** Whether the initialization was successful */
+  success: boolean;
+  /** Path to the created config file */
+  configPath?: string;
+  /** Error message if failed */
+  error?: string;
+}
+
+/**
+ * Doctype configuration file structure
+ */
+export interface DoctypeConfig {
+  /** Project name */
+  projectName: string;
+  /** Project root directory */
+  projectRoot: string;
+  /** Documentation folder path */
+  docsFolder: string;
+  /** Map file name/path */
+  mapFile: string;
+}

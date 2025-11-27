@@ -134,4 +134,59 @@ export class Logger {
   public static hash(hash: string, length: number = 8): string {
     return `${colors.gray}${hash.substring(0, length)}${colors.reset}`;
   }
+
+  /**
+   * Print a banner with text
+   */
+  public banner(text: string): void {
+    const width = 60;
+    const padding = Math.max(0, Math.floor((width - text.length - 2) / 2));
+    const line = '═'.repeat(width);
+
+    console.log(`${colors.cyan}${colors.bold}`);
+    console.log(`╔${line}╗`);
+    console.log(`║${' '.repeat(padding)}${text}${' '.repeat(width - padding - text.length)}║`);
+    console.log(`╚${line}╝`);
+    console.log(colors.reset);
+  }
+
+  /**
+   * Print a box around text
+   */
+  public box(title: string, content: string[]): void {
+    const maxLength = Math.max(
+      title.length,
+      ...content.map(line => line.replace(/\x1b\[[0-9;]*m/g, '').length)
+    );
+    const width = Math.min(maxLength + 4, 70);
+
+    console.log(`${colors.cyan}┌${'─'.repeat(width)}┐${colors.reset}`);
+    console.log(`${colors.cyan}│${colors.reset} ${colors.bold}${title}${colors.reset}${' '.repeat(width - title.length - 1)}${colors.cyan}│${colors.reset}`);
+    console.log(`${colors.cyan}├${'─'.repeat(width)}┤${colors.reset}`);
+
+    content.forEach(line => {
+      const stripped = line.replace(/\x1b\[[0-9;]*m/g, '');
+      const padding = width - stripped.length - 1;
+      console.log(`${colors.cyan}│${colors.reset} ${line}${' '.repeat(padding)}${colors.cyan}│${colors.reset}`);
+    });
+
+    console.log(`${colors.cyan}└${'─'.repeat(width)}┘${colors.reset}`);
+  }
+
+  /**
+   * Print a step header
+   */
+  public step(stepNumber: number, totalSteps: number, title: string, emoji: string = '▶'): void {
+    console.log();
+    console.log(`${colors.bold}${colors.cyan}${emoji} Step ${stepNumber}/${totalSteps}: ${colors.reset}${colors.bold}${title}${colors.reset}`);
+    console.log();
+  }
+
+  /**
+   * Print an item in a list
+   */
+  public listItem(text: string, checked: boolean = false): void {
+    const icon = checked ? `${colors.green}✓${colors.reset}` : `${colors.gray}○${colors.reset}`;
+    console.log(`  ${icon} ${text}`);
+  }
 }

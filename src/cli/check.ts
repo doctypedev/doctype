@@ -12,15 +12,46 @@ import { CheckResult, CheckOptions, DriftDetail } from './types';
 import { detectDrift } from './drift-detector';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
+import {
+  loadConfig,
+  getMapPath,
+  ConfigNotFoundError,
+  InvalidConfigError,
+} from './config-loader';
 
 /**
  * Execute the check command
  */
 export async function checkCommand(options: CheckOptions): Promise<CheckResult> {
   const logger = new Logger(options.verbose);
-  const mapPath = resolve(options.map || './doctype-map.json');
 
   logger.header('🔍 Doctype Check - Drift Detection');
+
+  // Load configuration file (required for all commands except init)
+  let config;
+  try {
+    config = loadConfig();
+    logger.debug(`Loaded config: project "${config.projectName}"`);
+  } catch (error) {
+    if (error instanceof ConfigNotFoundError || error instanceof InvalidConfigError) {
+      logger.error(error.message);
+      return {
+        totalEntries: 0,
+        driftedEntries: 0,
+        drifts: [],
+        success: false,
+        configError: error.message,
+      };
+    }
+    throw error;
+  }
+
+  // Get map path from config, or use CLI override
+  const mapPath = options.map
+    ? resolve(options.map)
+    : getMapPath(config);
+
+  logger.debug(`Using map file: ${mapPath}`);
 
   // Validate map file exists
   if (!existsSync(mapPath)) {
@@ -34,8 +65,6 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
       configError: `Map file not found: ${mapPath}`,
     };
   }
-
-  logger.debug(`Loading map from: ${mapPath}`);
 
   // Load the map
   const mapManager = new DoctypeMapManager(mapPath);
