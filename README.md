@@ -4,27 +4,54 @@
 
 Doctype is the ultimate guardrail for conceptual documentation. By leveraging Abstract Syntax Tree (AST) analysis and Generative AI (GenAI), it guarantees the veracity of your Markdown guides in real-time. If the code changes, the documentation updates automatically.
 
-## 🚀 Project Status: Phase 1 Complete
+## 🚀 Project Status: Phase 2 Complete
 
-**✅ Core AST & Drift Detection Module**
+**✅ Core AST & Drift Detection Module (Phase 1)**
 - TypeScript code analysis using ts-morph
 - Deterministic signature hashing (SHA256)
-- Comprehensive test coverage (98.37%)
-- 44/44 tests passing
+- Comprehensive test coverage
 
-## Features (Current Phase)
+**✅ Content & Mapping Module (Phase 2)**
+- Markdown parsing and anchor extraction
+- doctype-map.json management
+- Content injection into documentation
+- 102/102 tests passing
 
-### AST Analyzer
+## Features
+
+### Phase 1: AST & Drift Detection
+
+**AST Analyzer**
 - Extracts signatures from TypeScript code
 - Supports: functions, classes, interfaces, types, enums, variables
 - Normalizes signatures for consistent comparison
 - Filters exported vs. private symbols
 
-### Signature Hasher
+**Signature Hasher**
 - Generates SHA256 hashes from code signatures
 - Deterministic: same signature always produces same hash
 - Batch processing support
 - Hash comparison utilities
+
+### Phase 2: Content & Mapping
+
+**Markdown Parser**
+- Extracts doctype anchors from Markdown files
+- Validates anchor format and structure
+- Preserves whitespace and formatting
+- Parses code references (`file_path#symbol_name`)
+
+**Doctype Map Manager**
+- Manages `doctype-map.json` (single source of truth)
+- CRUD operations for map entries
+- Drift detection capabilities
+- Query by ID, code reference, or documentation file
+
+**Content Injector**
+- Safely injects AI-generated content into Markdown
+- Preview mode (no file writes)
+- Batch injection support
+- Anchor validation and location detection
 
 ## Installation
 
@@ -89,13 +116,18 @@ npm run test:ui         # Visual UI
 
 ### Test Coverage
 
-Current coverage: **98.37%**
+**Total: 102 tests passing**
 
-| File | Statements | Branches | Functions | Lines |
-|------|------------|----------|-----------|-------|
-| ast-analyzer.ts | 96.98% | 89.18% | 100% | 96.98% |
-| signature-hasher.ts | 100% | 100% | 100% | 100% |
-| types.ts | 100% | 100% | 100% | 100% |
+- Phase 1 (Core/AST): 44 tests
+- Phase 2 (Content/Mapping): 58 tests
+
+| Module | Tests | Status |
+|--------|-------|--------|
+| AST Analyzer | 19 | ✅ |
+| Signature Hasher | 25 | ✅ |
+| Markdown Parser | 18 | ✅ |
+| Map Manager | 22 | ✅ |
+| Content Injector | 18 | ✅ |
 
 ### Building
 
@@ -110,12 +142,13 @@ npm run clean    # Clean dist/
 - [x] **Phase 1**: Core AST & Drift Detection
   - [x] AST Analyzer with ts-morph
   - [x] Signature Hasher (SHA256)
-  - [x] Comprehensive tests (>80% coverage)
+  - [x] Comprehensive tests (44 tests passing)
 
-- [ ] **Phase 2**: Data Model & Mapping
-  - [ ] `doctype-map.json` management
-  - [ ] Markdown anchor parsing
-  - [ ] File system operations
+- [x] **Phase 2**: Content & Mapping
+  - [x] `doctype-map.json` management
+  - [x] Markdown anchor parsing
+  - [x] Content injection into documentation
+  - [x] Comprehensive tests (58 tests passing)
 
 - [ ] **Phase 3**: CLI Commands
   - [ ] `npx doctype check` - Verify documentation sync
@@ -140,15 +173,33 @@ Deterministic foundation for drift detection:
 
 **Data Flow:**
 ```
-TypeScript Code → AST Analyzer → Signature Hasher → doctype-map.json
+TypeScript Code → AST Analyzer → Signature Hasher → SHA256 Hash
 ```
 
 📖 **[Detailed Core/AST Documentation](./src/core/README.md)**
 
+### Phase 2: Content & Mapping Module ✅
+
+Markdown parsing, mapping management, and content injection:
+
+- **Markdown Parser**: Extracts and validates doctype anchors from Markdown files
+- **Map Manager**: Manages `doctype-map.json` (CRUD, drift detection, querying)
+- **Content Injector**: Safely injects AI-generated content into documentation
+
+**Data Flow:**
+```
+Markdown Docs → Parser → Anchors → Map Manager ← Signature Hashes
+                                         ↓
+                                   Drift Detection
+                                         ↓
+                                   Content Injector → Updated Docs
+```
+
+📖 **[Detailed Content/Mapping Documentation](./src/content/README.md)**
+
 ### Future Phases
 
-- **Phase 2**: Data Model & Mapping (doctype-map.json, Markdown anchors)
-- **Phase 3**: CLI Commands (`check`, `fix`)
+- **Phase 3**: CLI Commands (`npx doctype check`, `npx doctype fix`)
 - **Phase 4**: Gen AI Integration (OpenAI/Gemini, auto-commit)
 
 For complete project architecture and roadmap, see [CLAUDE.md](./CLAUDE.md).
