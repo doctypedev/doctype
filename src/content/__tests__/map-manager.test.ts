@@ -153,18 +153,21 @@ describe('DoctypeMapManager', () => {
       expect(updated?.codeSignatureHash).toBe(newHash);
     });
 
-    it('should update lastUpdated timestamp', () => {
+    it('should update lastUpdated timestamp', async () => {
       const entry = createTestEntry('update-timestamp');
       const originalTime = entry.lastUpdated;
       manager.addEntry(entry);
 
       // Wait a bit to ensure timestamp changes
-      setTimeout(() => {
-        manager.updateEntry('update-timestamp', { originalMarkdownContent: 'new content' });
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          manager.updateEntry('update-timestamp', { originalMarkdownContent: 'new content' });
 
-        const updated = manager.getEntryById('update-timestamp');
-        expect(updated?.lastUpdated).toBeGreaterThan(originalTime);
-      }, 10);
+          const updated = manager.getEntryById('update-timestamp');
+          expect(updated?.lastUpdated).toBeGreaterThan(originalTime);
+          resolve();
+        }, 10);
+      });
     });
 
     it('should throw error when updating non-existent entry', () => {
