@@ -1,0 +1,129 @@
+#!/usr/bin/env node
+
+/**
+ * Doctype CLI - Main entry point
+ *
+ * Commands:
+ * - check: Verify documentation is in sync with code
+ * - fix: Update documentation when drift is detected
+ */
+
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { checkCommand } from './check';
+import { fixCommand } from './fix';
+import { CheckOptions, FixOptions } from './types';
+
+// Parse command line arguments
+yargs(hideBin(process.argv))
+  .scriptName('doctype')
+  .usage('$0 <command> [options]')
+  .version('0.1.0')
+  .alias('v', 'version')
+  .alias('h', 'help')
+
+  // Check command
+  .command(
+    'check',
+    'Verify documentation is in sync with code',
+    (yargs) => {
+      return yargs
+        .option('map', {
+          alias: 'm',
+          type: 'string',
+          description: 'Path to doctype-map.json',
+          default: './doctype-map.json',
+        })
+        .option('verbose', {
+          type: 'boolean',
+          description: 'Enable verbose logging',
+          default: false,
+        })
+        .option('strict', {
+          type: 'boolean',
+          description: 'Exit with error code if drift detected',
+          default: true,
+        });
+    },
+    async (argv) => {
+      const options: CheckOptions = {
+        map: argv.map as string,
+        verbose: argv.verbose as boolean,
+        strict: argv.strict as boolean,
+      };
+
+      const result = await checkCommand(options);
+
+      // Exit with error code if drift detected and strict mode
+      if (!result.success && options.strict) {
+        process.exit(1);
+      }
+    }
+  )
+
+  // Fix command
+  .command(
+    'fix',
+    'Update documentation to fix detected drift',
+    (yargs) => {
+      return yargs
+        .option('map', {
+          alias: 'm',
+          type: 'string',
+          description: 'Path to doctype-map.json',
+          default: './doctype-map.json',
+        })
+        .option('verbose', {
+          type: 'boolean',
+          description: 'Enable verbose logging',
+          default: false,
+        })
+        .option('dry-run', {
+          alias: 'd',
+          type: 'boolean',
+          description: 'Preview changes without writing files',
+          default: false,
+        })
+        .option('auto-commit', {
+          alias: 'a',
+          type: 'boolean',
+          description: 'Automatically commit changes (not yet implemented)',
+          default: false,
+        })
+        .option('interactive', {
+          alias: 'i',
+          type: 'boolean',
+          description: 'Prompt before each fix (not yet implemented)',
+          default: false,
+        });
+    },
+    async (argv) => {
+      const options: FixOptions = {
+        map: argv.map as string,
+        verbose: argv.verbose as boolean,
+        dryRun: argv['dry-run'] as boolean,
+        autoCommit: argv['auto-commit'] as boolean,
+        interactive: argv.interactive as boolean,
+      };
+
+      const result = await fixCommand(options);
+
+      // Exit with error code if any fixes failed
+      if (!result.success) {
+        process.exit(1);
+      }
+    }
+  )
+
+  // Help and examples
+  .example('$0 check', 'Check for documentation drift')
+  .example('$0 check --verbose', 'Check with detailed output')
+  .example('$0 fix', 'Fix detected drift')
+  .example('$0 fix --dry-run', 'Preview fixes without writing')
+  .example('$0 fix --auto-commit', 'Fix and commit changes (Phase 4)')
+
+  .demandCommand(1, 'You must provide a command (check or fix)')
+  .strict()
+  .recommendCommands()
+  .showHelpOnFail(true)
+  .parse();
