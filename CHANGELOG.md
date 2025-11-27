@@ -4,6 +4,59 @@ All notable changes to Doctype will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 3 - CLI / Executor (2025-11-27)
+
+#### Added
+- **CLI Module** for command-line interface
+  - `npx doctype check` command for drift detection
+  - `npx doctype fix` command for documentation updates
+  - Colored console output with Logger module
+  - Verbose logging support
+  - Dry-run mode for preview
+
+- **Check Command** (`cli/check.ts`)
+  - Verifies documentation is in sync with code
+  - Compares current code signatures with saved hashes
+  - Reports detailed drift information
+  - Exits with error code for CI/CD integration
+
+- **Fix Command** (`cli/fix.ts`)
+  - Updates documentation when drift detected
+  - Generates placeholder content (Phase 3) or AI content (Phase 4)
+  - Supports dry-run mode for preview
+  - Updates doctype-map.json with new hashes
+  - Auto-commit flag (placeholder for Phase 4)
+
+- **Logger** (`cli/logger.ts`)
+  - Colored terminal output (ANSI codes)
+  - Multiple log levels: error, warn, info, success, debug
+  - Formatted helpers for paths, symbols, hashes
+  - Section headers and dividers
+
+- **CLI Types** (`cli/types.ts`)
+  - CheckResult, DriftDetail interfaces
+  - FixResult, FixDetail interfaces
+  - CLIConfig, CheckOptions, FixOptions
+
+#### Testing
+- Added 12 comprehensive CLI tests (all passing)
+- Check command: 6 tests
+- Fix command: 6 tests
+- Total project tests: 114 (102 from Phases 1 & 2 + 12 from Phase 3)
+
+#### Documentation
+- Created `src/cli/README.md` with detailed CLI usage
+- Created `docs/PHASE3.md` with phase documentation
+- CI/CD integration examples (GitHub Actions, GitLab CI)
+- Pre-commit hook example
+
+#### Build & Infrastructure
+- Configured bin entry point in package.json
+- CLI entry point with yargs argument parsing
+- Error handling and user-friendly messages
+
+---
+
 ### Phase 2 - Content & Mapping (2025-11-27)
 
 #### Added
