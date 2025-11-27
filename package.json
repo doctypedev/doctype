@@ -1,14 +1,22 @@
 {
-  "name": "doctype",
-  "version": "0.1.0",
+  "name": "@doctypedev/doctype",
+  "version": "0.1.14",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doctypedev/doctype.git"
+  },
   "description": "The Self-Maintaining Documentation System - Automatically update documentation when code changes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "doctype": "./dist/cli/index.js"
+    "doctype": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
+    "postbuild": "chmod +x dist/cli/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -28,7 +36,7 @@
     "automation",
     "drift-detection"
   ],
-  "author": "",
+  "author": "doctypedev",
   "license": "MIT",
   "dependencies": {
     "@types/uuid": "^10.0.0",

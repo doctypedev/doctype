@@ -1,0 +1,86 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Tests
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/
+.nyc_output/
+
+# Documentation source
+docs/
+CLAUDE.md
+DOCUMENTATION.md
+
+# Build and development configs
+tsconfig.json
+vitest.config.ts
+vite.config.ts
+.eslintrc.js
+.prettierrc
+.prettierignore
+
+# CI/CD and deployment
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+vercel.json
+netlify.toml
+
+# IDE and editor configs
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.*
+.env.example
+.envrc
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+*.tsbuildinfo
+.cache/
+.temp/
+.tmp/
+
+# Example and test data
+doctype-map.json
+examples/
+fixtures/
+
+# Scripts (internal development)
+scripts/
+
+# Assets (if not needed in published package)
+assets/
+
+# Misc
+*.tgz
+.npm/
+.eslintcache
+.stylelintcache
