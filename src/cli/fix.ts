@@ -1,9 +1,10 @@
 /**
  * CLI command: fix
  *
- * Fixes documentation drift by updating Markdown files
- * Note: Phase 3 implements manual content updates
- * Phase 4 will add AI-generated content
+ * Fixes documentation drift by updating Markdown files with AI-generated content
+ *
+ * Phase 3: Manual content updates (placeholder)
+ * Phase 4: AI-powered documentation generation (OpenAI, Gemini)
  */
 
 import { DoctypeMapManager } from '../content/map-manager';
@@ -13,6 +14,8 @@ import { SignatureHasher } from '../core/signature-hasher';
 import { Logger } from './logger';
 import { FixResult, FixOptions, FixDetail } from './types';
 import { detectDrift } from './drift-detector';
+import { createAgentFromEnv, AIAgent } from '../ai';
+import { GitHelper } from './git-helper';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -84,6 +87,32 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   logger.newline();
   logger.divider();
 
+  // Initialize AI Agent if API key is available (Phase 4)
+  let aiAgent: AIAgent | null = null;
+  let useAI = false;
+
+  if (!options.noAI) {
+    try {
+      aiAgent = createAgentFromEnv({ debug: options.verbose });
+      const isConnected = await aiAgent.validateConnection();
+
+      if (isConnected) {
+        useAI = true;
+        logger.info(`Using AI provider: ${aiAgent.getProvider()}`);
+      } else {
+        logger.warn('AI provider connection failed, falling back to placeholder content');
+      }
+    } catch (error) {
+      if (options.verbose) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.debug(`AI initialization failed: ${errorMsg}`);
+      }
+      logger.info('No AI API key found, using placeholder content');
+    }
+  } else {
+    logger.info('AI generation disabled (--no-ai flag)');
+  }
+
   // Fix each drifted entry
   const injector = new ContentInjector();
   const fixes: FixDetail[] = [];
@@ -91,19 +120,41 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   let failCount = 0;
 
   for (const drift of detectedDrifts) {
-    const { entry, currentSignature } = drift;
+    const { entry, currentSignature, oldSignature } = drift;
 
     logger.newline();
     logger.info(`${Logger.symbol(entry.codeRef.symbolName)} - ${Logger.path(entry.codeRef.filePath)}`);
     logger.info(`  Documentation: ${Logger.path(entry.docRef.filePath)}:${entry.docRef.startLine}`);
 
     try {
+      let newContent: string;
 
-      // Phase 3: Simple placeholder content
-      // Phase 4: This will be replaced with AI-generated content
-      const newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
+      // Phase 4: Use AI Agent if available
+      if (useAI && aiAgent && oldSignature) {
+        logger.debug('Generating AI-powered documentation...');
 
-      logger.debug(`Generated placeholder content (${newContent.length} chars)`);
+        try {
+          newContent = await aiAgent.generateFromDrift(
+            entry.codeRef.symbolName,
+            oldSignature,
+            currentSignature,
+            entry.originalMarkdownContent || '',
+            entry.codeRef.filePath
+          );
+
+          logger.debug(`AI generated content (${newContent.length} chars)`);
+        } catch (aiError) {
+          const errorMsg = aiError instanceof Error ? aiError.message : String(aiError);
+          logger.warn(`AI generation failed: ${errorMsg}`);
+          logger.info('Falling back to placeholder content');
+
+          newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
+        }
+      } else {
+        // Phase 3: Simple placeholder content
+        newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
+        logger.debug(`Generated placeholder content (${newContent.length} chars)`);
+      }
 
       // Resolve doc file path to ensure it's absolute
       const docFilePath = resolve(entry.docRef.filePath);
@@ -116,11 +167,12 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
         successCount++;
         logger.success(`Updated documentation (${result.linesChanged} lines changed)`);
 
-        // Update the map with new hash
+        // Update the map with new hash and signature text (Phase 4)
         if (!options.dryRun) {
           const newHash = hasher.hash(currentSignature).hash;
           mapManager.updateEntry(entry.id, {
             codeSignatureHash: newHash,
+            codeSignatureText: currentSignature.signatureText, // Store for future AI context
             originalMarkdownContent: newContent,
           });
         }
@@ -183,7 +235,44 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   if (options.dryRun) {
     logger.info('Dry run complete - no files were modified');
   } else if (options.autoCommit && successCount > 0) {
-    logger.info('Auto-commit is not yet implemented (coming in Phase 4)');
+    // Phase 4: Auto-commit functionality
+    logger.newline();
+    logger.info('Auto-committing changes...');
+
+    const gitHelper = new GitHelper(logger);
+
+    // Collect all modified files
+    const modifiedFiles = new Set<string>();
+    for (const fix of fixes) {
+      if (fix.success) {
+        modifiedFiles.add(fix.docFilePath);
+      }
+    }
+
+    // Add doctype-map.json
+    modifiedFiles.add(mapPath);
+
+    // Get symbol names for commit message
+    const symbolNames = fixes
+      .filter(f => f.success)
+      .map(f => f.symbolName);
+
+    // Commit changes
+    const commitResult = gitHelper.autoCommit(
+      Array.from(modifiedFiles),
+      symbolNames,
+      false // Don't push by default
+    );
+
+    if (commitResult.success) {
+      logger.success('Changes committed successfully');
+      if (commitResult.output) {
+        logger.info(`Commit message: "${commitResult.output}"`);
+      }
+    } else {
+      logger.error(`Auto-commit failed: ${commitResult.error}`);
+      logger.info('You can manually commit the changes');
+    }
   }
 
   logger.divider();

@@ -4,6 +4,70 @@ All notable changes to Doctype will be documented in this file.
 
 ## [Unreleased]
 
+### Phase 4 - Gen AI Agent (2025-11-27)
+
+#### Added
+- **AI Agent Module** (`src/ai/`) for AI-powered documentation generation
+  - Main orchestrator (AIAgent class)
+  - Prompt engineering (PromptBuilder)
+  - OpenAI provider integration (GPT-4, GPT-3.5-turbo)
+  - Base provider abstraction for future providers
+  - Retry logic with exponential backoff
+  - Connection validation
+
+- **OpenAI Integration** (`src/ai/providers/openai-provider.ts`)
+  - Chat Completions API support
+  - Configurable models, tokens, temperature
+  - Usage statistics tracking
+  - Detailed error messages
+  - Timeout handling
+
+- **Prompt Engineering** (`src/ai/prompt-builder.ts`)
+  - System prompt with technical writer persona
+  - Context-aware user prompts
+  - Signature comparison and change detection
+  - Customizable generation styles (concise, detailed, tutorial)
+
+- **Git Auto-Commit** (`src/cli/git-helper.ts`)
+  - Repository validation
+  - File staging and commit creation
+  - Standard commit message format
+  - Optional push to remote
+  - Integration with fix command
+
+- **Enhanced Fix Command**
+  - AI-powered documentation generation
+  - Automatic fallback to placeholder content
+  - `--no-ai` flag to disable AI
+  - `--auto-commit` flag for git operations
+  - Provider connection validation
+  - Enhanced error handling
+
+- **Data Model Updates**
+  - Added `codeSignatureText` to `DoctypeMapEntry`
+  - Stores signature for AI context in future runs
+
+- **Example Usage** (`src/examples/phase4-ai-integration.ts`)
+  - Complete AI integration examples
+  - Error handling demonstrations
+  - Workflow examples with AST analysis
+
+#### Environment Variables
+- `OPENAI_API_KEY`: Required for OpenAI-powered documentation
+- `GEMINI_API_KEY`: Reserved for future Gemini support
+
+#### Documentation
+- Created `PHASE4.md` with comprehensive Phase 4 documentation
+- AI Agent architecture and design
+- Integration examples
+- Performance and cost considerations
+- Security best practices
+
+#### Dependencies
+- No new dependencies required (uses native fetch API)
+
+---
+
 ### Phase 3 - CLI / Executor (2025-11-27)
 
 #### Added
@@ -147,5 +211,5 @@ All notable changes to Doctype will be documented in this file.
 - **v0.1.0** - Initial development
   - Phase 1: Core AST & Drift Detection ✅
   - Phase 2: Content & Mapping ✅
-  - Phase 3: CLI / Executor (planned)
-  - Phase 4: Gen AI Agent (planned)
+  - Phase 3: CLI / Executor ✅
+  - Phase 4: Gen AI Agent ✅

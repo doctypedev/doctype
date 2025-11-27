@@ -19,6 +19,8 @@ import { resolve } from 'path';
 export interface DriftInfo {
   /** The map entry that has drifted */
   entry: DoctypeMapEntry;
+  /** The old signature (reconstructed from signature text, if available) */
+  oldSignature?: CodeSignature;
   /** The current signature from the code */
   currentSignature: CodeSignature;
   /** The current hash of the signature */
@@ -91,8 +93,20 @@ export function detectDrift(
 
       // Check for drift
       if (mapManager.hasDrift(entry.id, currentHash)) {
+        // Reconstruct old signature from stored text (if available)
+        let oldSignature: CodeSignature | undefined;
+        if (entry.codeSignatureText) {
+          oldSignature = {
+            symbolName: entry.codeRef.symbolName,
+            symbolType: currentSignature.symbolType, // Assume same type
+            signatureText: entry.codeSignatureText,
+            isExported: currentSignature.isExported, // Assume same export status
+          };
+        }
+
         drifts.push({
           entry,
+          oldSignature,
           currentSignature,
           currentHash,
           oldHash: entry.codeSignatureHash,

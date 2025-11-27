@@ -20,3 +20,16 @@ export type {
 // Phase 2: Content & Mapping
 export { MarkdownParser, DoctypeMapManager, ContentInjector } from './content';
 export type { DoctypeAnchor, InjectionResult } from './content';
+
+// Phase 4: Gen AI Agent
+export { AIAgent, createOpenAIAgent, createAgentFromEnv, PromptBuilder } from './ai';
+export type {
+  AIProvider,
+  AIModel,
+  AIAgentConfig,
+  DocumentationRequest,
+  DocumentationResponse,
+  GenerateOptions,
+  IAIProvider,
+  AIProviderError,
+} from './ai';
