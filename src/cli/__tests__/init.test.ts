@@ -62,7 +62,7 @@ describe('CLI: init command', () => {
     mapFile?: string;
     replaceKey?: boolean;
     apiKey?: string;
-  }) => {
+  }): void => {
     // Reset previous mocks to avoid accumulation of mockResolvedValueOnce
     mockConfirm.mockReset();
     mockText.mockReset();

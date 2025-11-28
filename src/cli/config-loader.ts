@@ -51,7 +51,7 @@ export function loadConfig(
   }
 
   // Read and parse the file
-  let rawConfig: any;
+  let rawConfig: unknown;
   try {
     const fileContent = fs.readFileSync(resolvedPath, 'utf-8');
     rawConfig = JSON.parse(fileContent);

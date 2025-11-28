@@ -156,6 +156,7 @@ export class Logger {
   public box(title: string, content: string[]): void {
     const maxLength = Math.max(
       title.length,
+      // eslint-disable-next-line no-control-regex
       ...content.map(line => line.replace(/\x1b\[[0-9;]*m/g, '').length)
     );
     const width = Math.min(maxLength + 4, 70);
@@ -165,6 +166,7 @@ export class Logger {
     console.log(`${colors.cyan}├${'─'.repeat(width)}┤${colors.reset}`);
 
     content.forEach(line => {
+      // eslint-disable-next-line no-control-regex
       const stripped = line.replace(/\x1b\[[0-9;]*m/g, '');
       const padding = width - stripped.length - 1;
       console.log(`${colors.cyan}│${colors.reset} ${line}${' '.repeat(padding)}${colors.cyan}│${colors.reset}`);
