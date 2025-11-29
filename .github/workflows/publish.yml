@@ -53,6 +53,7 @@ jobs:
             }
 
       - name: Version Bump & Push Tag
+        id: version
         if: steps.bump.outputs.type
         run: |
           git config user.name "github-actions[bot]"
@@ -85,5 +86,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: steps.bump.outputs.type
         with:
-          tag_name: ${{ steps.bump.outputs.NEW_TAG }}
+          tag_name: ${{ steps.version.outputs.NEW_TAG }}
           generate_release_notes: true
