@@ -17,12 +17,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as p from '@clack/prompts';
-import { InitOptions, InitResult, DoctypeConfig } from './types';
+import { InitOptions, InitResult, DoctypeConfig, OutputStrategy } from './types';
 import { ASTAnalyzer } from '../core/ast-analyzer';
 import { SignatureHasher } from '../core/signature-hasher';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
-import { DoctypeMapEntry } from '../core/types';
+import { DoctypeMapEntry, SymbolType } from '../core/types';
 
 /**
  * Recursively find all TypeScript files in a directory
@@ -48,9 +48,63 @@ function findTypeScriptFiles(dir: string, fileList: string[] = []): string[] {
 }
 
 /**
+ * Determine the output file path based on strategy and symbol
+ */
+export function determineOutputFile(
+  strategy: OutputStrategy,
+  docsFolder: string,
+  filePath: string,
+  symbolType: SymbolType
+): string {
+  // Default to mirror if undefined
+  const effectiveStrategy = strategy || 'mirror';
+
+  if (effectiveStrategy === 'mirror') {
+    // src/auth/login.ts -> docs/src/auth/login.md
+    // We keep the full path structure to avoid collisions
+    // If filePath is "src/auth/login.ts", we want "docs/src/auth/login.md"
+    const parsed = path.parse(filePath);
+    const dirPath = path.join(docsFolder, parsed.dir);
+    return path.join(dirPath, `${parsed.name}.md`);
+  }
+
+  if (effectiveStrategy === 'module') {
+    // src/auth/login.ts -> docs/src/auth.md
+    // src/index.ts -> docs/src.md
+    const dir = path.dirname(filePath);
+    // If file is at root (e.g. index.ts), dir is "."
+    if (dir === '.' || dir === '') {
+      return path.join(docsFolder, 'index.md');
+    }
+    return path.join(docsFolder, `${dir}.md`);
+  }
+
+  if (effectiveStrategy === 'type') {
+    switch (symbolType) {
+      case SymbolType.CLASS:
+        return path.join(docsFolder, 'classes.md');
+      case SymbolType.FUNCTION:
+        return path.join(docsFolder, 'functions.md');
+      case SymbolType.INTERFACE:
+        return path.join(docsFolder, 'interfaces.md');
+      case SymbolType.TYPE_ALIAS:
+      case SymbolType.ENUM:
+        return path.join(docsFolder, 'types.md');
+      case SymbolType.VARIABLE:
+      case SymbolType.CONST:
+        return path.join(docsFolder, 'variables.md');
+      default:
+        return path.join(docsFolder, 'api.md');
+    }
+  }
+
+  return path.join(docsFolder, 'api.md');
+}
+
+/**
  * Scan code and create anchors in markdown files
  */
-async function scanAndCreateAnchors(config: DoctypeConfig, spinner: any): Promise<number> {
+async function scanAndCreateAnchors(config: DoctypeConfig, spinner: { message: (msg: string) => void }): Promise<number> {
   const projectRoot = path.resolve(process.cwd(), config.projectRoot);
   const docsFolder = path.resolve(process.cwd(), config.docsFolder);
   const mapFilePath = path.resolve(process.cwd(), config.mapFile);
@@ -81,24 +135,36 @@ async function scanAndCreateAnchors(config: DoctypeConfig, spinner: any): Promis
   const symbolsToDocument: Array<{
     filePath: string;
     symbolName: string;
+    symbolType: SymbolType;
     signatureText: string;
     hash: string;
+    targetDocFile: string;
   }> = [];
 
   for (const tsFile of tsFiles) {
     try {
       const signatures = analyzer.analyzeFile(tsFile);
+      // Normalize path to use forward slashes on all platforms
+      const relativePath = path.relative(projectRoot, tsFile).split(path.sep).join('/');
 
       for (const signature of signatures) {
         if (signature.isExported) {
           const hashResult = hasher.hash(signature);
-          const relativePath = path.relative(projectRoot, tsFile);
+          
+          const targetDocFile = determineOutputFile(
+             config.outputStrategy || 'mirror', 
+             docsFolder,
+             relativePath,
+             signature.symbolType
+          );
 
           symbolsToDocument.push({
             filePath: relativePath,
             symbolName: signature.symbolName,
+            symbolType: signature.symbolType,
             signatureText: signature.signatureText,
             hash: hashResult.hash,
+            targetDocFile
           });
         }
       }
@@ -112,80 +178,87 @@ async function scanAndCreateAnchors(config: DoctypeConfig, spinner: any): Promis
     return 0;
   }
 
-  spinner.message(`Found ${symbolsToDocument.length} exported symbols. Creating anchors...`);
+  spinner.message(`Found ${symbolsToDocument.length} exported symbols. Grouping by file...`);
 
-  // Create or use existing API.md file
-  const apiMdPath = path.join(docsFolder, 'api.md');
-  let apiMdContent = '';
-  let isNewFile = false;
-
-  if (fs.existsSync(apiMdPath)) {
-    apiMdContent = fs.readFileSync(apiMdPath, 'utf-8');
-  } else {
-    // Create new API.md with header
-    apiMdContent = `# API Reference\n\nThis file contains auto-generated documentation anchors for the codebase.\n\n`;
-    isNewFile = true;
+  // Group by target document
+  const symbolsByDoc = new Map<string, typeof symbolsToDocument>();
+  for (const sym of symbolsToDocument) {
+    if (!symbolsByDoc.has(sym.targetDocFile)) {
+      symbolsByDoc.set(sym.targetDocFile, []);
+    }
+    symbolsByDoc.get(sym.targetDocFile)!.push(sym);
   }
 
-  // Get existing anchors to avoid duplicates
-  const existingCodeRefs = anchorInserter.getExistingCodeRefs(apiMdContent);
-  const existingSet = new Set(existingCodeRefs);
+  let totalInserted = 0;
 
-  // Insert anchors and create map entries
-  let insertedCount = 0;
-  let hasChanges = false;
+  // Process each document file
+  for (const [docPath, symbols] of symbolsByDoc.entries()) {
+    let docContent = '';
+    let isNewFile = false;
 
-  for (const symbol of symbolsToDocument) {
-    const codeRef = `${symbol.filePath}#${symbol.symbolName}`;
-
-    // Skip if anchor already exists
-    if (existingSet.has(codeRef)) {
-      continue;
+    // Ensure directory exists for this doc file
+    const docDir = path.dirname(docPath);
+    if (!fs.existsSync(docDir)) {
+        fs.mkdirSync(docDir, { recursive: true });
     }
 
-    // Insert anchor
-    const result = anchorInserter.insertIntoContent(apiMdContent, codeRef, {
-      createSection: false, // We already have the section
-      placeholder: 'TODO: Add documentation for this symbol',
-    });
+    if (fs.existsSync(docPath)) {
+      docContent = fs.readFileSync(docPath, 'utf-8');
+    } else {
+      const title = generateMarkdownTitle(docPath);
+      docContent = `# ${title}\n\nAuto-generated documentation via Doctype.\n\n`;
+      isNewFile = true;
+    }
 
-    if (result.success) {
-      // Update content in memory
-      apiMdContent = result.content;
-      hasChanges = true;
+    const existingCodeRefs = anchorInserter.getExistingCodeRefs(docContent);
+    const existingSet = new Set(existingCodeRefs);
+    let hasChanges = false;
 
-      // Create map entry
-      const mapEntry: DoctypeMapEntry = {
-        id: result.anchorId,
-        codeRef: {
-          filePath: symbol.filePath,
-          symbolName: symbol.symbolName,
-        },
-        codeSignatureHash: symbol.hash,
-        codeSignatureText: symbol.signatureText,
-        docRef: {
-          filePath: path.relative(process.cwd(), apiMdPath),
-          startLine: result.location.startLine,
-          endLine: result.location.endLine,
-        },
-        originalMarkdownContent: `<!-- TODO: Add documentation for this symbol -->`,
-        lastUpdated: Date.now(),
-      };
+    for (const symbol of symbols) {
+      const codeRef = `${symbol.filePath}#${symbol.symbolName}`;
 
-      mapManager.addEntry(mapEntry);
-      insertedCount++;
+      if (existingSet.has(codeRef)) {
+        continue;
+      }
+
+      const result = anchorInserter.insertIntoContent(docContent, codeRef, {
+        createSection: true,
+        placeholder: 'TODO: Add documentation for this symbol',
+      });
+
+      if (result.success) {
+        docContent = result.content;
+        hasChanges = true;
+
+        const mapEntry: DoctypeMapEntry = {
+          id: result.anchorId,
+          codeRef: {
+            filePath: symbol.filePath,
+            symbolName: symbol.symbolName,
+          },
+          codeSignatureHash: symbol.hash,
+          codeSignatureText: symbol.signatureText,
+          docRef: {
+            filePath: path.relative(process.cwd(), docPath),
+            startLine: result.location.startLine,
+            endLine: result.location.endLine,
+          },
+          originalMarkdownContent: `<!-- TODO: Add documentation for this symbol -->`,
+          lastUpdated: Date.now(),
+        };
+
+        mapManager.addEntry(mapEntry);
+        totalInserted++;
+      }
+    }
+
+    if (isNewFile || hasChanges) {
+      fs.writeFileSync(docPath, docContent, 'utf-8');
     }
   }
 
-  // Save the map
   mapManager.save();
-
-  // Write the file if it's new or has changes
-  if (isNewFile || hasChanges) {
-    fs.writeFileSync(apiMdPath, apiMdContent, 'utf-8');
-  }
-
-  return insertedCount;
+  return totalInserted;
 }
 
 /**
@@ -213,6 +286,22 @@ function addToGitignore(line: string): void {
 
   // Write back
   fs.writeFileSync(gitignorePath, gitignoreContent, 'utf-8');
+}
+
+/**
+ * Generates a meaningful H1 title for a new Markdown documentation file based on its filename.
+ * @param docPath The full path to the new documentation file.
+ * @returns A capitalized title for the Markdown file.
+ */
+function generateMarkdownTitle(docPath: string): string {
+  const basename = path.basename(docPath, '.md');
+
+  if (basename === 'index' || basename === 'api') {
+    return 'API Reference';
+  }
+
+  // Capitalize the first letter
+  return basename.charAt(0).toUpperCase() + basename.slice(1);
 }
 
 /**
@@ -290,7 +379,23 @@ export async function initCommand(
       return { success: false, error: 'Cancelled by user' };
     }
 
-    // Prompt 5: OpenAI API Key
+    // Prompt 5: Output Strategy
+    const outputStrategy = await p.select({
+      message: 'How should documentation files be structured?',
+      options: [
+        { value: 'mirror', label: 'Mirror Source Structure (e.g. src/auth/login.ts → docs/src/auth/login.md)' },
+        { value: 'module', label: 'Module/Folder Based (e.g. src/auth/* → docs/src/auth.md)' },
+        { value: 'type', label: 'Symbol Type Based (e.g. All Functions → docs/functions.md)' },
+      ],
+      initialValue: 'mirror',
+    });
+
+    if (p.isCancel(outputStrategy)) {
+      p.cancel('Initialization cancelled.');
+      return { success: false, error: 'Cancelled by user' };
+    }
+
+    // Prompt 6: OpenAI API Key
     const envPath = path.join(process.cwd(), '.env');
     let existingApiKey: string | null = null;
 
@@ -358,6 +463,7 @@ export async function initCommand(
       projectRoot: projectRoot as string,
       docsFolder: docsFolder as string,
       mapFile: mapFile as string,
+      outputStrategy: outputStrategy as OutputStrategy,
     };
 
     // Create spinner for file operations

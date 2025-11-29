@@ -156,4 +156,11 @@ export interface DoctypeConfig {
   docsFolder: string;
   /** Map file name/path */
   mapFile: string;
+  /** Strategy for generating documentation files */
+  outputStrategy?: OutputStrategy;
 }
+
+/**
+ * Strategy for generating documentation files
+ */
+export type OutputStrategy = 'mirror' | 'module' | 'type';

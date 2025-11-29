@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { initCommand } from '../init';
+import { initCommand, determineOutputFile } from '../init';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { DoctypeConfig } from '../types';
+import { SymbolType } from '../../core/types';
 
 // Mock @clack/prompts - use vi.hoisted to ensure variables are available during hoisting
 const {
@@ -15,6 +16,7 @@ const {
   mockNote,
   mockSpinner,
   mockIsCancel,
+  mockSelect,
 } = vi.hoisted(() => {
   return {
     mockIntro: vi.fn(),
@@ -30,9 +32,9 @@ const {
       message: vi.fn(),
     })),
     mockIsCancel: vi.fn((value) => value === Symbol.for('clack.cancel')),
+    mockSelect: vi.fn(),
   };
 });
-
 vi.mock('@clack/prompts', () => ({
   intro: mockIntro,
   outro: mockOutro,
@@ -43,6 +45,7 @@ vi.mock('@clack/prompts', () => ({
   note: mockNote,
   spinner: mockSpinner,
   isCancel: mockIsCancel,
+  select: mockSelect,
 }));
 
 describe('CLI: init command', () => {
@@ -60,6 +63,7 @@ describe('CLI: init command', () => {
     projectRoot?: string;
     docsFolder?: string;
     mapFile?: string;
+    outputStrategy?: 'mirror' | 'module' | 'type'; // Added
     replaceKey?: boolean;
     apiKey?: string;
   }): void => {
@@ -71,6 +75,7 @@ describe('CLI: init command', () => {
     mockIntro.mockReset();
     mockOutro.mockReset();
     mockSpinner.mockReset();
+    mockSelect.mockReset(); // Added mockSelect reset
 
     // Mock intro (always called)
     mockIntro.mockReturnValue(undefined);
@@ -86,6 +91,9 @@ describe('CLI: init command', () => {
       .mockResolvedValueOnce(responses.projectRoot || '.')
       .mockResolvedValueOnce(responses.docsFolder || './docs')
       .mockResolvedValueOnce(responses.mapFile || 'doctype-map.json');
+
+    // Mock select prompt for outputStrategy
+    mockSelect.mockResolvedValueOnce(responses.outputStrategy || 'mirror'); // Added mockSelect
 
     // Mock note (called when showing API key info)
     mockNote.mockReturnValue(undefined);
@@ -391,9 +399,10 @@ describe('CLI: init command', () => {
     expect(config).toHaveProperty('projectRoot');
     expect(config).toHaveProperty('docsFolder');
     expect(config).toHaveProperty('mapFile');
+    expect(config).toHaveProperty('outputStrategy');
 
     // Verify no extra fields
-    expect(Object.keys(config)).toHaveLength(4);
+    expect(Object.keys(config)).toHaveLength(5);
   });
 
   // Tests for API key handling
@@ -579,5 +588,71 @@ describe('CLI: init command', () => {
     expect(envContent).toContain('DEBUG=true');
     expect(envContent).toContain('OPENAI_API_KEY=sk-new-key');
     expect(envContent).not.toContain('sk-old-key');
+  });
+});
+
+describe('determineOutputFile', () => {
+  const docsFolder = 'docs';
+
+  it('should handle "mirror" strategy correctly', () => {
+    // src/auth/login.ts -> docs/src/auth/login.md
+    const result = determineOutputFile('mirror', docsFolder, 'src/auth/login.ts', SymbolType.FUNCTION);
+    expect(result).toBe(join(docsFolder, 'src/auth/login.md'));
+    
+    // Windows style path input should still work with join
+    // (Simulating what might happen if passed from a non-normalized source, though scanAndCreateAnchors normalizes it)
+    // But here we test the logic of determineOutputFile itself
+    const result2 = determineOutputFile('mirror', docsFolder, 'src/utils.ts', SymbolType.CLASS);
+    expect(result2).toBe(join(docsFolder, 'src/utils.md'));
+  });
+
+  it('should handle "module" strategy correctly', () => {
+    // src/auth/login.ts -> docs/src/auth.md
+    const result = determineOutputFile('module', docsFolder, 'src/auth/login.ts', SymbolType.FUNCTION);
+    expect(result).toBe(join(docsFolder, 'src/auth.md'));
+
+    // src/index.ts -> docs/src.md
+    const result2 = determineOutputFile('module', docsFolder, 'src/index.ts', SymbolType.VARIABLE);
+    expect(result2).toBe(join(docsFolder, 'src.md'));
+
+    // index.ts (root) -> docs/index.md
+    const result3 = determineOutputFile('module', docsFolder, 'index.ts', SymbolType.FUNCTION);
+    expect(result3).toBe(join(docsFolder, 'index.md'));
+  });
+
+  it('should handle "type" strategy correctly', () => {
+    // Class -> classes.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.CLASS))
+      .toBe(join(docsFolder, 'classes.md'));
+
+    // Function -> functions.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.FUNCTION))
+      .toBe(join(docsFolder, 'functions.md'));
+
+    // Interface -> interfaces.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.INTERFACE))
+      .toBe(join(docsFolder, 'interfaces.md'));
+
+    // Type Alias -> types.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.TYPE_ALIAS))
+      .toBe(join(docsFolder, 'types.md'));
+      
+    // Enum -> types.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.ENUM))
+      .toBe(join(docsFolder, 'types.md'));
+
+    // Variable -> variables.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.VARIABLE))
+      .toBe(join(docsFolder, 'variables.md'));
+
+    // Const -> variables.md
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.CONST))
+      .toBe(join(docsFolder, 'variables.md'));
+  });
+
+  it('should default to "mirror" strategy if undefined', () => {
+    // @ts-expect-error - testing undefined strategy
+    const result = determineOutputFile(undefined, docsFolder, 'src/file.ts', SymbolType.FUNCTION);
+    expect(result).toBe(join(docsFolder, 'src/file.md'));
   });
 });
