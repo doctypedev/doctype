@@ -1,249 +1,1173 @@
 {
-  "version": "1.0",
+  "version": "1.0.0",
   "entries": [
     {
-      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "id": "19140291-0b89-4945-b7a8-ffcc903b6b8d",
       "codeRef": {
-        "filePath": "src/cli/check.ts",
-        "symbolName": "checkCommand"
+        "filePath": "docs/scripts/generateSidebar.ts",
+        "symbolName": "generateSidebar"
       },
-      "codeSignatureHash": "834d841a0878511bc393222b9fd9dc7a841bdeff42924af13a59b95e158a68ce",
+      "codeSignatureHash": "6ab8481c50a10d09f5f210f5286dd79aab1c3a3dd50597e5989e172b98d5878f",
+      "codeSignatureText": "export function generateSidebar(customConfig?: Partial<SidebarConfig>): void",
       "docRef": {
-        "filePath": "docs/cli/check.md",
-        "startLine": 88,
-        "endLine": 99
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "The check command performs the following steps:\n\n1. Loads the doctype-map.json file using DoctypeMapManager\n2. For each entry in the map:\n   - Reads the source file specified in code_ref\n   - Analyzes the symbol using ASTAnalyzer\n   - Calculates the current signature hash using SignatureHasher\n   - Compares with the saved hash\n3. Reports all detected drifts\n4. Exits with appropriate status code",
-      "lastUpdated": 1764259025172
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
     },
     {
-      "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "id": "193a4680-9a68-4fc8-b3d0-8f74f5bd463d",
       "codeRef": {
-        "filePath": "src/cli/fix.ts",
-        "symbolName": "fixCommand"
+        "filePath": "scripts/init-hashes.ts",
+        "symbolName": "initHashes"
       },
-      "codeSignatureHash": "33c444cb7aa89dac2c18682f513857f7b079a7f14174c7bbc2344dcc340bf322",
+      "codeSignatureHash": "f9485bf5cea653b2946659ae70e1a1ed793bfceaf8cfbfc50f967ef645b49b2d",
+      "codeSignatureText": "async function initHashes(mapPath: string = './doctype-map.json'): Promise<void>",
       "docRef": {
-        "filePath": "docs/cli/fix.md",
-        "startLine": 107,
-        "endLine": 119
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "The fix command performs the following steps:\n\n1. Runs drift detection using DriftDetector\n2. For each drifted entry:\n   - Extracts old and new code signatures\n   - Prepares context for GenAI (Phase 4)\n   - Updates the hash in doctype-map.json\n3. In Phase 4, will also:\n   - Generate new documentation content via LLM\n   - Inject content using ContentInjector\n   - Optionally commit changes to git",
-      "lastUpdated": 1764259025252
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
     },
     {
-      "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+      "id": "4470d3e4-3b8d-47c7-aad1-9c48538343c3",
       "codeRef": {
-        "filePath": "src/core/ast-analyzer.ts",
-        "symbolName": "ASTAnalyzer"
+        "filePath": "src/ai/ai-agent.ts",
+        "symbolName": "createOpenAIAgent"
       },
-      "codeSignatureHash": "35265b2a642dd3dcf5725ec0d97984f40694e94abc9db17030aa1499c9b7965c",
+      "codeSignatureHash": "44137caecdd961b74886f48eba574c2ed3fee582a196a06b8e987f287040aed2",
+      "codeSignatureText": "export function createOpenAIAgent(apiKey: string, modelId: string = 'gpt-4', options: {maxTokens?: number;temperature?: number;timeout?: number;debug?: boolean;}={}): AIAgent",
       "docRef": {
-        "filePath": "docs/api/ast-analyzer.md",
-        "startLine": 6,
-        "endLine": 16
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "# ASTAnalyzer Class\n\nThe `ASTAnalyzer` class is used for analyzing TypeScript/JavaScript code. It provides methods to analyze code from a file or a string.\n\n## Methods\n\n### analyzeFile(filePath: string): CodeSignature[]\n\nThis method is used to analyze TypeScript/JavaScript code from a file.\n\n#### Parameters\n\n- `filePath` (string): The path to the file that contains the TypeScript/JavaScript code to be analyzed.\n\n#### Return\n\nReturns an array of `CodeSignature` objects. Each `CodeSignature` represents a signature of a function or a method in the analyzed code.\n\n### analyzeCode(code: string): CodeSignature[]\n\nThis method is used to analyze TypeScript/JavaScript code from a string.\n\n#### Parameters\n\n- `code` (string): A string that contains the TypeScript/JavaScript code to be analyzed.\n\n#### Return\n\nReturns an array of `CodeSignature` objects. Each `CodeSignature` represents a signature of a function or a method in the analyzed code.\n\n## Usage Example\n\n```typescript\nconst analyzer = new ASTAnalyzer();\nconst codeSignatures = analyzer.analyzeFile('path/to/your/file.ts');\n\nfor (const signature of codeSignatures) {\n    console.log(signature.toString());\n}\n```\n\nIn this example, we create a new instance of `ASTAnalyzer`, analyze a TypeScript file, and then print out the signatures of all functions and methods in the file.",
-      "lastUpdated": 1764271657497,
-      "codeSignatureText": "class ASTAnalyzer{;analyzeFile(filePath: string): CodeSignature[];analyzeCode(code: string): CodeSignature[]}"
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
     },
     {
-      "id": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+      "id": "30621fb0-0b36-42fb-b4b1-8b47711144eb",
       "codeRef": {
-        "filePath": "src/core/signature-hasher.ts",
-        "symbolName": "SignatureHasher"
+        "filePath": "src/ai/ai-agent.ts",
+        "symbolName": "createAgentFromEnv"
       },
-      "codeSignatureHash": "487ac575f7222e943ddecf4108a46fb84b919713e2df639ed4de31d7ca345333",
+      "codeSignatureHash": "d0f0e9a89a042c94115be66a7ad52f0ccf2baba64caa5265c75715e12e120145",
+      "codeSignatureText": "export function createAgentFromEnv(options: {modelId?: string;maxTokens?: number;temperature?: number;timeout?: number;debug?: boolean;}={}): AIAgent",
       "docRef": {
-        "filePath": "docs/api/signature-hasher.md",
-        "startLine": 6,
-        "endLine": 13
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "# SignatureHasher Class\n\nThe `SignatureHasher` class is designed to hash code signatures and compare them. It provides four methods: `hash`, `hashMany`, `compare`, and `hashText`.\n\n## Methods\n\n### hash\n\nThe `hash` method takes a `CodeSignature` as a parameter and returns a `SignatureHash`.\n\n```typescript\nhash(signature: CodeSignature): SignatureHash\n```\n\n**Parameters:**\n\n- `signature` (`CodeSignature`): The code signature to be hashed.\n\n**Returns:**\n\n- `SignatureHash`: The hashed version of the provided code signature.\n\n### hashMany\n\nThe `hashMany` method takes an array of `CodeSignature` and returns an array of `SignatureHash`.\n\n```typescript\nhashMany(signatures: CodeSignature[]): SignatureHash[]\n```\n\n**Parameters:**\n\n- `signatures` (`CodeSignature[]`): An array of code signatures to be hashed.\n\n**Returns:**\n\n- `SignatureHash[]`: An array of hashed versions of the provided code signatures.\n\n### compare\n\nThe `compare` method takes two strings as parameters and returns a boolean indicating whether the two strings are identical.\n\n```typescript\ncompare(hash1: string, hash2: string): boolean\n```\n\n**Parameters:**\n\n- `hash1` (`string`): The first string to be compared.\n- `hash2` (`string`): The second string to be compared.\n\n**Returns:**\n\n- `boolean`: `true` if the two strings are identical, `false` otherwise.\n\n### hashText\n\nThe `hashText` method takes a string as a parameter and returns a hashed version of the string.\n\n```typescript\nhashText(signatureText: string): string\n```\n\n**Parameters:**\n\n- `signatureText` (`string`): The text to be hashed.\n\n**Returns:**\n\n- `string`: The hashed version of the provided text.\n\n## Usage Example\n\n```typescript\nlet hasher = new SignatureHasher();\nlet signature = new CodeSignature('functionName', ['param1', 'param2']);\nlet hash = hasher.hash(signature);\nlet hashText = hasher.hashText('functionName(param1, param2)');\nlet comparison = hasher.compare(hash, hashText);\nconsole.log(comparison); // Outputs: true\n```\n\nIn this example, we create a new instance of `SignatureHasher`, hash a `CodeSignature` object, hash a string of text, and then compare the two hashes. The `compare` method returns `true` because the hashes are identical.",
-      "lastUpdated": 1764271672960,
-      "codeSignatureText": "class SignatureHasher{;hash(signature: CodeSignature): SignatureHash;hashMany(signatures: CodeSignature[]): SignatureHash[];compare(hash1: string, hash2: string): boolean;hashText(signatureText: string): string}"
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
     },
     {
-      "id": "d6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0a",
-      "codeRef": {
-        "filePath": "src/content/map-manager.ts",
-        "symbolName": "DoctypeMapManager"
-      },
-      "codeSignatureHash": "28479cf1179053820dde1f1e4dac403999246896d63f69704ae26ff3f563df5f",
-      "docRef": {
-        "filePath": "docs/api/map-manager.md",
-        "startLine": 6,
-        "endLine": 14
-      },
-      "originalMarkdownContent": "# `DoctypeMapManager` Class\n\nThe `DoctypeMapManager` class provides methods to manage a collection of `DoctypeMapEntry` objects. It allows you to add, update, remove entries, and perform various queries on the collection.\n\n## Methods\n\n### `save(): void`\n\nSaves the current state of the `DoctypeMapManager` instance. It does not take any parameters and does not return any value.\n\n### `getEntries(): DoctypeMapEntry[]`\n\nReturns all entries in the `DoctypeMapManager` instance.\n\n**Returns:** An array of `DoctypeMapEntry` objects.\n\n### `getEntryById(id: string): DoctypeMapEntry`\n\nRetrieves a specific entry by its ID.\n\n**Parameters:**\n- `id: string` - The ID of the entry to retrieve.\n\n**Returns:** The `DoctypeMapEntry` object with the specified ID.\n\n### `getEntriesByCodeRef(filePath: string, symbolName: string): DoctypeMapEntry[]`\n\nRetrieves entries by their code reference.\n\n**Parameters:**\n- `filePath: string` - The file path of the code reference.\n- `symbolName: string` - The symbol name of the code reference.\n\n**Returns:** An array of `DoctypeMapEntry` objects that match the specified code reference.\n\n### `getEntriesByDocFile(filePath: string): DoctypeMapEntry[]`\n\nRetrieves entries by their documentation file.\n\n**Parameters:**\n- `filePath: string` - The file path of the documentation file.\n\n**Returns:** An array of `DoctypeMapEntry` objects that match the specified documentation file.\n\n### `addEntry(entry: DoctypeMapEntry): void`\n\nAdds a new entry to the `DoctypeMapManager` instance.\n\n**Parameters:**\n- `entry: DoctypeMapEntry` - The entry to add.\n\n### `updateEntry(id: string, updates: Partial<DoctypeMapEntry>): void`\n\nUpdates an existing entry in the `DoctypeMapManager` instance.\n\n**Parameters:**\n- `id: string` - The ID of the entry to update.\n- `updates: Partial<DoctypeMapEntry>` - An object containing the fields to update.\n\n### `removeEntry(id: string): boolean`\n\nRemoves an entry from the `DoctypeMapManager` instance.\n\n**Parameters:**\n- `id: string` - The ID of the entry to remove.\n\n**Returns:** A boolean indicating whether the removal was successful.\n\n### `hasDrift(id: string, currentHash: string): boolean`\n\nChecks if an entry has drifted.\n\n**Parameters:**\n- `id: string` - The ID of the entry to check.\n- `currentHash: string` - The current hash of the entry.\n\n**Returns:** A boolean indicating whether the entry has drifted.\n\n### `getDriftedEntries(currentHashes: Map<string, string>): DoctypeMapEntry[]`\n\nRetrieves all entries that have drifted.\n\n**Parameters:**\n- `currentHashes: Map<string, string>` - A map of current hashes.\n\n**Returns:** An array of `DoctypeMapEntry` objects that have drifted.\n\n### `getEntryCount(): number`\n\nReturns the number of entries in the `DoctypeMapManager` instance.\n\n**Returns:** The number of entries.\n\n### `clear(): void`\n\nClears all entries in the `DoctypeMapManager` instance. It does not take any parameters and does not return any value.\n\n### `getVersion(): string`\n\nReturns the version of the `DoctypeMapManager` instance.\n\n**Returns:** The version as a string.\n\n### `export(): DoctypeMap`\n\nExports the current state of the `DoctypeMapManager` instance.\n\n**Returns:** A `DoctypeMap` object representing the current state.\n\n## Example Usage\n\n```typescript\nconst manager = new DoctypeMapManager();\nmanager.addEntry(new DoctypeMapEntry('id1', 'filePath1', 'symbolName1', 'docFilePath1', 'hash1'));\nmanager.addEntry(new DoctypeMapEntry('id2', 'filePath2', 'symbolName2', 'docFilePath2', 'hash2'));\nconsole.log(manager.getEntryCount()); // Outputs: 2\nconsole.log(manager.getEntryById('id1')); // Outputs: DoctypeMapEntry object with id 'id1'\nmanager.removeEntry('id1');\nconsole.log(manager.getEntryCount()); // Outputs: 1\n```",
-      "lastUpdated": 1764271701528,
-      "codeSignatureText": "class DoctypeMapManager{;save(): void;getEntries(): DoctypeMapEntry[];getEntryById(id: string): DoctypeMapEntry;getEntriesByCodeRef(filePath: string, symbolName: string): DoctypeMapEntry[];getEntriesByDocFile(filePath: string): DoctypeMapEntry[];addEntry(entry: DoctypeMapEntry): void;updateEntry(id: string, updates: Partial<DoctypeMapEntry>): void;removeEntry(id: string): boolean;hasDrift(id: string, currentHash: string): boolean;getDriftedEntries(currentHashes: Map<string, string>): DoctypeMapEntry[];getEntryCount(): number;clear(): void;getVersion(): string;export(): DoctypeMap}"
-    },
-    {
-      "id": "b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0e",
-      "codeRef": {
-        "filePath": "src/content/content-injector.ts",
-        "symbolName": "ContentInjector"
-      },
-      "codeSignatureHash": "5c4efaa53d3025e8b66202e9c53929773bdd6f538f5fe35b4671a2a042a6f882",
-      "docRef": {
-        "filePath": "docs/api/content-injector.md",
-        "startLine": 6,
-        "endLine": 15
-      },
-      "originalMarkdownContent": "# `ContentInjector` Class\n\nThe `ContentInjector` class provides methods for injecting content into files or strings at specific anchor points. It also provides methods for previewing the results of these injections, validating anchors, and retrieving the location of anchors within files or strings.\n\n## Methods\n\n### `injectIntoFile(filePath: string, anchorId: string, newContent: string, writeToFile: boolean): InjectionResult`\n\nInjects `newContent` at the location of `anchorId` within the file specified by `filePath`. If `writeToFile` is `true`, the changes are written directly to the file.\n\n- `filePath: string` - The path to the file where the content will be injected.\n- `anchorId: string` - The identifier of the anchor where the content will be injected.\n- `newContent: string` - The content to be injected.\n- `writeToFile: boolean` - If `true`, the file will be updated with the new content.\n\nReturns an `InjectionResult` object representing the result of the injection.\n\n### `injectIntoContent(content: string, anchorId: string, newContent: string): InjectionResult`\n\nInjects `newContent` at the location of `anchorId` within the provided `content` string.\n\n- `content: string` - The string where the content will be injected.\n- `anchorId: string` - The identifier of the anchor where the content will be injected.\n- `newContent: string` - The content to be injected.\n\nReturns an `InjectionResult` object representing the result of the injection.\n\n### `injectMultiple(filePath: string, injections: Map<string, string>, writeToFile: boolean): InjectionResult[]`\n\nInjects multiple content strings at their corresponding anchor locations within the file specified by `filePath`. If `writeToFile` is `true`, the changes are written directly to the file.\n\n- `filePath: string` - The path to the file where the content will be injected.\n- `injections: Map<string, string>` - A map where the keys are anchor identifiers and the values are the corresponding content strings to be injected.\n- `writeToFile: boolean` - If `true`, the file will be updated with the new content.\n\nReturns an array of `InjectionResult` objects representing the results of the injections.\n\n### `preview(filePath: string, anchorId: string, newContent: string): InjectionResult`\n\nPreviews the result of injecting `newContent` at the location of `anchorId` within the file specified by `filePath` without actually modifying the file.\n\n- `filePath: string` - The path to the file where the content will be injected.\n- `anchorId: string` - The identifier of the anchor where the content will be injected.\n- `newContent: string` - The content to be injected.\n\nReturns an `InjectionResult` object representing the result of the injection.\n\n### `getAnchorLocation(filePath: string, anchorId: string): {startLine: number, endLine: number}`\n\nRetrieves the location of `anchorId` within the file specified by `filePath`.\n\n- `filePath: string` - The path to the file where the anchor is located.\n- `anchorId: string` - The identifier of the anchor.\n\nReturns an object with `startLine` and `endLine` properties representing the start and end lines of the anchor within the file.\n\n### `getAnchorLocationFromContent(content: string, anchorId: string): {startLine: number, endLine: number}`\n\nRetrieves the location of `anchorId` within the provided `content` string.\n\n- `content: string` - The string where the anchor is located.\n- `anchorId: string` - The identifier of the anchor.\n\nReturns an object with `startLine` and `endLine` properties representing the start and end lines of the anchor within the string.\n\n### `validateAnchor(content: string, anchorId: string): string[]`\n\nValidates the existence of `anchorId` within the provided `content` string.\n\n- `content: string` - The string where the anchor is located.\n- `anchorId: string` - The identifier of the anchor.\n\nReturns an array of error messages if the anchor is not valid, or an empty array if the anchor is valid.\n\n## Usage Example\n\n```typescript\nconst injector = new ContentInjector();\nconst filePath = './test.txt';\nconst anchorId = 'anchor1';\nconst newContent = 'New content to be injected';\n\n// Inject new content into file\nconst result = injector.injectIntoFile(filePath, anchorId, newContent, true);\n\nconsole.log(result); // Logs the InjectionResult object\n```\n\n## File Location\n`src/content/content-injector.ts`",
-      "lastUpdated": 1764271728402,
-      "codeSignatureText": "class ContentInjector{;injectIntoFile(filePath: string, anchorId: string, newContent: string, writeToFile: boolean): InjectionResult;injectIntoContent(content: string, anchorId: string, newContent: string): InjectionResult;injectMultiple(filePath: string, injections: Map<string, string>, writeToFile: boolean): InjectionResult[];preview(filePath: string, anchorId: string, newContent: string): InjectionResult;getAnchorLocation(filePath: string, anchorId: string): {startLine: number;endLine: number;};getAnchorLocationFromContent(content: string, anchorId: string): {startLine: number;endLine: number;};validateAnchor(content: string, anchorId: string): string[]}"
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440001",
-      "codeRef": {
-        "filePath": "src/core/ast-analyzer.ts",
-        "symbolName": "ASTAnalyzer"
-      },
-      "codeSignatureHash": "35265b2a642dd3dcf5725ec0d97984f40694e94abc9db17030aa1499c9b7965c",
-      "docRef": {
-        "filePath": "src/core/README.md",
-        "startLine": 18,
-        "endLine": 45
-      },
-      "originalMarkdownContent": "Analyzes TypeScript files using the TypeScript Compiler API (via `ts-morph`) to extract public API signatures.\n\n**Capabilities:**\n- Extract function declarations and signatures\n- Extract class declarations with public methods and properties\n- Extract interface declarations\n- Extract type alias declarations\n- Extract enum declarations\n- Parse JSDoc comments for additional context\n\n**API:**\n\n```typescript\nimport { ASTAnalyzer } from 'doctype';\n\nconst analyzer = new ASTAnalyzer();\n\n// Analyze single file\nconst signatures = analyzer.analyzeFile('src/auth/login.ts');\n\n// Analyze directory\nconst allSignatures = analyzer.analyzeDirectory('src/auth');\n\n// Find specific symbol\nconst signature = analyzer.findSymbol('src/auth/login.ts', 'login');\n```",
-      "lastUpdated": 1764418502190
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440002",
-      "codeRef": {
-        "filePath": "src/core/signature-hasher.ts",
-        "symbolName": "SignatureHasher"
-      },
-      "codeSignatureHash": "487ac575f7222e943ddecf4108a46fb84b919713e2df639ed4de31d7ca345333",
-      "docRef": {
-        "filePath": "src/core/README.md",
-        "startLine": 68,
-        "endLine": 92
-      },
-      "originalMarkdownContent": "Generates SHA256 cryptographic hashes of code signatures for deterministic drift detection.\n\n**Capabilities:**\n- Hash function signatures (name, parameters, return type)\n- Hash class signatures (name, properties, methods)\n- Hash interface signatures\n- Normalize signatures before hashing (consistent formatting)\n- Support for selective hashing (e.g., ignore JSDoc changes)\n\n**API:**\n\n```typescript\nimport { SignatureHasher } from 'doctype';\n\nconst hasher = new SignatureHasher();\n\n// Hash a signature\nconst result = hasher.hash(signature);\n\nconsole.log(result.hash);           // 'abc123...'\nconsole.log(result.algorithm);      // 'sha256'\nconsole.log(result.normalizedText); // 'function login(email:string,password:string):Promise<string>'\n```",
-      "lastUpdated": 1764418502218
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440003",
-      "codeRef": {
-        "filePath": "src/content/markdown-parser.ts",
-        "symbolName": "MarkdownParser"
-      },
-      "codeSignatureHash": "07c4d13d14877ce4181802a061028eeda37fca5d7d437a7b7b043b3fe57c8caa",
-      "docRef": {
-        "filePath": "src/content/README.md",
-        "startLine": 17,
-        "endLine": 48
-      },
-      "originalMarkdownContent": "Parses Markdown files to extract doctype anchors defined using HTML comments.\n\n**Anchor Format:**\n\n```markdown\n<!-- doctype:start id=\"uuid\" code_ref=\"src/file.ts#symbolName\" -->\nDocumentation content managed by Doctype.\nThis will be automatically updated when code changes.\n<!-- doctype:end id=\"uuid\" -->\n```\n\n**API:**\n\n```typescript\nimport { MarkdownParser } from 'doctype';\n\nconst parser = new MarkdownParser();\n\n// Parse file and extract all anchors\nconst anchors = parser.parseFile('docs/api.md');\n\n// Parse content string\nconst anchors = parser.parseContent(markdownContent);\n\n// Validate anchor format\nconst errors = parser.validate(markdownContent);\n\n// Parse code_ref into components\nconst { filePath, symbolName } = parser.parseCodeRef('src/utils.ts#helper');\n```",
-      "lastUpdated": 1764418502244
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440004",
-      "codeRef": {
-        "filePath": "src/content/map-manager.ts",
-        "symbolName": "DoctypeMapManager"
-      },
-      "codeSignatureHash": "28479cf1179053820dde1f1e4dac403999246896d63f69704ae26ff3f563df5f",
-      "docRef": {
-        "filePath": "src/content/README.md",
-        "startLine": 73,
-        "endLine": 75
-      },
-      "originalMarkdownContent": "Manages the `doctype-map.json` file - the single source of truth for documentation mappings.",
-      "lastUpdated": 1764418502270
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440005",
-      "codeRef": {
-        "filePath": "src/content/content-injector.ts",
-        "symbolName": "ContentInjector"
-      },
-      "codeSignatureHash": "5c4efaa53d3025e8b66202e9c53929773bdd6f538f5fe35b4671a2a042a6f882",
-      "docRef": {
-        "filePath": "src/content/README.md",
-        "startLine": 151,
-        "endLine": 186
-      },
-      "originalMarkdownContent": "Injects AI-generated or placeholder content into Markdown files within anchor boundaries.\n\n**API:**\n\n```typescript\nimport { ContentInjector } from 'doctype';\n\nconst injector = new ContentInjector();\n\n// Inject content and write to file\nconst result = injector.injectIntoFile(\n  'docs/api.md',\n  'anchor-uuid',\n  'New documentation content here.\\n\\nSupports **Markdown** formatting!',\n  true // write to file\n);\n\nconsole.log(result.success);      // true\nconsole.log(result.linesChanged); // 5\n\n// Preview without writing (dry-run)\nconst preview = injector.preview(\n  'docs/api.md',\n  'anchor-uuid',\n  'New content'\n);\n\nconsole.log(preview.before);      // Original content\nconsole.log(preview.after);       // Preview of new content\nconsole.log(preview.linesChanged); // Number of lines that will change\n\n// Validate anchor exists and is well-formed\nconst errors = injector.validateAnchor(content, 'anchor-uuid');\n```",
-      "lastUpdated": 1764418502292
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440006",
-      "codeRef": {
-        "filePath": "src/cli/logger.ts",
-        "symbolName": "Logger"
-      },
-      "codeSignatureHash": "f9a537956e6cf253710d17f166dfa94942fcc2c097903448e695a082f6e52c32",
-      "docRef": {
-        "filePath": "src/cli/README.md",
-        "startLine": 232,
-        "endLine": 263
-      },
-      "originalMarkdownContent": "Professional CLI output with colored formatting and log levels.\n\n**Features:**\n- Multiple log levels (error, warn, info, success, debug)\n- ANSI color codes for terminal output\n- Conditional verbose logging\n- Formatted helpers (path, symbol, hash)\n- Section headers and dividers\n\n**API:**\n\n```typescript\nimport { Logger } from 'doctype/cli';\n\nconst logger = new Logger(verbose);\n\nlogger.error('Error message');       // ✗ Red\nlogger.warn('Warning message');       // ⚠ Yellow\nlogger.info('Info message');          // ℹ Blue\nlogger.success('Success message');    // ✓ Green\nlogger.debug('Debug message');        // [DEBUG] Gray (verbose only)\n\nlogger.header('Section Title');       // Bold cyan\nlogger.divider();                     // ──────────\n\n// Formatted helpers\nlogger.formatPath('src/auth/login.ts');    // Cyan\nlogger.formatSymbol('login');               // Yellow\nlogger.formatHash('abc123...');             // Gray\n```",
-      "lastUpdated": 1764418502314
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440007",
-      "codeRef": {
-        "filePath": "src/cli/git-helper.ts",
-        "symbolName": "GitHelper"
-      },
-      "codeSignatureHash": "636e50dad75674e34ce865fa021c77d14c95e4cc5492508a9ec7615a3e933d0b",
-      "docRef": {
-        "filePath": "src/cli/README.md",
-        "startLine": 267,
-        "endLine": 297
-      },
-      "originalMarkdownContent": "Git operations for auto-commit functionality.\n\n**Features:**\n- Repository validation (check if current directory is a git repo)\n- File staging (`git add`)\n- Commit creation with standardized messages\n- Optional push to remote\n\n**API:**\n\n```typescript\nimport { GitHelper } from 'doctype/cli';\n\nconst git = new GitHelper(logger);\n\n// Check if current directory is a git repository\nconst isRepo = git.isGitRepository();\n\n// Auto-commit documentation changes\nconst result = git.autoCommit(\n  ['docs/api.md', 'docs/auth.md', 'doctype-map.json'], // Files to commit\n  ['login', 'logout'],                                 // Symbol names\n  false                                                 // Don't push to remote\n);\n\nif (result.success) {\n  console.log(`Created commit: ${result.commitMessage}`);\n}\n```",
-      "lastUpdated": 1764418502334
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440008",
+      "id": "3f8a87ef-8c44-4b1e-9d5e-75d660a2f2d2",
       "codeRef": {
         "filePath": "src/ai/ai-agent.ts",
         "symbolName": "AIAgent"
       },
       "codeSignatureHash": "05a65f7565cde2b47e8f6adaf00e26e9e490052b050333c46574e3b7dcb2ae99",
+      "codeSignatureText": "class AIAgent{;generateDocumentation(request: DocumentationRequest, _options: GenerateOptions): Promise<DocumentationResponse>;generateFromDrift(symbolName: string, oldSignature: CodeSignature, newSignature: CodeSignature, oldDocumentation: string, filePath: string): Promise<string>;generateInitial(symbolName: string, signature: CodeSignature, options: GenerateOptions): Promise<string>;validateConnection(): Promise<boolean>;getProvider(): string;getConfig(): {provider: string;model: string;timeout: number;}}",
       "docRef": {
-        "filePath": "src/ai/README.md",
-        "startLine": 47,
-        "endLine": 93
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "Main orchestrator for AI-powered documentation generation.\n\n**Features:**\n- Provider abstraction (supports multiple AI vendors)\n- Retry logic with exponential backoff\n- Connection validation\n- Error handling and fallback to placeholder\n- Token usage tracking\n\n**API:**\n\n```typescript\nimport { createAgentFromEnv, createOpenAIAgent } from 'doctype';\n\n// Create from environment variables\nconst agent = createAgentFromEnv({\n  modelId: 'gpt-4',\n  maxTokens: 1000,\n  temperature: 0.3\n});\n\n// Or create with explicit configuration\nconst agent = createOpenAIAgent('your-api-key', 'gpt-4', {\n  maxTokens: 1000,\n  temperature: 0.3,\n  timeout: 30000\n});\n\n// Generate documentation for drift\nconst newDocs = await agent.generateFromDrift(\n  'login',              // Symbol name\n  oldSignature,         // Old CodeSignature object\n  newSignature,         // New CodeSignature object\n  oldDocumentation,     // Previous markdown content\n  'src/auth/login.ts'   // File path (for context)\n);\n\nconsole.log(newDocs); // Generated markdown documentation\n\n// Validate connection (useful for CI checks)\nconst isValid = await agent.validateConnection();\nif (!isValid) {\n  console.error('Cannot connect to AI provider');\n}\n```",
-      "lastUpdated": 1764418502361
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
     },
     {
-      "id": "550e8400-e29b-41d4-a716-446655440009",
+      "id": "42cc552f-f42b-48ca-9e14-0cb72a8d70e8",
       "codeRef": {
         "filePath": "src/ai/prompt-builder.ts",
         "symbolName": "PromptBuilder"
       },
       "codeSignatureHash": "b47ebc554f225f79b30e826c5d6637fc6af4191b841e7a951ad5f669389c5e12",
+      "codeSignatureText": "class PromptBuilder{;buildSystemPrompt(): string;buildUserPrompt(request: DocumentationRequest, options: GenerateOptions): string;buildInitialPrompt(symbolName: string, signature: string, options: GenerateOptions): string;summarizeChanges(oldSignature: string, newSignature: string): string}",
       "docRef": {
-        "filePath": "src/ai/README.md",
-        "startLine": 108,
-        "endLine": 110
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "Generates optimized prompts for AI providers to produce high-quality documentation.",
-      "lastUpdated": 1764418502361
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
     },
     {
-      "id": "550e8400-e29b-41d4-a716-446655440010",
+      "id": "fd6a8b94-c104-43b7-b00a-e6d9d6f5c179",
+      "codeRef": {
+        "filePath": "src/ai/providers/base-provider.ts",
+        "symbolName": "BaseAIProvider"
+      },
+      "codeSignatureHash": "1700f121e9844910eb480d39cdf26fba03de747e894c021a161e89ccc98bf7fc",
+      "codeSignatureText": "class BaseAIProvider{model: AIModel;timeout: number;debug: boolean;generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse>;validateConnection(): Promise<boolean>;log(message: string, args: unknown[]): void;createError(code: string, message: string, originalError: unknown): AIProviderError;makeRequest(url: string, options: RequestInit): Promise<Response>}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "1cbbaeb1-eb49-49cc-83ba-6152602fdf34",
       "codeRef": {
         "filePath": "src/ai/providers/openai-provider.ts",
         "symbolName": "OpenAIProvider"
       },
       "codeSignatureHash": "4029be42c282a29ad34eb062f03a84e5a72e088fe0d47b969c1e3a959bcb7ac0",
+      "codeSignatureText": "class OpenAIProvider{;generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse>;validateConnection(): Promise<boolean>;getModels(): Promise<string[]>}",
       "docRef": {
-        "filePath": "src/ai/README.md",
-        "startLine": 210,
-        "endLine": 219
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
       },
-      "originalMarkdownContent": "OpenAI API integration for documentation generation using GPT models.\n\n**Features:**\n- Chat Completions API (GPT-4, GPT-4-turbo, GPT-3.5-turbo)\n- Configurable model, max tokens, temperature\n- Usage statistics tracking (prompt tokens, completion tokens, total tokens)\n- Error handling with detailed messages\n- Timeout support",
-      "lastUpdated": 1764418502362
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "5fdb5efd-83a5-4adf-9865-a20813f6eaef",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "AIModel"
+      },
+      "codeSignatureHash": "58cbd415f1a2461247af73d1acae80843bb1170c66313e0a308694cb5dbc23a0",
+      "codeSignatureText": "export interface AIModel{provider: AIProvider;modelId: string;apiKey: string;maxTokens?: number;temperature?: number;endpoint?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "3aa13751-77b9-4ccc-ba5d-be0d2c344ee4",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "DocumentationRequest"
+      },
+      "codeSignatureHash": "72bafa4b83e2ef58fab2c4c3c0b9082481a3bfe59628827e951667a52d36dd50",
+      "codeSignatureText": "export interface DocumentationRequest{symbolName: string;oldSignature: CodeSignature;newSignature: CodeSignature;oldDocumentation: string;context?: {filePath?: string;surroundingCode?: string;relatedSymbols?: string[];};}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "d8d0c8c0-0b14-461a-bc53-6f9f84baf3bc",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "DocumentationResponse"
+      },
+      "codeSignatureHash": "3f175f4a10d8833e51bdd6040a26ce2e49e5f13686a7c4b40702d0df0a45f00e",
+      "codeSignatureText": "export interface DocumentationResponse{content: string;provider: AIProvider;modelId: string;usage?: {promptTokens: number;completionTokens: number;totalTokens: number;};timestamp: number;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "b47ca690-877b-4f16-939d-caf5e25276b4",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "AIProviderError"
+      },
+      "codeSignatureHash": "c9ca6ec2ba2778ca7f39c5b475b7bec8162055da28aefe07752c6718fcc55012",
+      "codeSignatureText": "export interface AIProviderError{code: string;message: string;provider: AIProvider;originalError?: unknown;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "d690cab8-b34d-4cf3-a555-c44696913606",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "AIAgentConfig"
+      },
+      "codeSignatureHash": "013aae36d40a5dab2b11a14a605cc677cbdadef755c5db813146198174301a42",
+      "codeSignatureText": "export interface AIAgentConfig{model: AIModel;debug?: boolean;timeout?: number;retry?: {maxAttempts: number;delayMs: number;};}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "fde7ba44-3d0a-401b-b7fa-be1f5415797b",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "IAIProvider"
+      },
+      "codeSignatureHash": "bcc2ef7b73ba146c79a630990b3dd16580373ab9433bd2fec7b2732e411d6f75",
+      "codeSignatureText": "export interface IAIProvider{readonly provider: AIProvider;generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse>;validateConnection(): Promise<boolean>;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "2f36f0de-9d25-4b32-8e5e-850de199c9b8",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "GenerateOptions"
+      },
+      "codeSignatureHash": "0e3c58c84a949141a940f647884d426a6ede7eafb2920f38684f6ac73192558c",
+      "codeSignatureText": "export interface GenerateOptions{includeContext?: boolean;includeExamples?: boolean;maxLength?: number;style?: 'concise' | 'detailed' | 'tutorial';}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "09f878c3-7b77-4572-b264-6b106ff2369d",
+      "codeRef": {
+        "filePath": "src/ai/types.ts",
+        "symbolName": "AIProvider"
+      },
+      "codeSignatureHash": "010118038f5bb5a87d898a4007f79bd8a0b1423824bfde72abdb51cd7b179cd5",
+      "codeSignatureText": "export type AIProvider = 'openai' | 'gemini';",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "6abfd53b-b44f-4d9f-a66c-2540c1ece7a1",
+      "codeRef": {
+        "filePath": "src/cli/check.ts",
+        "symbolName": "checkCommand"
+      },
+      "codeSignatureHash": "834d841a0878511bc393222b9fd9dc7a841bdeff42924af13a59b95e158a68ce",
+      "codeSignatureText": "export async function checkCommand(options: CheckOptions): Promise<CheckResult>",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "744e08c6-acd9-4aa8-b3d8-cc5883936c40",
+      "codeRef": {
+        "filePath": "src/cli/config-loader.ts",
+        "symbolName": "loadConfig"
+      },
+      "codeSignatureHash": "8bb68be001c7af47d8ba44eece300da82e9e9ca9d681fa6fc665fcf63421fa75",
+      "codeSignatureText": "export function loadConfig(configPath: string = './doctype.config.json'): DoctypeConfig",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "095d3831-c296-4a24-8d00-9c1b8203f8bd",
+      "codeRef": {
+        "filePath": "src/cli/config-loader.ts",
+        "symbolName": "configExists"
+      },
+      "codeSignatureHash": "a00768f3e7ad4eb3074827db90b51e2c71115d92d682d5c6df7573ce0147fd72",
+      "codeSignatureText": "export function configExists(configPath: string = './doctype.config.json'): boolean",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "9b754598-6561-4ed1-a0d0-98577e3efdda",
+      "codeRef": {
+        "filePath": "src/cli/config-loader.ts",
+        "symbolName": "getMapPath"
+      },
+      "codeSignatureHash": "9a0e1d2223843a395f0c1f79bc10e5af46d2284a7a601f7c1a4133b3ebdd9916",
+      "codeSignatureText": "export function getMapPath(config: DoctypeConfig): string",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "582c6c17-8ad8-4041-aa78-6cc0642ada76",
+      "codeRef": {
+        "filePath": "src/cli/config-loader.ts",
+        "symbolName": "getDocsPath"
+      },
+      "codeSignatureHash": "e817644b6d0373e642011fdf9c51067ab1087d17c1fc4d6f4aa00423b696442e",
+      "codeSignatureText": "export function getDocsPath(config: DoctypeConfig): string",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "f9629759-2568-42b6-9d2c-4737f43b5cef",
+      "codeRef": {
+        "filePath": "src/cli/config-loader.ts",
+        "symbolName": "ConfigNotFoundError"
+      },
+      "codeSignatureHash": "c3feb94d823d1efd7da2d4f0dee9043bd0059c70246124efc5ab430a4aa96db5",
+      "codeSignatureText": "class ConfigNotFoundError{;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "b23ade69-fcee-4557-aa10-140cb2309d6c",
+      "codeRef": {
+        "filePath": "src/cli/config-loader.ts",
+        "symbolName": "InvalidConfigError"
+      },
+      "codeSignatureHash": "448b4aec55ecbfc111b924c699cf490959fa9ce0b997c86f766d09490d14ee67",
+      "codeSignatureText": "class InvalidConfigError{;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "0d621e3c-9478-4a64-9bc3-228e98de0520",
+      "codeRef": {
+        "filePath": "src/cli/drift-detector.ts",
+        "symbolName": "detectDrift"
+      },
+      "codeSignatureHash": "e296e0a19f476e1301c5e38f74d400a990459ad8702796a99e53f0e5e2105b17",
+      "codeSignatureText": "export function detectDrift(mapManager: DoctypeMapManager, analyzer: ASTAnalyzer, hasher: SignatureHasher, options: DriftDetectionOptions ={}): DriftInfo[]",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "e2f82b9a-a479-4015-9ddd-b14972440620",
+      "codeRef": {
+        "filePath": "src/cli/drift-detector.ts",
+        "symbolName": "DriftInfo"
+      },
+      "codeSignatureHash": "a4cf7874e3c955b406bb7ab34deb3cee9acada5b40cd95c4471c163a76874e37",
+      "codeSignatureText": "export interface DriftInfo{entry: DoctypeMapEntry;oldSignature?: CodeSignature;currentSignature: CodeSignature;currentHash: string;oldHash: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "74d34b6b-66c4-437e-a27e-1d9646ee5f2a",
+      "codeRef": {
+        "filePath": "src/cli/drift-detector.ts",
+        "symbolName": "DriftDetectionOptions"
+      },
+      "codeSignatureHash": "cc59d5a18d59a6aadf3055ebec158b2f591a3248d0c2475fbcd6d76686f36535",
+      "codeSignatureText": "export interface DriftDetectionOptions{basePath?: string;logger?: Logger;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "887d56de-393e-4e15-afc8-4c6a4024b584",
+      "codeRef": {
+        "filePath": "src/cli/fix.ts",
+        "symbolName": "fixCommand"
+      },
+      "codeSignatureHash": "33c444cb7aa89dac2c18682f513857f7b079a7f14174c7bbc2344dcc340bf322",
+      "codeSignatureText": "export async function fixCommand(options: FixOptions): Promise<FixResult>",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "9b4dc7b9-9288-42b9-8542-48f72f28a42e",
+      "codeRef": {
+        "filePath": "src/cli/git-helper.ts",
+        "symbolName": "GitHelper"
+      },
+      "codeSignatureHash": "636e50dad75674e34ce865fa021c77d14c95e4cc5492508a9ec7615a3e933d0b",
+      "codeSignatureText": "class GitHelper{;isGitRepository(): boolean;getStatus(): GitOperationResult;hasUncommittedChanges(): boolean;addFiles(files: string[]): GitOperationResult;commit(message: string): GitOperationResult;push(): GitOperationResult;autoCommit(files: string[], symbolNames: string[], push: boolean): GitOperationResult}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "bed2e3d1-1b50-422d-91f3-f681d28c509b",
+      "codeRef": {
+        "filePath": "src/cli/git-helper.ts",
+        "symbolName": "GitOperationResult"
+      },
+      "codeSignatureHash": "9d28ddbb1a4bf4a0d1c0033f9cbab12bdc414e06d8fe67c54a834c9deeb3639a",
+      "codeSignatureText": "export interface GitOperationResult{success: boolean;output?: string;error?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "be986722-cbfb-4071-8de5-56ce589a1c81",
+      "codeRef": {
+        "filePath": "src/cli/init.ts",
+        "symbolName": "initCommand"
+      },
+      "codeSignatureHash": "a78f939b5d50ef54e7ac59b0a01895d8f4090fdf1dbadf67f58c37bb92bbd31f",
+      "codeSignatureText": "export async function initCommand(_options: InitOptions ={}): Promise<InitResult>",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "5770776c-10e4-45a5-a155-e48c91496d78",
+      "codeRef": {
+        "filePath": "src/cli/logger.ts",
+        "symbolName": "Logger"
+      },
+      "codeSignatureHash": "f9a537956e6cf253710d17f166dfa94942fcc2c097903448e695a082f6e52c32",
+      "codeSignatureText": "class Logger{;error(message: string, args: unknown[]): void;warn(message: string, args: unknown[]): void;info(message: string, args: unknown[]): void;success(message: string, args: unknown[]): void;debug(message: string, args: unknown[]): void;log(message: string, args: unknown[]): void;header(message: string): void;divider(): void;newline(): void;color(text: string, color: \"reset\" | \"red\" | \"green\" | \"yellow\" | \"blue\" | \"magenta\" | \"cyan\" | \"gray\" | \"bold\"): string;bold(text: string): string;path(filePath: string): string;symbol(symbolName: string): string;hash(hash: string, length: number): string;banner(text: string): void;box(title: string, content: string[]): void;step(stepNumber: number, totalSteps: number, title: string, emoji: string): void;listItem(text: string, checked: boolean): void}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "8285af01-b302-4793-b281-d92c84c288f1",
+      "codeRef": {
+        "filePath": "src/cli/logger.ts",
+        "symbolName": "LogLevel"
+      },
+      "codeSignatureHash": "d1d0290cd6ecbd40f1e10a6867a1be2c914c520609b165732b8995db52482224",
+      "codeSignatureText": "export enum LogLevel{ERROR = 'error', WARN = 'warn', INFO = 'info', SUCCESS = 'success', DEBUG = 'debug', }",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "00074909-03de-49a7-b672-216df917058b",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "CheckResult"
+      },
+      "codeSignatureHash": "1688783415af9568f0724522eb8710dda347a18f90ec4c68e033d8a6745f614f",
+      "codeSignatureText": "export interface CheckResult{totalEntries: number;driftedEntries: number;drifts: DriftDetail[];success: boolean;configError?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "afba5cb5-25f1-41f0-bf1c-801494a67aa4",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "DriftDetail"
+      },
+      "codeSignatureHash": "25b511dddb78e5f9e65bed2771b585aed65eb3fb4507ec83f627c33b615064f9",
+      "codeSignatureText": "export interface DriftDetail{id: string;symbolName: string;codeFilePath: string;docFilePath: string;docLine: number;oldHash: string;newHash: string;oldSignature?: string;newSignature?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "81572e82-dd8e-43e6-9b05-fb31a165cd2c",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "FixResult"
+      },
+      "codeSignatureHash": "6fb6d6ce0ac5bcb52835887dbe81aa06f33d7f06bd1fa7aa83d1024ab194928c",
+      "codeSignatureText": "export interface FixResult{totalFixes: number;successfulFixes: number;failedFixes: number;fixes: FixDetail[];success: boolean;configError?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "8d3de98d-625b-457b-a422-17f15d578e98",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "FixDetail"
+      },
+      "codeSignatureHash": "19345539edc2629dd2a51083633deffac9011c5f4f9df0db4da693a237950e75",
+      "codeSignatureText": "export interface FixDetail{id: string;symbolName: string;codeFilePath: string;docFilePath: string;success: boolean;error?: string;newContent?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "afc9e5ba-2259-4743-8801-58e5d0cd7378",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "CLIConfig"
+      },
+      "codeSignatureHash": "43d47d2d5d1314288181fc295ec9d182bf0cb9ecca072e95971063f3dbdc36d1",
+      "codeSignatureText": "export interface CLIConfig{mapPath: string;projectRoot: string;verbose: boolean;dryRun: boolean;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "cc1d7f25-0396-49dd-970a-3ce0d5c4e061",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "CheckOptions"
+      },
+      "codeSignatureHash": "99b90060ee43d5ef07c73eb7c77b54fbddadca00ab64f3fc41b0fe5e7f2f1570",
+      "codeSignatureText": "export interface CheckOptions{map?: string;verbose?: boolean;strict?: boolean;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "5b67bb83-fe6e-46e8-bcbd-b6dd4db58e2a",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "FixOptions"
+      },
+      "codeSignatureHash": "f0b59cbcc85e0e5fa990a04f079e1a5883b2ac9c6f9d4bdf54b5fce5c6e3a787",
+      "codeSignatureText": "export interface FixOptions{map?: string;verbose?: boolean;dryRun?: boolean;autoCommit?: boolean;interactive?: boolean;noAI?: boolean;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "ac15906c-43a8-47b1-88f1-5aafcedace8f",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "InitOptions"
+      },
+      "codeSignatureHash": "34b90e84cf39ce16ad538feff55f4f47bf4ca484cb2442095644ed2f5b2f60d0",
+      "codeSignatureText": "export interface InitOptions{verbose?: boolean;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "9d95da8f-15d9-48b9-8e68-fcdd90f0eab2",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "InitResult"
+      },
+      "codeSignatureHash": "e8891d2f1e0214f719a28b3eb9809d6c27b3611f0e17e44a9083c9cb3a28a34f",
+      "codeSignatureText": "export interface InitResult{success: boolean;configPath?: string;error?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "d21f5804-5031-443e-9168-70284300e10e",
+      "codeRef": {
+        "filePath": "src/cli/types.ts",
+        "symbolName": "DoctypeConfig"
+      },
+      "codeSignatureHash": "723b9d112c0e97e6dabf66a06a34aa79d388f5dca39b49c06fb345a771358ba5",
+      "codeSignatureText": "export interface DoctypeConfig{projectName: string;projectRoot: string;docsFolder: string;mapFile: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "46fdeb00-1a01-4f44-8555-dbfedc57e2e5",
+      "codeRef": {
+        "filePath": "src/content/content-injector.ts",
+        "symbolName": "ContentInjector"
+      },
+      "codeSignatureHash": "5c4efaa53d3025e8b66202e9c53929773bdd6f538f5fe35b4671a2a042a6f882",
+      "codeSignatureText": "class ContentInjector{;injectIntoFile(filePath: string, anchorId: string, newContent: string, writeToFile: boolean): InjectionResult;injectIntoContent(content: string, anchorId: string, newContent: string): InjectionResult;injectMultiple(filePath: string, injections: Map<string, string>, writeToFile: boolean): InjectionResult[];preview(filePath: string, anchorId: string, newContent: string): InjectionResult;getAnchorLocation(filePath: string, anchorId: string): {startLine: number;endLine: number;};getAnchorLocationFromContent(content: string, anchorId: string): {startLine: number;endLine: number;};validateAnchor(content: string, anchorId: string): string[]}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "22529c0d-dbb8-4300-8505-1e87359b052e",
+      "codeRef": {
+        "filePath": "src/content/content-injector.ts",
+        "symbolName": "InjectionResult"
+      },
+      "codeSignatureHash": "26f0e12cfdfabe39d1f92e4e6becf4f657ce72ec5d71a6a44f2d58516fa1705f",
+      "codeSignatureText": "export interface InjectionResult{success: boolean;content: string;linesChanged: number;error?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "f616a697-56e1-4c20-a2ab-bf4a65338869",
+      "codeRef": {
+        "filePath": "src/content/map-manager.ts",
+        "symbolName": "DoctypeMapManager"
+      },
+      "codeSignatureHash": "28479cf1179053820dde1f1e4dac403999246896d63f69704ae26ff3f563df5f",
+      "codeSignatureText": "class DoctypeMapManager{;save(): void;getEntries(): DoctypeMapEntry[];getEntryById(id: string): DoctypeMapEntry;getEntriesByCodeRef(filePath: string, symbolName: string): DoctypeMapEntry[];getEntriesByDocFile(filePath: string): DoctypeMapEntry[];addEntry(entry: DoctypeMapEntry): void;updateEntry(id: string, updates: Partial<DoctypeMapEntry>): void;removeEntry(id: string): boolean;hasDrift(id: string, currentHash: string): boolean;getDriftedEntries(currentHashes: Map<string, string>): DoctypeMapEntry[];getEntryCount(): number;clear(): void;getVersion(): string;export(): DoctypeMap}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "63fe5395-365e-494d-ad2e-2b43b93bc7f5",
+      "codeRef": {
+        "filePath": "src/content/markdown-anchor-inserter.ts",
+        "symbolName": "MarkdownAnchorInserter"
+      },
+      "codeSignatureHash": "688756dcc23b741e68a0097332e3b7c56a64561e7f10cd53066efe1383187add",
+      "codeSignatureText": "class MarkdownAnchorInserter{;insertIntoFile(filePath: string, codeRef: string, options: AnchorInsertionOptions, writeToFile: boolean): AnchorInsertionResult;insertIntoContent(content: string, codeRef: string, options: AnchorInsertionOptions): AnchorInsertionResult;insertMultiple(filePath: string, codeRefs: string[], options: AnchorInsertionOptions, writeToFile: boolean): AnchorInsertionResult[];hasAnchor(content: string, codeRef: string): boolean;getExistingCodeRefs(content: string): string[]}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "97567046-5b8c-4f18-abb9-140cd81a7585",
+      "codeRef": {
+        "filePath": "src/content/markdown-anchor-inserter.ts",
+        "symbolName": "AnchorInsertionOptions"
+      },
+      "codeSignatureHash": "2cbb7f81d47a9b088f24c108cbdcbe708e6ac4bd29d49d92d5d9ed578c481405",
+      "codeSignatureText": "export interface AnchorInsertionOptions{createSection?: boolean;sectionTitle?: string;placeholder?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "a0e6226b-39cf-4c0d-9f25-7e4596059c0e",
+      "codeRef": {
+        "filePath": "src/content/markdown-anchor-inserter.ts",
+        "symbolName": "AnchorInsertionResult"
+      },
+      "codeSignatureHash": "65cbf3898d9c5192d9dff7cf1548b2d4225e5d2850d56ee0dfcfd16b62759871",
+      "codeSignatureText": "export interface AnchorInsertionResult{success: boolean;content: string;anchorId: string;location: {startLine: number;endLine: number;};error?: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "0238ccb4-320f-4f27-b40d-188ba2399a70",
+      "codeRef": {
+        "filePath": "src/content/markdown-parser.ts",
+        "symbolName": "MarkdownParser"
+      },
+      "codeSignatureHash": "07c4d13d14877ce4181802a061028eeda37fca5d7d437a7b7b043b3fe57c8caa",
+      "codeSignatureText": "class MarkdownParser{;parseFile(filePath: string): DoctypeAnchor[];parseContent(content: string): DoctypeAnchor[];validate(content: string): string[];parseCodeRef(codeRef: string): {filePath: string;symbolName: string;}}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "00020b62-fbd4-4f13-96ec-e8fbba045e51",
+      "codeRef": {
+        "filePath": "src/content/markdown-parser.ts",
+        "symbolName": "DoctypeAnchor"
+      },
+      "codeSignatureHash": "624ce47102378769b696122ce3009e3df23c46e0d18b673cea5cc74923652e1b",
+      "codeSignatureText": "export interface DoctypeAnchor{id: string;startLine: number;endLine: number;content: string;codeRef: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "a2313c04-5627-42b6-990e-822df49bd30e",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/classes.ts",
+        "symbolName": "Calculator"
+      },
+      "codeSignatureHash": "c736550dd552b891dabb89dfc49bbc69aae0286f673ad7849d3957ef9912fcbe",
+      "codeSignatureText": "class Calculator{;add(value: number): void;subtract(value: number): void;getResult(): number}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "145c4a0a-404c-4b96-af74-4d846759bc0f",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/classes.ts",
+        "symbolName": "User"
+      },
+      "codeSignatureHash": "5cb545362a6fe26c8600828bd2a0b32891598b3ee36a9d41bba2cedc3e1f76d9",
+      "codeSignatureText": "class User{;validatePassword(input: string): boolean;getName(): string}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "4d121f30-2944-47d9-b681-88deb770c2c9",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/simple-functions.ts",
+        "symbolName": "add"
+      },
+      "codeSignatureHash": "cfdf9c447d2ca5973cf2bf88af87ce6e91b27e1942c47b423dcacd5fce58adec",
+      "codeSignatureText": "export function add(a: number, b: number): number",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "59db4b7c-bbbf-43bd-ab78-1423d583f64d",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/simple-functions.ts",
+        "symbolName": "subtract"
+      },
+      "codeSignatureHash": "e6fadbda373d305a91b97a950ceb528ee2dd90774120c087fe6d90f93cc79e0e",
+      "codeSignatureText": "export function subtract(a: number, b: number): number",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "f949be13-e82f-4c96-a964-ba8565df7b1c",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/simple-functions.ts",
+        "symbolName": "fetchData"
+      },
+      "codeSignatureHash": "82643b5e2384fbd304ec7dfe8e868f0f41aa2f65b577acd0f1f01045665bfd77",
+      "codeSignatureText": "export async function fetchData(_url: string): Promise<string>",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "fdb4c7c8-8c5a-42df-be3e-e2c1ecda9924",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/simple-functions.ts",
+        "symbolName": "multiply"
+      },
+      "codeSignatureHash": "c074a43a53ddffc3619e0ecda428857fcfa82428f2e5c60037c9637fa5648650",
+      "codeSignatureText": "export function multiply(x: number, y: number): number",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "20d8d6db-8d6a-4b33-a0f6-25a69bd4c78d",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "UserProfile"
+      },
+      "codeSignatureHash": "307d18539c265eba4fe2ec79dddcf4d48ddc8173d0f4beb86af004d491253241",
+      "codeSignatureText": "export interface UserProfile{id: string;name: string;email: string;age?: number;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103869
+    },
+    {
+      "id": "eb07f336-3fb1-4760-ad54-57a1a2c9332a",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "ApiResponse"
+      },
+      "codeSignatureHash": "db06998596c2300328f3a84d1705f566672970397b5e58148689a736d725a639",
+      "codeSignatureText": "export interface ApiResponse<T>{data: T;status: number;message: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "baf7065e-08fd-49df-8d05-799e50df8eac",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "StringOrNumber"
+      },
+      "codeSignatureHash": "3a2d9e13af718d7b3ccdf244b4cc84ae529367e426789db4a2c20d563bcc4be6",
+      "codeSignatureText": "export type StringOrNumber = string | number;",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "3f739df1-6d78-49cd-8a13-396046630d25",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "Point"
+      },
+      "codeSignatureHash": "30ba55ad9e7228a7b893ac1060f1013cf99f3333bd319561ab86d7b2e49d6382",
+      "codeSignatureText": "export type Point ={x: number;y: number;};",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "9506b664-8f54-4606-a309-4cdcef2cc2a8",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "Status"
+      },
+      "codeSignatureHash": "2001f7be15eb427cf9b6ce783eec58840254a52ba147ad8f6074fd01ba10fec2",
+      "codeSignatureText": "export enum Status{PENDING = 'pending', ACTIVE = 'active', INACTIVE = 'inactive', }",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "4e681f1b-a56c-4a69-91d8-a6492b0d092d",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "Priority"
+      },
+      "codeSignatureHash": "696314059b349963fa89e8b3ddd952a5da072beb46b024efcafa8311774c12ab",
+      "codeSignatureText": "export enum Priority{LOW = 1, MEDIUM = 2, HIGH = 3, }",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "7d90a6d6-49ed-403b-8ac0-654c634f44d2",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "API_URL"
+      },
+      "codeSignatureHash": "82a2b49e15279f2816af167291dcb0cdf16180e8942aee5e8a80ea46e64b6bf5",
+      "codeSignatureText": "API_URL = 'https:",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "2558aef1-e1bc-4382-b003-a192ca505ca7",
+      "codeRef": {
+        "filePath": "src/core/__tests__/fixtures/types-and-interfaces.ts",
+        "symbolName": "DEFAULT_TIMEOUT"
+      },
+      "codeSignatureHash": "5ba64db198ba696c2dfb31bb91083d86ed1c7a313e634e721eea6b93269ace8b",
+      "codeSignatureText": "DEFAULT_TIMEOUT = 5000",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "3d22f4b7-7e15-4fd4-a793-0676f40d1abe",
+      "codeRef": {
+        "filePath": "src/core/ast-analyzer.ts",
+        "symbolName": "ASTAnalyzer"
+      },
+      "codeSignatureHash": "35265b2a642dd3dcf5725ec0d97984f40694e94abc9db17030aa1499c9b7965c",
+      "codeSignatureText": "class ASTAnalyzer{;analyzeFile(filePath: string): CodeSignature[];analyzeCode(code: string): CodeSignature[]}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "cd98928b-dee5-4fbd-a4ca-2f73ffa3c3af",
+      "codeRef": {
+        "filePath": "src/core/signature-hasher.ts",
+        "symbolName": "SignatureHasher"
+      },
+      "codeSignatureHash": "487ac575f7222e943ddecf4108a46fb84b919713e2df639ed4de31d7ca345333",
+      "codeSignatureText": "class SignatureHasher{;hash(signature: CodeSignature): SignatureHash;hashMany(signatures: CodeSignature[]): SignatureHash[];compare(hash1: string, hash2: string): boolean;hashText(signatureText: string): string}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "b45107fa-d1ff-49b7-ba9f-7973f569c98f",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "CodeRef"
+      },
+      "codeSignatureHash": "8206331af0b8784ebb9fdb85c6eacc4734ca9ebb75c83742e5f4feda47574175",
+      "codeSignatureText": "export interface CodeRef{filePath: string;symbolName: string;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "870f3a88-fe92-414b-940d-0a110e5a32e4",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "CodeSignature"
+      },
+      "codeSignatureHash": "aa0b6273f3de3307f4f5b85bffeeeea1bc2444fc4fcbcfe03e94e09025b54b3a",
+      "codeSignatureText": "export interface CodeSignature{symbolName: string;symbolType: SymbolType;signatureText: string;isExported: boolean;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "63901a37-548f-4b2f-bfbc-5638cd4f614d",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "SignatureHash"
+      },
+      "codeSignatureHash": "d17a3ef5fcdd372bc2bf80428f4814ddad9b96aca68a0859fa366137b0423f2f",
+      "codeSignatureText": "export interface SignatureHash{hash: string;signature: CodeSignature;timestamp: number;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "c4b165be-bcbf-433d-aa32-d74e9d4f9f52",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "DocRef"
+      },
+      "codeSignatureHash": "a43825d0ea78de8e0dfd874d9116834db67b6bd0b2de18f94ed34d0bfb048edf",
+      "codeSignatureText": "export interface DocRef{filePath: string;startLine: number;endLine: number;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "5daa4f42-5b1a-463f-b627-34bfc6de5075",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "DoctypeMapEntry"
+      },
+      "codeSignatureHash": "6fc1eb1edf7176dc91d64a01c36d8c65f9c2f17613c8261cdd6ca0f455f5f565",
+      "codeSignatureText": "export interface DoctypeMapEntry{id: string;codeRef: CodeRef;codeSignatureHash: string;codeSignatureText?: string;docRef: DocRef;originalMarkdownContent: string;lastUpdated: number;}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "900c36a9-24fd-4fa7-85fb-3bbe9dd0ea0f",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "DoctypeMap"
+      },
+      "codeSignatureHash": "152a8c2e6b153096865f9ec961819d93b4a000590e4af040c79b2abfbe63c97c",
+      "codeSignatureText": "export interface DoctypeMap{version: string;entries: DoctypeMapEntry[];}",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
+    },
+    {
+      "id": "56d201d5-8373-469d-9782-0268515f5306",
+      "codeRef": {
+        "filePath": "src/core/types.ts",
+        "symbolName": "SymbolType"
+      },
+      "codeSignatureHash": "3515f8c7d220fc14fc1725ee0eba0f551b953ef00f524df5713c69907d4246ec",
+      "codeSignatureText": "export enum SymbolType{FUNCTION = 'function', CLASS = 'class', INTERFACE = 'interface', TYPE_ALIAS = 'type', ENUM = 'enum', VARIABLE = 'variable', CONST = 'const', }",
+      "docRef": {
+        "filePath": "docs/api.md",
+        "startLine": 4,
+        "endLine": 6
+      },
+      "originalMarkdownContent": "<!-- TODO: Add documentation for this symbol -->",
+      "lastUpdated": 1764450103870
     }
   ]
 }

@@ -47,24 +47,31 @@ doctype init
 ```
 
 This will:
-- Prompt you for your documentation folder
-- Scan your Markdown files for code references
-- **Automatically insert doctype anchors** in your documentation
-- Analyze your code and create `doctype-map.json` (commit this file)
+- Prompt you for project configuration (name, root, docs folder)
+- **Automatically scan your TypeScript codebase** for exported symbols
+- **Create `api.md` with documentation anchors** for each symbol
+- Generate SHA256 hashes of all code signatures
+- Create `doctype-map.json` to track everything (commit this file)
 - Create `doctype.config.json` with your project configuration (commit this file)
 - Optionally set your OpenAI API key for AI-powered updates
 
-**Doctype will add anchors like this automatically:**
+**Doctype will create an api.md file with anchors like this:**
 
 ```markdown
 <!-- docs/api.md -->
 
-# Authentication API
+# API Reference
+
+### login
 
 <!-- doctype:start id="550e8400-e29b-41d4-a716-446655440000" code_ref="src/auth/login.ts#login" -->
-Authenticates a user with email.
+<!-- TODO: Add documentation for this symbol -->
 <!-- doctype:end id="550e8400-e29b-41d4-a716-446655440000" -->
 ```
+
+**After running init, you can:**
+1. Manually fill in the documentation between the anchor tags, OR
+2. Use `doctype generate` (planned) to auto-generate initial content with AI
 
 ### 3. Check for Drift
 
@@ -127,14 +134,23 @@ doctype init
 ```
 
 **What it does:**
-1. Prompts you to select your documentation folder
-2. Scans your Markdown files for code references
-3. **Automatically inserts doctype anchors** where needed
-4. Analyzes referenced code symbols
-5. Generates SHA256 hashes of code signatures
+1. Prompts you for project configuration (name, root directory, docs folder)
+2. **Scans all TypeScript files** in your project root
+3. **Extracts all exported symbols** (functions, classes, interfaces, types, enums)
+4. **Creates `api.md`** in your docs folder with anchor placeholders
+5. Generates SHA256 hashes of all code signatures
 6. Creates `doctype-map.json` to track everything (commit this)
 7. Creates `doctype.config.json` with project configuration (commit this)
 8. Optionally configures your OpenAI API key
+
+**Initial anchors are created with TODO placeholders:**
+```markdown
+<!-- doctype:start id="uuid" code_ref="src/file.ts#SymbolName" -->
+<!-- TODO: Add documentation for this symbol -->
+<!-- doctype:end id="uuid" -->
+```
+
+You can then manually document each symbol, or use `doctype generate` (planned) to auto-fill with AI.
 
 ### `doctype check`
 

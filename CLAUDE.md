@@ -116,9 +116,57 @@ This file tracks every anchor in the repository and is essential for drift detec
 - Executes `git commit` and automatic `git push` to PR
 - Standard commit message: `🤖 Doctype Bot: Auto-fix documentation for [Symbol Name]`
 
+### C. Initialization: `npx doctype init`
+
+**Input**: User configuration (project paths, API keys)
+
+**Process**:
+1. Interactive prompts collect project configuration
+2. Save `doctype.config.json` and `.env` (for API keys)
+3. Recursively scan project root for TypeScript files
+4. Use ASTAnalyzer to extract all exported symbols
+5. Generate SHA256 hashes for each symbol signature
+6. Create `api.md` in docs folder with anchor placeholders
+7. Build `doctype-map.json` with all entries
+
+**Output**:
+- `doctype.config.json` - Project configuration
+- `api.md` - Markdown file with TODO anchors for each symbol
+- `doctype-map.json` - Complete tracking map with hashes
+- `.env` - API key (optional, gitignored)
+
+**Anchor Format Created**:
+```markdown
+### SymbolName
+
+<!-- doctype:start id="uuid" code_ref="src/file.ts#SymbolName" -->
+<!-- TODO: Add documentation for this symbol -->
+<!-- doctype:end id="uuid" -->
+```
+
 ## Current Implementation Status
 
-The repository currently contains GitHub automation infrastructure as proof-of-concept, but not yet the core Doctype implementation:
+### Implemented Core Features
+
+1. **Init Command** (`npx doctype init`)
+   - Interactive configuration setup
+   - Automatic codebase scanning
+   - TypeScript AST analysis using ts-morph
+   - SHA256 signature hashing
+   - Automatic anchor insertion in api.md
+   - doctype-map.json generation
+
+2. **Core Modules**
+   - **ASTAnalyzer** (src/core/ast-analyzer.ts) - Extracts public symbols from TypeScript files
+   - **SignatureHasher** (src/core/signature-hasher.ts) - Generates deterministic SHA256 hashes
+   - **DoctypeMapManager** (src/content/map-manager.ts) - Manages doctype-map.json CRUD operations
+   - **MarkdownParser** (src/content/markdown-parser.ts) - Parses and validates anchor tags
+   - **MarkdownAnchorInserter** (src/content/markdown-anchor-inserter.ts) - Inserts new anchors in markdown
+   - **ContentInjector** (src/content/content-injector.ts) - Updates content within existing anchors
+
+### GitHub Automation (Proof-of-Concept)
+
+The repository also contains GitHub automation infrastructure:
 
 ### GitHub Workflows
 
@@ -148,21 +196,27 @@ Three automated workflows are configured:
 
 ## Development Commands
 
+### Implemented Commands
+
+```bash
+npx doctype init                     # Initialize Doctype, scan codebase, create anchors and map
+npx doctype check                    # Verify documentation is in sync with code (for CI)
+```
+
 ### Planned Commands (Not Yet Implemented)
 
 ```bash
-npx doctype check                    # Verify documentation is in sync with code (for CI)
 npx doctype fix                      # Interactively fix documentation drift
 npx doctype fix --auto-commit        # Automatically fix drift and commit changes
+npx doctype generate                 # Use AI to generate initial documentation content
 ```
 
-### Current Commands
-
-Note: The project currently has no package.json or build configuration. The CI workflow expects these commands to exist:
+### Build Commands
 
 ```bash
 npm ci              # Install dependencies
-npm run build       # Build the project
+npm run build       # Build the TypeScript project
+npm test            # Run unit tests
 ```
 
 ## Environment Variables
