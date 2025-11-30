@@ -158,6 +158,8 @@ export interface DoctypeConfig {
   mapFile: string;
   /** Strategy for generating documentation files */
   outputStrategy?: OutputStrategy;
+  /** Directory where the config file was found (internal use) */
+  baseDir?: string;
 }
 
 /**

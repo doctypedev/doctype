@@ -11,7 +11,7 @@ import { Logger } from './logger';
 import { CheckResult, CheckOptions, DriftDetail } from './types';
 import { detectDrift } from './drift-detector';
 import { existsSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import {
   loadConfig,
   getMapPath,
@@ -84,10 +84,18 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   logger.info(`Checking ${entries.length} documentation entries...`);
   logger.newline();
 
+  // Resolve the root directory for source code
+  const codeRoot = config 
+    ? resolve(config.baseDir || process.cwd(), config.projectRoot)
+    : dirname(mapPath);
+
   // Analyze current code and detect drift using centralized logic
   const analyzer = new ASTAnalyzer();
   const hasher = new SignatureHasher();
-  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, { logger });
+  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
+    logger,
+    basePath: codeRoot,
+  });
 
   // Convert DriftInfo to DriftDetail format for API compatibility
   const drifts: DriftDetail[] = detectedDrifts.map((drift) => ({

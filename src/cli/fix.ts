@@ -17,7 +17,7 @@ import { detectDrift } from './drift-detector';
 import { createAgentFromEnv, AIAgent } from '../ai';
 import { GitHelper } from './git-helper';
 import { existsSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import {
   loadConfig,
   getMapPath,
@@ -92,10 +92,18 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   logger.info(`Analyzing ${entries.length} documentation entries...`);
   logger.newline();
 
+  // Resolve the root directory for source code
+  const codeRoot = config 
+    ? resolve(config.baseDir || process.cwd(), config.projectRoot)
+    : dirname(mapPath);
+
   // Detect drift using centralized logic
   const analyzer = new ASTAnalyzer();
   const hasher = new SignatureHasher();
-  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, { logger });
+  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
+    logger,
+    basePath: codeRoot,
+  });
 
   if (detectedDrifts.length === 0) {
     logger.success('No drift detected - all documentation is up to date');
@@ -201,7 +209,9 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
       }
 
       // Resolve doc file path to ensure it's absolute
-      const docFilePath = resolve(entry.docRef.filePath);
+      // Doc paths are relative to project root (where config lives)
+      const projectBase = config ? (config.baseDir || process.cwd()) : dirname(mapPath);
+      const docFilePath = resolve(projectBase, entry.docRef.filePath);
 
       // Inject the content
       const writeToFile = !options.dryRun;

@@ -33,6 +33,27 @@ export class InvalidConfigError extends Error {
 }
 
 /**
+ * Find the configuration file by walking up the directory tree
+ */
+function findConfigPath(startDir: string, configName: string): string | null {
+  let currentDir = startDir;
+  const root = path.parse(startDir).root;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const configPath = path.join(currentDir, configName);
+    if (fs.existsSync(configPath)) {
+      return configPath;
+    }
+
+    if (currentDir === root || path.dirname(currentDir) === currentDir) {
+      return null;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+}
+
+/**
  * Load and validate the doctype configuration file
  *
  * @param configPath - Path to doctype.config.json (default: ./doctype.config.json)
@@ -43,7 +64,21 @@ export class InvalidConfigError extends Error {
 export function loadConfig(
   configPath: string = './doctype.config.json'
 ): DoctypeConfig {
-  const resolvedPath = path.resolve(process.cwd(), configPath);
+  let resolvedPath: string;
+
+  // If using the default path or just the filename, search up the directory tree
+  if (configPath === './doctype.config.json' || configPath === 'doctype.config.json') {
+    const found = findConfigPath(process.cwd(), 'doctype.config.json');
+    if (found) {
+      resolvedPath = found;
+    } else {
+      // Fallback to CWD for error reporting
+      resolvedPath = path.resolve(process.cwd(), 'doctype.config.json');
+    }
+  } else {
+    // If a specific path is provided (e.g. ../config.json), resolve it directly
+    resolvedPath = path.resolve(process.cwd(), configPath);
+  }
 
   // Check if file exists
   if (!fs.existsSync(resolvedPath)) {
@@ -84,6 +119,8 @@ export function loadConfig(
     projectRoot: rawConfig.projectRoot,
     docsFolder: rawConfig.docsFolder,
     mapFile: rawConfig.mapFile,
+    outputStrategy: rawConfig.outputStrategy,
+    baseDir: path.dirname(resolvedPath),
   };
 }
 
@@ -107,8 +144,9 @@ export function configExists(
  * @returns Absolute path to the map file
  */
 export function getMapPath(config: DoctypeConfig): string {
-  // Map file path is relative to project root
-  return path.resolve(process.cwd(), config.projectRoot, config.mapFile);
+  // Map file path is relative to the config file location (project root)
+  const base = config.baseDir || process.cwd();
+  return path.resolve(base, config.mapFile);
 }
 
 /**
@@ -118,5 +156,6 @@ export function getMapPath(config: DoctypeConfig): string {
  * @returns Absolute path to the docs folder
  */
 export function getDocsPath(config: DoctypeConfig): string {
-  return path.resolve(process.cwd(), config.projectRoot, config.docsFolder);
+  const base = config.baseDir || process.cwd();
+  return path.resolve(base, config.docsFolder);
 }
