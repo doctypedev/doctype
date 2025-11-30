@@ -49,18 +49,18 @@ doctype init
 This will:
 - Prompt you for project configuration (name, root, docs folder)
 - **Automatically scan your TypeScript codebase** for exported symbols
-- **Create `api.md` with documentation anchors** for each symbol
+- **Create documentation files** based on your chosen strategy (Mirror, Module, or Type)
 - Generate SHA256 hashes of all code signatures
 - Create `doctype-map.json` to track everything (commit this file)
 - Create `doctype.config.json` with your project configuration (commit this file)
 - Optionally set your OpenAI API key for AI-powered updates
 
-**Doctype will create an api.md file with anchors like this:**
+**Doctype will create documentation files with anchors like this:**
 
 ```markdown
-<!-- docs/api.md -->
+<!-- docs/src/auth/login.md (Mirror Strategy) -->
 
-# API Reference
+# Login
 
 ### login
 
@@ -137,7 +137,7 @@ doctype init
 1. Prompts you for project configuration (name, root directory, docs folder)
 2. **Scans all TypeScript files** in your project root
 3. **Extracts all exported symbols** (functions, classes, interfaces, types, enums)
-4. **Creates `api.md`** in your docs folder with anchor placeholders
+4. **Creates documentation files** in your docs folder (structure depends on selected strategy)
 5. Generates SHA256 hashes of all code signatures
 6. Creates `doctype-map.json` to track everything (commit this)
 7. Creates `doctype.config.json` with project configuration (commit this)

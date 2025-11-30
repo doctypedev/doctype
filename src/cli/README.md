@@ -174,7 +174,7 @@ processData - src/utils/process.ts
 
 ### `npx doctype init`
 
-Initializes doctype-map.json by scanning project for doctype anchors.
+Initializes Doctype by scanning the codebase and creating documentation anchors based on the selected strategy (Mirror, Module, or Type).
 
 **Usage:**
 
@@ -206,24 +206,27 @@ npx doctype init --map ./custom-map.json
 **Output:**
 
 ```
-🚀 Doctype Init - Initialize Project
+🚀 DOCTYPE INITIALIZATION
 
-ℹ Scanning for doctype anchors in ./docs...
+[...]
 
-────────────────────────────────────────────────────────────
-✓ Found 15 anchors in 5 files:
-  - docs/auth.md (3 anchors)
-  - docs/api.md (7 anchors)
-  - docs/utils.md (5 anchors)
+Scanning codebase and creating documentation anchors...
+✅ Created 15 documentation anchors in documentation files
 
-✓ Analyzed code signatures for 15 symbols
-✓ Created doctype-map.json with 15 entries
-────────────────────────────────────────────────────────────
-ℹ Next steps:
-  1. Review doctype-map.json
-  2. Run 'npx doctype check' to verify setup
-  3. Commit doctype-map.json to version control
-────────────────────────────────────────────────────────────
+📋 Configuration Summary
+Project Name: My Project
+Project Root: .
+Docs Folder:  ./docs
+Map File:     doctype-map.json
+
+🎯 Status
+✓ Configuration saved
+✓ Documentation anchors created
+✓ Map file initialized
+
+Next steps:
+• Review and edit generated documentation files
+• Run "doctype check" to verify documentation is in sync
 ```
 
 ## Modules

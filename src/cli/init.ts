@@ -525,7 +525,7 @@ export async function initCommand(
       const insertedCount = await scanAndCreateAnchors(config, s2);
 
       if (insertedCount > 0) {
-        s2.stop(`✅ Created ${insertedCount} documentation anchors in api.md`);
+        s2.stop(`✅ Created ${insertedCount} documentation anchors in documentation files`);
       } else {
         s2.stop('ℹ️  No new symbols to document');
       }
@@ -559,7 +559,7 @@ export async function initCommand(
         '✓ Map file initialized',
         '',
         'Next steps:',
-        '• Review and edit api.md to add documentation',
+        '• Review and edit generated documentation files to add documentation',
         '• Run "doctype check" to verify documentation is in sync',
       ].join('\n'),
       '🎯 Status'

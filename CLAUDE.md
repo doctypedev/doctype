@@ -126,12 +126,12 @@ This file tracks every anchor in the repository and is essential for drift detec
 3. Recursively scan project root for TypeScript files
 4. Use ASTAnalyzer to extract all exported symbols
 5. Generate SHA256 hashes for each symbol signature
-6. Create `api.md` in docs folder with anchor placeholders
+6. Create documentation files in docs folder with anchor placeholders (structure based on strategy)
 7. Build `doctype-map.json` with all entries
 
 **Output**:
 - `doctype.config.json` - Project configuration
-- `api.md` - Markdown file with TODO anchors for each symbol
+- Documentation files (e.g., `src/auth/login.md`, `api.md`, etc.) - Markdown files with TODO anchors
 - `doctype-map.json` - Complete tracking map with hashes
 - `.env` - API key (optional, gitignored)
 
@@ -153,7 +153,7 @@ This file tracks every anchor in the repository and is essential for drift detec
    - Automatic codebase scanning
    - TypeScript AST analysis using ts-morph
    - SHA256 signature hashing
-   - Automatic anchor insertion in api.md
+   - Automatic anchor insertion in documentation files (Mirror, Module, or Type strategy)
    - doctype-map.json generation
 
 2. **Core Modules**
