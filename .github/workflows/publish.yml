@@ -86,6 +86,7 @@ jobs:
           git commit --amend --no-edit
           
           git push --follow-tags
+          git push origin $NEW_TAG
 
   build-core:
     needs: version-bump
@@ -114,7 +115,7 @@ jobs:
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
-            build: npm run build -- --target aarch64-unknown-linux-gnu
+            build: docker run --rm -v $(pwd):/build -w /build/src/rust-core ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64 sh -c "npm install && npm run build -- --target aarch64-unknown-linux-gnu"
     name: Core Build - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -148,10 +149,16 @@ jobs:
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
 
       - name: Build Rust Core
+        if: ${{ !matrix.settings.docker }}
         working-directory: src/rust-core
         run: |
           npm install
           ${{ matrix.settings.build }}
+        shell: bash
+
+      - name: Build Rust Core (Docker)
+        if: ${{ matrix.settings.docker }}
+        run: ${{ matrix.settings.build }}
         shell: bash
 
       - name: Upload artifact
@@ -189,6 +196,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+  publish-cli:
+    needs: [version-bump, publish-core]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
