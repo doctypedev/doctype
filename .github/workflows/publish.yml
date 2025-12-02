@@ -269,7 +269,10 @@ jobs:
       - name: Move artifacts
         working-directory: src/rust-core
         run: |
-          mkdir -p npm
+          mkdir -p npm/win32-x64-msvc
+          mkdir -p npm/darwin-arm64
+          mkdir -p npm/darwin-x64
+          mkdir -p npm/linux-x64-musl
           npm run artifacts
 
       - name: Publish @doctypedev/core
