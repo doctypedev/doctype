@@ -110,7 +110,7 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: npm run build -- --target x86_64-unknown-linux-gnu
+            build: docker run --rm -v $(pwd):/build -w /build/src/rust-core ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian sh -c "npm install && npm run build -- --target x86_64-unknown-linux-gnu"
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
