@@ -31,6 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       NEW_TAG: ${{ steps.version.outputs.NEW_TAG }}
+      OLD_VERSION: ${{ steps.version.outputs.OLD_VERSION }}
+      CORE_CHANGED: ${{ steps.changes.outputs.core }}
       SHOULD_PUBLISH: ${{ steps.bump.outputs.type != '' }}
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +44,14 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
+
+      - name: Check for Core Changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            core:
+              - 'src/rust-core/**'
 
       - name: Detect Release Label & Bump
         id: bump
@@ -67,6 +77,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Capture Old Version
+          OLD_VERSION=$(node -p "require('./package.json').version")
+          echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_OUTPUT
           
           # 1. Bump version in root package.json (no git tag/commit yet)
           npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
@@ -130,15 +144,74 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Check if Reuse Possible
+        id: reuse
+        shell: bash
+        run: |
+          CORE_CHANGED="${{ needs.version-bump.outputs.CORE_CHANGED }}"
+          OLD_VERSION="${{ needs.version-bump.outputs.OLD_VERSION }}"
+          TARGET="${{ matrix.settings.target }}"
+          
+          echo "Core Changed: $CORE_CHANGED"
+          echo "Old Version: $OLD_VERSION"
+          
+          if [ "$CORE_CHANGED" == "true" ]; then
+            echo "Core changed, must rebuild."
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Map target to napi platform
+          PLATFORM=""
+          if [ "$TARGET" == "x86_64-apple-darwin" ]; then PLATFORM="darwin-x64"; fi
+          if [ "$TARGET" == "aarch64-apple-darwin" ]; then PLATFORM="darwin-arm64"; fi
+          if [ "$TARGET" == "x86_64-pc-windows-msvc" ]; then PLATFORM="win32-x64-msvc"; fi
+          if [ "$TARGET" == "x86_64-unknown-linux-musl" ]; then PLATFORM="linux-x64-musl"; fi
+          
+          if [ -z "$PLATFORM" ]; then
+            echo "Unknown platform for target $TARGET, rebuilding."
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          PACKAGE_NAME="@doctypedev/core-$PLATFORM"
+          echo "Attempting to reuse $PACKAGE_NAME@$OLD_VERSION"
+          
+          mkdir -p reuse_temp
+          cd reuse_temp
+          
+          # Try to pack the old version
+          if npm pack $PACKAGE_NAME@$OLD_VERSION; then
+            echo "Successfully downloaded old package."
+            tar -xf *.tgz
+            
+            # Find .node file
+            NODE_FILE=$(find package -name "*.node")
+            if [ -f "$NODE_FILE" ]; then
+              echo "Found binary: $NODE_FILE"
+              mkdir -p ../src/rust-core
+              cp "$NODE_FILE" ../src/rust-core/
+              echo "Binary restored to src/rust-core/"
+              echo "skip=true" >> $GITHUB_OUTPUT
+            else
+              echo "No .node file found in package, rebuilding."
+              echo "skip=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Failed to download package (maybe first release?), rebuilding."
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        if: ${{ !matrix.settings.docker }}
+        if: ${{ !matrix.settings.docker && steps.reuse.outputs.skip != 'true' }}
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
 
       - name: Cache cargo
         uses: actions/cache@v4
+        if: ${{ steps.reuse.outputs.skip != 'true' }}
         with:
           path: |
             ~/.cargo/registry/index/
@@ -149,7 +222,7 @@ jobs:
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
 
       - name: Build Rust Core
-        if: ${{ !matrix.settings.docker }}
+        if: ${{ !matrix.settings.docker && steps.reuse.outputs.skip != 'true' }}
         working-directory: src/rust-core
         run: |
           rm -f *.node
@@ -158,7 +231,7 @@ jobs:
         shell: bash
 
       - name: Build Rust Core (Docker)
-        if: ${{ matrix.settings.docker }}
+        if: ${{ matrix.settings.docker && steps.reuse.outputs.skip != 'true' }}
         run: |
           rm -f src/rust-core/*.node
           ${{ matrix.settings.build }}
