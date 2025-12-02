@@ -231,12 +231,12 @@ jobs:
       - name: Install dependencies
         run: npm install --omit=optional
 
-      # We still need to build the core locally for tests to pass in this environment
-      - name: Install Rust for Tests
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build Core Locally (for Tests)
-        run: npm run build:core
+      # We reuse the pre-built binary from the build-core job to avoid recompiling
+      - name: Download Linux Core Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-x86_64-unknown-linux-gnu
+          path: src/rust-core
 
       - name: Run tests
         run: npm test
