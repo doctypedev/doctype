@@ -199,6 +199,8 @@ jobs:
 
       - name: Publish Packages
         uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           script: |
             const publish = require('./.github/scripts/release/publish-packages.js');
