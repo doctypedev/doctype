@@ -1,6 +1,6 @@
 {
   "name": "@doctypedev/doctype",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "publishConfig": {
     "access": "public"
   },
@@ -31,7 +31,7 @@
     "docs:preview": "npm run generate:sidebar && vitepress preview docs"
   },
   "optionalDependencies": {
-    "@doctypedev/core": "0.2.13"
+    "@doctypedev/core": "0.2.14"
   },
   "keywords": [
     "documentation",
