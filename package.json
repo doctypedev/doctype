@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:core": "cd src/rust-core && npm install && npm run build",
     "postbuild": "chmod +x dist/cli/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
@@ -28,6 +29,9 @@
     "docs:dev": "npm run generate:sidebar && vitepress dev docs",
     "docs:build": "npm run generate:sidebar && vitepress build docs",
     "docs:preview": "npm run generate:sidebar && vitepress preview docs"
+  },
+  "optionalDependencies": {
+    "@doctypedev/core": "^0.2.0"
   },
   "keywords": [
     "documentation",

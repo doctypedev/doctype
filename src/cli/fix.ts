@@ -100,7 +100,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   // Detect drift using centralized logic
   const analyzer = new ASTAnalyzer();
   const hasher = new SignatureHasher();
-  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
+  const detectedDrifts = await detectDrift(mapManager, analyzer, hasher, {
     logger,
     basePath: codeRoot,
   });

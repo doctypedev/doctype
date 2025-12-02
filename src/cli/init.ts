@@ -143,7 +143,7 @@ async function scanAndCreateAnchors(config: DoctypeConfig, spinner: { message: (
 
   for (const tsFile of tsFiles) {
     try {
-      const signatures = analyzer.analyzeFile(tsFile);
+      const signatures = await analyzer.analyzeFile(tsFile);
       // Normalize path to use forward slashes on all platforms
       const relativePath = path.relative(projectRoot, tsFile).split(path.sep).join('/');
 

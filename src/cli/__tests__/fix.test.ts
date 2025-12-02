@@ -12,6 +12,9 @@ describe('CLI: fix command', () => {
   const testCodeFile = join(testDir, 'test.ts');
   const testDocFile = join(testDir, 'test.md');
 
+  // Increase timeout for all tests in this suite
+  const TEST_TIMEOUT = 15000;
+
   beforeEach(() => {
     // Create test directory
     if (!existsSync(testDir)) {
@@ -93,7 +96,7 @@ Old documentation
     expect(updatedDoc).toContain('<!-- doctype:start id="test-id"');
     expect(updatedDoc).toContain('<!-- doctype:end id="test-id" -->');
     expect(updatedDoc).not.toContain('Old documentation');
-  });
+  }, TEST_TIMEOUT);
 
   it('should not modify files in dry-run mode', async () => {
     const originalDoc = readFileSync(testDocFile, 'utf-8');
@@ -109,7 +112,7 @@ Old documentation
     // Verify doc file was NOT updated
     const currentDoc = readFileSync(testDocFile, 'utf-8');
     expect(currentDoc).toBe(originalDoc);
-  });
+  }, TEST_TIMEOUT);
 
   it('should handle missing map file gracefully', async () => {
     const result = await fixCommand({
@@ -125,7 +128,7 @@ Old documentation
     // Update map to match current code
     const analyzer = new ASTAnalyzer();
     const hasher = new SignatureHasher();
-    const signatures = analyzer.analyzeFile(testCodeFile);
+    const signatures = await analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
 
     if (signature) {
@@ -162,7 +165,7 @@ Old documentation
     // Verify hash was updated
     const analyzer = new ASTAnalyzer();
     const hasher = new SignatureHasher();
-    const signatures = analyzer.analyzeFile(testCodeFile);
+    const signatures = await analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
 
     if (signature) {

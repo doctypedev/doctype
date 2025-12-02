@@ -1,5 +1,10 @@
 name: Publish to NPM
 
+env:
+  DEBUG: napi:*
+  APP_NAME: doctype-core
+  MACOSX_DEPLOYMENT_TARGET: '10.13'
+
 on:
   push:
     branches:
@@ -22,8 +27,11 @@ permissions:
   pull-requests: read
 
 jobs:
-  publish:
+  version-bump:
     runs-on: ubuntu-latest
+    outputs:
+      NEW_TAG: ${{ steps.version.outputs.NEW_TAG }}
+      SHOULD_PUBLISH: ${{ steps.bump.outputs.type != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,33 +67,194 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          npm version ${{ steps.bump.outputs.type }} -m "chore(release): %s"
-          git push --follow-tags
-          echo "NEW_TAG=$(git describe --abbrev=0)" >> $GITHUB_OUTPUT
+          
+          # 1. Bump version in root package.json (no git tag/commit yet)
+          npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
+          
+          # Get new version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          NEW_TAG="v$NEW_VERSION"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
+          
+          # 2. Bump version in rust-core package.json
+          cd src/rust-core
+          npm version $NEW_VERSION --no-git-tag-version
+          cd ../..
+          
+          # 3. Update optional dependency in root package.json
+          npm pkg set optionalDependencies.@doctypedev/core=$NEW_VERSION
+          
+          # 4. Commit and Tag
+          git add package.json src/rust-core/package.json
+          git commit -m "chore(release): $NEW_TAG"
+          git tag $NEW_TAG
+          
+          git push origin HEAD
+          git push origin $NEW_TAG
+
+  build-core:
+    needs: version-bump
+    if: needs.version-bump.outputs.SHOULD_PUBLISH == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            build: |
+              npm run build
+              strip -x *.node
+          - host: windows-latest
+            build: npm run build
+            target: x86_64-pc-windows-msvc
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
+            build: npm run build -- --target x86_64-unknown-linux-gnu
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: |
+              npm run build -- --target aarch64-apple-darwin
+              strip -x *.node
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
+            build: docker run --rm -v $(pwd):/build -w /build/src/rust-core ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64 sh -c "npm install && npm run build -- --target aarch64-unknown-linux-gnu"
+    name: Core Build - ${{ matrix.settings.target }}
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.version-bump.outputs.NEW_TAG }}
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        if: ${{ !matrix.settings.docker }}
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        if: ${{ !matrix.settings.docker }}
+        with:
+          toolchain: stable
+          targets: ${{ matrix.settings.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+
+      - name: Build Rust Core
+        if: ${{ !matrix.settings.docker }}
+        working-directory: src/rust-core
+        run: |
+          npm install
+          ${{ matrix.settings.build }}
+        shell: bash
+
+      - name: Build Rust Core (Docker)
+        if: ${{ matrix.settings.docker }}
+        run: ${{ matrix.settings.build }}
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: src/rust-core/${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
+  publish-core:
+    needs: [version-bump, build-core]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.version-bump.outputs.NEW_TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: src/rust-core/artifacts
+
+      - name: Move artifacts
+        working-directory: src/rust-core
+        run: npm run artifacts
+
+      - name: Publish @doctypedev/core
+        working-directory: src/rust-core
+        run: |
+          # Publish subpackages first if they exist
+          if [ -d "npm" ]; then
+            for dir in npm/*; do
+              if [ -d "$dir" ]; then
+                echo "Publishing $dir..."
+                cd "$dir"
+                npm publish --access public --provenance
+                cd ../..
+              fi
+            done
+          fi
+          
+          # Publish main package
+          npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-cli:
+    needs: [version-bump, publish-core]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.version-bump.outputs.NEW_TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
 
       - name: Update npm
-        if: steps.bump.outputs.type
         run: npm install -g npm@latest
 
+      # Install dependencies but ignore the optional @doctypedev/core dependency
+      # because we are going to use the local build logic for tests anyway
       - name: Install dependencies
-        if: steps.bump.outputs.type
-        run: npm ci
+        run: npm install --omit=optional
+
+      # We still need to build the core locally for tests to pass in this environment
+      - name: Install Rust for Tests
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Core Locally (for Tests)
+        run: npm run build:core
 
       - name: Run tests
-        if: steps.bump.outputs.type
         run: npm test
 
-      - name: Build
-        if: steps.bump.outputs.type
+      - name: Build CLI
         run: npm run build
 
-      - name: Publish to NPM
-        if: steps.bump.outputs.type
+      - name: Publish @doctypedev/doctype
         run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: steps.bump.outputs.type
         with:
-          tag_name: ${{ steps.version.outputs.NEW_TAG }}
+          tag_name: ${{ needs.version-bump.outputs.NEW_TAG }}
           generate_release_notes: true

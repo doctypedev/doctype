@@ -229,13 +229,13 @@ describe('ASTAnalyzer', () => {
   });
 
   describe('analyzeFile', () => {
-    it('should analyze a file with simple functions', () => {
+    it('should analyze a file with simple functions', async () => {
       const filePath = path.resolve(
         __dirname,
         'fixtures/simple-functions.ts'
       );
 
-      const signatures = analyzer.analyzeFile(filePath);
+      const signatures = await analyzer.analyzeFile(filePath);
 
       expect(signatures.length).toBeGreaterThan(0);
 
@@ -249,10 +249,10 @@ describe('ASTAnalyzer', () => {
       expect(functionNames).not.toContain('privateHelper');
     });
 
-    it('should analyze a file with classes', () => {
+    it('should analyze a file with classes', async () => {
       const filePath = path.resolve(__dirname, 'fixtures/classes.ts');
 
-      const signatures = analyzer.analyzeFile(filePath);
+      const signatures = await analyzer.analyzeFile(filePath);
 
       const classNames = signatures.map(s => s.symbolName);
       expect(classNames).toContain('Calculator');
@@ -262,13 +262,13 @@ describe('ASTAnalyzer', () => {
       expect(classNames).not.toContain('InternalService');
     });
 
-    it('should analyze a file with types and interfaces', () => {
+    it('should analyze a file with types and interfaces', async () => {
       const filePath = path.resolve(
         __dirname,
         'fixtures/types-and-interfaces.ts'
       );
 
-      const signatures = analyzer.analyzeFile(filePath);
+      const signatures = await analyzer.analyzeFile(filePath);
 
       const names = signatures.map(s => s.symbolName);
       expect(names).toContain('UserProfile');

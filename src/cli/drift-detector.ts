@@ -51,12 +51,12 @@ export interface DriftDetectionOptions {
  * @param options - Detection options
  * @returns Array of drift information for entries that have drifted
  */
-export function detectDrift(
+export async function detectDrift(
   mapManager: DoctypeMapManager,
   analyzer: ASTAnalyzer,
   hasher: SignatureHasher,
   options: DriftDetectionOptions = {}
-): DriftInfo[] {
+): Promise<DriftInfo[]> {
   const { basePath = process.cwd(), logger } = options;
   const entries = mapManager.getEntries();
   const drifts: DriftInfo[] = [];
@@ -77,7 +77,7 @@ export function detectDrift(
       }
 
       // Analyze the code file
-      const signatures = analyzer.analyzeFile(codeFilePath);
+      const signatures = await analyzer.analyzeFile(codeFilePath);
       const currentSignature = signatures.find((sig) => sig.symbolName === entry.codeRef.symbolName);
 
       if (!currentSignature) {

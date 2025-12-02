@@ -40,6 +40,8 @@ Doctype automatically detects when your code changes and updates your documentat
 npm install -g @doctypedev/doctype
 ```
 
+**Note:** Doctype uses a high-performance Rust core for AST analysis. The binary for your operating system (Windows, macOS, Linux) will be downloaded automatically. No Rust installation is required.
+
 ### 2. Initialize Tracking
 
 ```bash

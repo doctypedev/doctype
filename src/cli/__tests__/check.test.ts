@@ -12,7 +12,7 @@ describe('CLI: check command', () => {
   const testCodeFile = join(testDir, 'test.ts');
   const testDocFile = join(testDir, 'test.md');
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Create test directory
     if (!existsSync(testDir)) {
       mkdirSync(testDir, { recursive: true });
@@ -34,7 +34,7 @@ Test documentation
     // Create test map with correct hash
     const analyzer = new ASTAnalyzer();
     const hasher = new SignatureHasher();
-    const signatures = analyzer.analyzeFile(testCodeFile);
+    const signatures = await analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
 
     if (signature) {

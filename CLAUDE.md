@@ -37,8 +37,9 @@ Doctype will be built using a layered architecture with four independent logical
 **Role**: Static analysis, calculation of code signature hash from AST (Deterministic Logic)
 
 **Technologies**:
-- TypeScript Compiler API (TSS)
-- ts-morph
+- Rust Core (`@doctypedev/core`)
+- swc (Speedy Web Compiler)
+- N-API (Node-API)
 
 **Responsibilities**:
 - Analyze TypeScript code signatures
@@ -148,10 +149,10 @@ This file tracks every anchor in the repository and is essential for drift detec
 
 ### Implemented Core Features
 
-1. **Init Command** (`npx doctype init`)
+### 1. Init Command (`npx doctype init`)
    - Interactive configuration setup
-   - Automatic codebase scanning
-   - TypeScript AST analysis using ts-morph
+   - Automatic codebase scanning (using native Rust parser)
+   - TypeScript AST analysis using `@doctypedev/core` (Rust/SWC)
    - SHA256 signature hashing
    - Automatic anchor insertion in documentation files (Mirror, Module, or Type strategy)
    - doctype-map.json generation

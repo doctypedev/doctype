@@ -46,7 +46,7 @@ async function initHashes(mapPath: string = './doctype-map.json'): Promise<void>
 
     try {
       // Analyze the code file
-      const signatures = analyzer.analyzeFile(entry.codeRef.filePath);
+      const signatures = await analyzer.analyzeFile(entry.codeRef.filePath);
       const signature = signatures.find((sig) => sig.symbolName === entry.codeRef.symbolName);
 
       if (!signature) {

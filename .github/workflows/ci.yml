@@ -21,11 +21,17 @@ jobs:
         with:
           node-version: '20' # Using Node.js 20, which is a recent LTS version
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install dependencies
         run: npm ci
 
       - name: Lint code
         run: npm run lint
+
+      - name: Build Rust Core
+        run: npm run build:core
 
       - name: Run tests
         run: npm test

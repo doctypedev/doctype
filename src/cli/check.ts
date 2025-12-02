@@ -92,7 +92,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   // Analyze current code and detect drift using centralized logic
   const analyzer = new ASTAnalyzer();
   const hasher = new SignatureHasher();
-  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
+  const detectedDrifts = await detectDrift(mapManager, analyzer, hasher, {
     logger,
     basePath: codeRoot,
   });

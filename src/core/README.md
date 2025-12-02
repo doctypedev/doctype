@@ -17,7 +17,12 @@ This module implements the **deterministic logic** layer of Doctype:
 ### ASTAnalyzer (`ast-analyzer.ts`)
 
 <!-- doctype:start id="550e8400-e29b-41d4-a716-446655440001" code_ref="src/core/ast-analyzer.ts#ASTAnalyzer" -->
-Analyzes TypeScript files using the TypeScript Compiler API (via `ts-morph`) to extract public API signatures.
+Analyzes TypeScript files using a high-performance Rust core (via N-API) to extract public API signatures.
+
+**Performance:**
+- Uses `swc` (Speedy Web Compiler) in Rust for parsing, which is significantly faster than standard TypeScript parsers.
+- Executes AST traversal in native code.
+- Parallelizable (future-proof).
 
 **Capabilities:**
 - Extract function declarations and signatures
@@ -25,7 +30,7 @@ Analyzes TypeScript files using the TypeScript Compiler API (via `ts-morph`) to 
 - Extract interface declarations
 - Extract type alias declarations
 - Extract enum declarations
-- Parse JSDoc comments for additional context
+- Handles `export` declarations correctly
 
 **API:**
 
@@ -34,14 +39,11 @@ import { ASTAnalyzer } from 'doctype';
 
 const analyzer = new ASTAnalyzer();
 
-// Analyze single file
-const signatures = analyzer.analyzeFile('src/auth/login.ts');
+// Analyze single file (Async I/O, Native Parsing)
+const signatures = await analyzer.analyzeFile('src/auth/login.ts');
 
-// Analyze directory
-const allSignatures = analyzer.analyzeDirectory('src/auth');
-
-// Find specific symbol
-const signature = analyzer.findSymbol('src/auth/login.ts', 'login');
+// Analyze raw code string
+const signatures = analyzer.analyzeCode('export function test() {}');
 ```
 <!-- doctype:end id="550e8400-e29b-41d4-a716-446655440001" -->
 
@@ -50,17 +52,9 @@ const signature = analyzer.findSymbol('src/auth/login.ts', 'login');
 ```typescript
 {
   symbolName: 'login',
-  kind: 'function',
-  signature: 'function login(email: string, password: string): Promise<string>',
-  parameters: [
-    { name: 'email', type: 'string' },
-    { name: 'password', type: 'string' }
-  ],
-  returnType: 'Promise<string>',
-  jsdoc: 'Authenticates a user with email and password',
-  filePath: 'src/auth/login.ts',
-  startLine: 15,
-  endLine: 23
+  symbolType: 'function',
+  signatureText: 'function login(email: string, password: string): Promise<string>',
+  isExported: true
 }
 ```
 
@@ -353,14 +347,14 @@ console.log(diff.returnTypeChanged); // false
 
 ## Dependencies
 
-- **ts-morph**: TypeScript AST manipulation
-- **typescript**: TypeScript compiler API
+- **@doctypedev/core**: Native Rust module for AST analysis
+- **typescript**: TypeScript compiler API (for type checking)
 - **crypto** (built-in): SHA256 hashing
 
-No external runtime dependencies beyond Node.js standard library and TypeScript tooling.
+No heavy JavaScript AST parsers are used at runtime.
 
 ## Further Reading
 
-- [ts-morph Documentation](https://ts-morph.com/)
-- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
+- [NAPI-RS Documentation](https://napi.rs/)
+- [SWC (Speedy Web Compiler)](https://swc.rs/)
 - [SHA256 Hashing](https://en.wikipedia.org/wiki/SHA-2)

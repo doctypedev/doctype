@@ -1,0 +1,19 @@
+[package]
+name = "doctype-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# Napi è la libreria magica per interagire con Node.js
+napi = { version = "2.12.0", features = ["napi4"] }
+napi-derive = "2.12.0"
+
+# SWC è il parser TypeScript scritto in Rust (quello usato da Next.js)
+# Ti consiglio di usarlo per il tuo ast-analyzer invece di scrivere un parser da zero
+swc_core = { version = "10.0.0", features = ["common", "ecma_parser", "ecma_ast", "ecma_visit"] }
+serde = { version = "=1.0.200", features = ["derive"] }
+serde_json = "1.0"
+regex = "1.10"
