@@ -30,8 +30,8 @@ jobs:
   version-bump:
     runs-on: ubuntu-latest
     outputs:
-      NEW_TAG: ${{ steps.version.outputs.NEW_TAG }}
-      OLD_VERSION: ${{ steps.version.outputs.OLD_VERSION }}
+      NEW_TAG: ${{ steps.bump.outputs.NEW_TAG }}
+      OLD_VERSION: ${{ steps.bump.outputs.OLD_VERSION }}
       CORE_CHANGED: ${{ steps.changes.outputs.core }}
       SHOULD_PUBLISH: ${{ steps.bump.outputs.type != '' }}
     steps:
