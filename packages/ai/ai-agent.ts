@@ -11,7 +11,7 @@ import {
   AIProviderError,
 } from './types';
 import { OpenAIProvider } from './providers/openai-provider';
-import { CodeSignature } from '@doctypedev/core';
+import { CodeSignature } from '../core/native-loader';
 
 /**
  * AI Agent for generating documentation from code changes

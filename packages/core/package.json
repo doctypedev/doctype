@@ -1,0 +1,40 @@
+{
+  "name": "@doctypedev/core",
+  "version": "0.3.26",
+  "description": "Core analysis and logic for Doctype",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "native-types.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doctypedev/doctype.git"
+  },
+  "author": "doctypedev",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "ts-morph": "^21.0.1"
+  },
+  "optionalDependencies": {
+    "@doctypedev/core-darwin-arm64": "^0.3.26"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

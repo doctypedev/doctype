@@ -12,11 +12,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ASTAnalyzer } from './ast-analyzer';
-import { SignatureHasher } from './signature-hasher';
+import { ASTAnalyzer, SignatureHasher, SymbolType, discoverFiles } from '../core';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
-import { DoctypeMapEntry, SymbolType, discoverFiles } from '@doctypedev/core';
+import type { DoctypeMapEntry, SymbolTypeValue } from '../core';
 
 /**
  * Output strategy for documentation files
@@ -56,7 +55,7 @@ export function determineOutputFile(
   strategy: OutputStrategy,
   docsFolder: string,
   filePath: string,
-  symbolType: SymbolType
+  symbolType: SymbolTypeValue
 ): string {
   // Default to mirror if undefined
   const effectiveStrategy = strategy || 'mirror';
@@ -179,7 +178,7 @@ export async function scanAndCreateAnchors(
   const symbolsToDocument: Array<{
     filePath: string;
     symbolName: string;
-    symbolType: SymbolType;
+    symbolType: SymbolTypeValue;
     signatureText: string;
     hash: string;
     targetDocFile: string;

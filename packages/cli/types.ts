@@ -2,7 +2,7 @@
  * CLI-specific type definitions
  */
 
-import type { OutputStrategy } from '../core/init-orchestrator';
+import type { OutputStrategy } from './init-orchestrator';
 
 /**
  * Result of a drift check operation

@@ -5,12 +5,22 @@
  */
 
 // Core AST & Drift Detection
-export { ASTAnalyzer } from './core/ast-analyzer';
-export { SignatureHasher } from './core/signature-hasher';
-export { scanAndCreateAnchors, determineOutputFile } from './core/init-orchestrator';
-export type { InitConfig, ScanResult, OutputStrategy, ProgressCallback } from './core/init-orchestrator';
-export { SymbolType, discoverFiles } from '@doctypedev/core';
+export {
+  ASTAnalyzer,
+  SignatureHasher,
+  scanAndCreateAnchors,
+  determineOutputFile,
+  SymbolType,
+  discoverFiles,
+  helloWorld,
+  getVersion,
+} from './core';
+
 export type {
+  InitConfig,
+  ScanResult,
+  OutputStrategy,
+  ProgressCallback,
   CodeRef,
   CodeSignature,
   SignatureHash,
@@ -19,7 +29,7 @@ export type {
   DoctypeMap,
   FileDiscoveryResult,
   FileDiscoveryOptions,
-} from '@doctypedev/core';
+} from './core';
 
 // Content & Mapping
 export { MarkdownParser, DoctypeMapManager, ContentInjector } from './content';
