@@ -24,6 +24,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.version.outputs.NEW_TAG }}
+      should_release: ${{ steps.bump.outputs.type != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -83,13 +86,6 @@ jobs:
         if: steps.bump.outputs.type
         run: npm publish --provenance
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        if: steps.bump.outputs.type
-        with:
-          tag_name: ${{ steps.version.outputs.NEW_TAG }}
-          generate_release_notes: true
-
   publish-native:
     name: Publish Native Packages (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
     needs: publish
@@ -134,17 +130,63 @@ jobs:
           cd crates/core
           npm install
 
+      - name: Check for Rust changes
+        id: rust_changes
+        run: |
+          # Check if there are any changes in Rust code since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found, will build Rust"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            RUST_CHANGES=$(git diff --name-only $LAST_TAG HEAD | grep -E '^crates/core/(src/|Cargo\.)' || true)
+
+            if [ -n "$RUST_CHANGES" ]; then
+              echo "Rust changes detected:"
+              echo "$RUST_CHANGES"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "No Rust changes detected, will reuse existing binary"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - name: Sync version to native packages
         run: node crates/core/scripts/sync-version.js
 
-      - name: Build with napi-rs
+      - name: Download previous binary (if no Rust changes)
+        if: steps.rust_changes.outputs.has_changes == 'false'
+        run: |
+          PREV_VERSION=$(npm view @doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }} version 2>/dev/null || echo "")
+
+          if [ -n "$PREV_VERSION" ]; then
+            echo "📦 Downloading previous version: $PREV_VERSION"
+            npm pack @doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}@$PREV_VERSION
+
+            # Extract binary from tarball
+            tar -xzf *.tgz
+
+            NODE_BINARY_NAME="doctype-core.${{ matrix.settings.platform }}-${{ matrix.settings.arch }}.node"
+            NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+
+            cp "package/$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
+            echo "♻️  Reused binary from version $PREV_VERSION"
+          else
+            echo "⚠️  No previous version found, will build from scratch"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build with napi-rs (if Rust changed)
+        if: steps.rust_changes.outputs.has_changes == 'true'
         run: |
           cd crates/core
           npm run build
         env:
           CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
 
-      - name: Copy binary to npm package
+      - name: Copy binary to npm package (if Rust changed)
+        if: steps.rust_changes.outputs.has_changes == 'true'
         run: |
           NODE_BINARY_NAME="doctype-core.${{ matrix.settings.platform }}-${{ matrix.settings.arch }}.node"
           NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
@@ -161,3 +203,15 @@ jobs:
         run: |
           cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
           npm publish --provenance
+
+  create-release:
+    name: Create GitHub Release
+    needs: [publish, publish-native]
+    runs-on: ubuntu-latest
+    if: needs.publish.outputs.should_release == 'true'
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.publish.outputs.new_tag }}
+          generate_release_notes: true
