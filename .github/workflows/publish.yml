@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   publish:
+    name: Publish TS Packages
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.version.outputs.NEW_TAG }}
@@ -84,7 +85,18 @@ jobs:
 
       - name: Publish to NPM
         if: steps.bump.outputs.type
-        run: npm publish --provenance
+        run: |
+          # Check if this version is already published
+          VERSION=$(node -p "require('./package.json').version")
+          PUBLISHED_VERSION=$(npm view @doctypedev/doctype version 2>/dev/null || echo "")
+
+          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "📦 Version $VERSION already published, skipping"
+            exit 0
+          fi
+
+          echo "📦 Publishing @doctypedev/doctype@$VERSION"
+          npm publish --provenance
 
   publish-native:
     name: Publish Native Packages (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
@@ -202,6 +214,18 @@ jobs:
       - name: Publish to NPM
         run: |
           cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
+
+          # Check if this version is already published
+          PACKAGE_NAME="@doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          VERSION=$(node -p "require('./package.json').version")
+          PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
+
+          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "📦 Version $VERSION already published, skipping"
+            exit 0
+          fi
+
+          echo "📦 Publishing $PACKAGE_NAME@$VERSION"
           npm publish --provenance
 
   create-release:
