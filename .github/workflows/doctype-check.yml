@@ -33,12 +33,13 @@ jobs:
         run: chmod +x dist/cli/index.js
 
       - name: Run Doctype Check
+        id: doctype-check
         run: npx doctype check --verbose
         continue-on-error: true
 
-      # Add another check to avoid running when npx doctype check passes
+      # Fix documentation only if check failed and we're on main branch
       - name: Fix documentation
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.doctype-check.outcome != 'success'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
