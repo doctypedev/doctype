@@ -1,6 +1,7 @@
 {
   "name": "@doctypedev/core-native",
   "version": "0.1.0",
+  "private": true,
   "description": "Rust-powered core types and AST analysis for Doctype",
   "main": "index.js",
   "types": "index.d.ts",
