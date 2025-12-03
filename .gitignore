@@ -158,3 +158,11 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Native Node.js binaries (generated during build)
+crates/core/npm/**/*.node
+crates/core/*.node
+
+# napi-rs generated files
+crates/core/index.js
+crates/core/index.d.ts
