@@ -199,6 +199,10 @@ jobs:
 
             cp "package/$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
             echo "♻️  Reused binary from version $PREV_VERSION"
+
+            # Clean up downloaded package to avoid contamination
+            echo "🧹 Cleaning up downloaded package files..."
+            rm -rf package/ *.tgz
           else
             echo "⚠️  No previous version found, will build from scratch"
             echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -225,6 +229,17 @@ jobs:
         run: |
           echo "📦 Package contents:"
           ls -lah crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}/
+
+      - name: 🔍 Verify package.json version
+        run: |
+          cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          echo "============================================"
+          echo "📋 About to publish:"
+          echo "   Name: $PACKAGE_NAME"
+          echo "   Version: $PACKAGE_VERSION"
+          echo "============================================"
 
       - name: Publish to NPM
         run: |
