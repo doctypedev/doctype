@@ -86,7 +86,9 @@ jobs:
       - name: Publish to NPM
         if: steps.bump.outputs.type
         run: |
-          # Check if this version is already published
+          # TODO: Refine version check by comparing current (publishing) version with latest available
+          # to handle edge cases more robustly (e.g., downgrades, prereleases)
+          # See: https://github.com/doctypedev/doctype/issues/70
           VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view @doctypedev/doctype version 2>/dev/null || echo "")
 
@@ -96,7 +98,20 @@ jobs:
           fi
 
           echo "📦 Publishing @doctypedev/doctype@$VERSION"
-          npm publish --provenance
+
+          # Try to publish, but handle "already published" error gracefully
+          if ! npm publish --provenance 2>&1 | tee /tmp/publish.log; then
+            if grep -q "cannot publish over the previously published versions" /tmp/publish.log; then
+              echo "✅ Version already published (publish succeeded but npm reported it as error)"
+              exit 0
+            else
+              echo "❌ Publish failed"
+              cat /tmp/publish.log
+              exit 1
+            fi
+          fi
+
+          echo "✅ Published successfully"
 
   publish-native:
     name: Publish Native Packages (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
@@ -215,7 +230,9 @@ jobs:
         run: |
           cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
 
-          # Check if this version is already published
+          # TODO: Refine version check by comparing current (publishing) version with latest available
+          # to handle edge cases more robustly (e.g., downgrades, prereleases)
+          # See: https://github.com/doctypedev/doctype/issues/70
           PACKAGE_NAME="@doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
           VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
@@ -226,7 +243,20 @@ jobs:
           fi
 
           echo "📦 Publishing $PACKAGE_NAME@$VERSION"
-          npm publish --provenance
+
+          # Try to publish, but handle "already published" error gracefully
+          if ! npm publish --provenance 2>&1 | tee /tmp/publish.log; then
+            if grep -q "cannot publish over the previously published versions" /tmp/publish.log; then
+              echo "✅ Version already published (publish succeeded but npm reported it as error)"
+              exit 0
+            else
+              echo "❌ Publish failed"
+              cat /tmp/publish.log
+              exit 1
+            fi
+          fi
+
+          echo "✅ Published successfully"
 
   create-release:
     name: Create GitHub Release
