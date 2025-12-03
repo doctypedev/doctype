@@ -71,6 +71,17 @@ jobs:
         if: steps.bump.outputs.type
         run: npm install -g npm@latest
 
+      - name: Setup Rust
+        if: steps.bump.outputs.type
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust core types
+        if: steps.bump.outputs.type
+        run: |
+          cd crates/core
+          npm install
+          npm run build
+
       - name: Install dependencies
         if: steps.bump.outputs.type
         run: npm ci

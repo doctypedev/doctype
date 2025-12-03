@@ -21,6 +21,15 @@ jobs:
         with:
           node-version: '20' # Using Node.js 20, which is a recent LTS version
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust core types
+        run: |
+          cd crates/core
+          npm install
+          npm run build
+
       - name: Install dependencies
         run: npm ci
 
