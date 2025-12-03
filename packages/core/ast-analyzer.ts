@@ -9,7 +9,7 @@ import {
   PropertyDeclaration,
   FunctionDeclaration
 } from 'ts-morph';
-import { CodeSignature, SymbolType } from '@doctypedev/core';
+import { CodeSignature, SymbolType } from './native-loader';
 
 /**
  * Analyzes TypeScript source files to extract code signatures

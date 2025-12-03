@@ -6,12 +6,12 @@
 const fs = require('fs');
 const path = require('path');
 
-// Read main package.json version
-const mainPackagePath = path.join(__dirname, '../../../package.json');
-const mainPackage = JSON.parse(fs.readFileSync(mainPackagePath, 'utf8'));
-const version = mainPackage.version;
+// Read core package.json version (source of truth for native packages)
+const corePackagePath = path.join(__dirname, '../../../packages/core/package.json');
+const corePackage = JSON.parse(fs.readFileSync(corePackagePath, 'utf8'));
+const version = corePackage.version;
 
-console.log(`📦 Syncing version: ${version}`);
+console.log(`📦 Syncing native packages to version: ${version}`);
 
 // Find all npm platform packages
 const npmDir = path.join(__dirname, '../npm');

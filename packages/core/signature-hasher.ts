@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { CodeSignature, SignatureHash } from '@doctypedev/core';
+import { CodeSignature, SignatureHash } from './native-loader';
 
 /**
  * Generates deterministic SHA256 hashes from code signatures

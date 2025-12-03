@@ -2,7 +2,7 @@
  * Type definitions for AI Agent module
  */
 
-import { CodeSignature } from '@doctypedev/core';
+import { CodeSignature } from '../core/native-loader';
 
 /**
  * Supported AI providers
