@@ -8,5 +8,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["."]
+  "include": ["."],
+  "exclude": ["dist", "node_modules", "__tests__"]
 }
