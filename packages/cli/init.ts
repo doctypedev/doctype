@@ -17,249 +17,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as p from '@clack/prompts';
-import { InitOptions, InitResult, DoctypeConfig, OutputStrategy } from './types';
-import { ASTAnalyzer } from '../core/ast-analyzer';
-import { SignatureHasher } from '../core/signature-hasher';
-import { DoctypeMapManager } from '../content/map-manager';
-import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
-import { DoctypeMapEntry, SymbolType } from '@doctypedev/core';
+import { InitOptions, InitResult, DoctypeConfig } from './types';
+import { scanAndCreateAnchors, OutputStrategy } from '../core/init-orchestrator';
 
-/**
- * Recursively find all TypeScript files in a directory
- */
-function findTypeScriptFiles(dir: string, fileList: string[] = []): string[] {
-  const files = fs.readdirSync(dir);
-
-  files.forEach((file) => {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-
-    if (stat.isDirectory()) {
-      // Skip node_modules, dist, and other build directories
-      if (!['node_modules', 'dist', 'build', '.git', 'coverage', '.swc', '.idea', '.vscode', '.next'].includes(file)) {
-        findTypeScriptFiles(filePath, fileList);
-      }
-    } else if (file.endsWith('.ts') && !file.endsWith('.test.ts') && !file.endsWith('.spec.ts')) {
-      fileList.push(filePath);
-    }
-  });
-
-  return fileList;
-}
-
-/**
- * Determine the output file path based on strategy and symbol
- */
-export function determineOutputFile(
-  strategy: OutputStrategy,
-  docsFolder: string,
-  filePath: string,
-  symbolType: SymbolType
-): string {
-  // Default to mirror if undefined
-  const effectiveStrategy = strategy || 'mirror';
-
-  if (effectiveStrategy === 'mirror') {
-    // src/auth/login.ts -> docs/src/auth/login.md
-    // We keep the full path structure to avoid collisions
-    // If filePath is "src/auth/login.ts", we want "docs/src/auth/login.md"
-    const parsed = path.parse(filePath);
-    const dirPath = path.join(docsFolder, parsed.dir);
-    return path.join(dirPath, `${parsed.name}.md`);
-  }
-
-  if (effectiveStrategy === 'module') {
-    // src/auth/login.ts -> docs/src/auth.md
-    // src/index.ts -> docs/src.md
-    const dir = path.dirname(filePath);
-    // If file is at root (e.g. index.ts), dir is "."
-    if (dir === '.' || dir === '') {
-      return path.join(docsFolder, 'index.md');
-    }
-    return path.join(docsFolder, `${dir}.md`);
-  }
-
-  if (effectiveStrategy === 'type') {
-    switch (symbolType) {
-      case SymbolType.Class:
-        return path.join(docsFolder, 'classes.md');
-      case SymbolType.Function:
-        return path.join(docsFolder, 'functions.md');
-      case SymbolType.Interface:
-        return path.join(docsFolder, 'interfaces.md');
-      case SymbolType.TypeAlias:
-      case SymbolType.Enum:
-        return path.join(docsFolder, 'types.md');
-      case SymbolType.Variable:
-      case SymbolType.Const:
-        return path.join(docsFolder, 'variables.md');
-      default:
-        return path.join(docsFolder, 'api.md');
-    }
-  }
-
-  return path.join(docsFolder, 'api.md');
-}
-
-/**
- * Scan code and create anchors in markdown files
- */
-async function scanAndCreateAnchors(config: DoctypeConfig, spinner: { message: (msg: string) => void }): Promise<number> {
-  const projectRoot = path.resolve(process.cwd(), config.projectRoot);
-  const docsFolder = path.resolve(process.cwd(), config.docsFolder);
-  const mapFilePath = path.resolve(process.cwd(), config.mapFile);
-
-  // Ensure docs folder exists
-  if (!fs.existsSync(docsFolder)) {
-    fs.mkdirSync(docsFolder, { recursive: true });
-  }
-
-  // Initialize modules
-  const analyzer = new ASTAnalyzer();
-  const hasher = new SignatureHasher();
-  const mapManager = new DoctypeMapManager(mapFilePath);
-  const anchorInserter = new MarkdownAnchorInserter();
-
-  // Find all TypeScript files
-  spinner.message('Scanning TypeScript files...');
-  const tsFiles = findTypeScriptFiles(projectRoot);
-
-  if (tsFiles.length === 0) {
-    spinner.message('No TypeScript files found.');
-    return 0;
-  }
-
-  spinner.message(`Found ${tsFiles.length} TypeScript files. Analyzing...`);
-
-  // Collect all symbols
-  const symbolsToDocument: Array<{
-    filePath: string;
-    symbolName: string;
-    symbolType: SymbolType;
-    signatureText: string;
-    hash: string;
-    targetDocFile: string;
-  }> = [];
-
-  for (const tsFile of tsFiles) {
-    try {
-      const signatures = analyzer.analyzeFile(tsFile);
-      // Normalize path to use forward slashes on all platforms
-      const relativePath = path.relative(projectRoot, tsFile).split(path.sep).join('/');
-
-      for (const signature of signatures) {
-        if (signature.isExported) {
-          const hashResult = hasher.hash(signature);
-          
-          const targetDocFile = determineOutputFile(
-             config.outputStrategy || 'mirror', 
-             docsFolder,
-             relativePath,
-             signature.symbolType
-          );
-
-          symbolsToDocument.push({
-            filePath: relativePath,
-            symbolName: signature.symbolName,
-            symbolType: signature.symbolType,
-            signatureText: signature.signatureText,
-            hash: hashResult.hash,
-            targetDocFile
-          });
-        }
-      }
-    } catch (error) {
-      spinner.message(`Warning: Could not analyze ${tsFile}`);
-    }
-  }
-
-  if (symbolsToDocument.length === 0) {
-    spinner.message('No exported symbols found.');
-    return 0;
-  }
-
-  spinner.message(`Found ${symbolsToDocument.length} exported symbols. Grouping by file...`);
-
-  // Group by target document
-  const symbolsByDoc = new Map<string, typeof symbolsToDocument>();
-  for (const sym of symbolsToDocument) {
-    if (!symbolsByDoc.has(sym.targetDocFile)) {
-      symbolsByDoc.set(sym.targetDocFile, []);
-    }
-    symbolsByDoc.get(sym.targetDocFile)!.push(sym);
-  }
-
-  let totalInserted = 0;
-
-  // Process each document file
-  for (const [docPath, symbols] of symbolsByDoc.entries()) {
-    let docContent = '';
-    let isNewFile = false;
-
-    // Ensure directory exists for this doc file
-    const docDir = path.dirname(docPath);
-    if (!fs.existsSync(docDir)) {
-        fs.mkdirSync(docDir, { recursive: true });
-    }
-
-    if (fs.existsSync(docPath)) {
-      docContent = fs.readFileSync(docPath, 'utf-8');
-    } else {
-      const title = generateMarkdownTitle(docPath);
-      docContent = `# ${title}\n\nAuto-generated documentation via Doctype.\n\n`;
-      isNewFile = true;
-    }
-
-    const existingCodeRefs = anchorInserter.getExistingCodeRefs(docContent);
-    const existingSet = new Set(existingCodeRefs);
-    let hasChanges = false;
-
-    for (const symbol of symbols) {
-      const codeRef = `${symbol.filePath}#${symbol.symbolName}`;
-
-      if (existingSet.has(codeRef)) {
-        continue;
-      }
-
-      const result = anchorInserter.insertIntoContent(docContent, codeRef, {
-        createSection: true,
-        placeholder: 'TODO: Add documentation for this symbol',
-      });
-
-      if (result.success) {
-        docContent = result.content;
-        hasChanges = true;
-
-        const mapEntry: DoctypeMapEntry = {
-          id: result.anchorId,
-          codeRef: {
-            filePath: symbol.filePath,
-            symbolName: symbol.symbolName,
-          },
-          codeSignatureHash: symbol.hash,
-          codeSignatureText: symbol.signatureText,
-          docRef: {
-            filePath: path.relative(process.cwd(), docPath),
-            startLine: result.location.startLine,
-            endLine: result.location.endLine,
-          },
-          originalMarkdownContent: `<!-- TODO: Add documentation for this symbol -->`,
-          lastUpdated: Date.now(),
-        };
-
-        mapManager.addEntry(mapEntry);
-        totalInserted++;
-      }
-    }
-
-    if (isNewFile || hasChanges) {
-      fs.writeFileSync(docPath, docContent, 'utf-8');
-    }
-  }
-
-  mapManager.save();
-  return totalInserted;
-}
 
 /**
  * Add a line to .gitignore if not already present
@@ -288,21 +48,6 @@ function addToGitignore(line: string): void {
   fs.writeFileSync(gitignorePath, gitignoreContent, 'utf-8');
 }
 
-/**
- * Generates a meaningful H1 title for a new Markdown documentation file based on its filename.
- * @param docPath The full path to the new documentation file.
- * @returns A capitalized title for the Markdown file.
- */
-function generateMarkdownTitle(docPath: string): string {
-  const basename = path.basename(docPath, '.md');
-
-  if (basename === 'index' || basename === 'api') {
-    return 'API Reference';
-  }
-
-  // Capitalize the first letter
-  return basename.charAt(0).toUpperCase() + basename.slice(1);
-}
 
 /**
  * Execute the init command
@@ -522,12 +267,24 @@ export async function initCommand(
     s2.start('Scanning codebase and creating documentation anchors...');
 
     try {
-      const insertedCount = await scanAndCreateAnchors(config, s2);
+      const result = await scanAndCreateAnchors(
+        {
+          projectRoot: config.projectRoot,
+          docsFolder: config.docsFolder,
+          mapFile: config.mapFile,
+          outputStrategy: config.outputStrategy,
+        },
+        (message) => s2.message(message)
+      );
 
-      if (insertedCount > 0) {
-        s2.stop(`✅ Created ${insertedCount} documentation anchors in documentation files`);
+      if (result.anchorsCreated > 0) {
+        s2.stop(`✅ Created ${result.anchorsCreated} documentation anchors in ${result.filesCreated} files`);
       } else {
         s2.stop('ℹ️  No new symbols to document');
+      }
+
+      if (result.errors.length > 0) {
+        p.note(result.errors.join('\n'), '⚠️  Warnings');
       }
     } catch (error) {
       s2.stop('⚠️  Failed to scan codebase');

@@ -7,7 +7,9 @@
 // Core AST & Drift Detection
 export { ASTAnalyzer } from './core/ast-analyzer';
 export { SignatureHasher } from './core/signature-hasher';
-export { SymbolType } from '@doctypedev/core';
+export { scanAndCreateAnchors, determineOutputFile } from './core/init-orchestrator';
+export type { InitConfig, ScanResult, OutputStrategy, ProgressCallback } from './core/init-orchestrator';
+export { SymbolType, discoverFiles } from '@doctypedev/core';
 export type {
   CodeRef,
   CodeSignature,
@@ -15,6 +17,8 @@ export type {
   DocRef,
   DoctypeMapEntry,
   DoctypeMap,
+  FileDiscoveryResult,
+  FileDiscoveryOptions,
 } from '@doctypedev/core';
 
 // Content & Mapping

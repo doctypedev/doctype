@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { initCommand, determineOutputFile } from '../init';
+import { initCommand } from '../init';
+import { determineOutputFile } from '../../core/init-orchestrator';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { DoctypeConfig } from '../types';

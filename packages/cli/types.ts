@@ -2,6 +2,8 @@
  * CLI-specific type definitions
  */
 
+import type { OutputStrategy } from '../core/init-orchestrator';
+
 /**
  * Result of a drift check operation
  */
@@ -161,8 +163,3 @@ export interface DoctypeConfig {
   /** Directory where the config file was found (internal use) */
   baseDir?: string;
 }
-
-/**
- * Strategy for generating documentation files
- */
-export type OutputStrategy = 'mirror' | 'module' | 'type';
