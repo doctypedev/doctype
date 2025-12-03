@@ -1,0 +1,21 @@
+[package]
+name = "doctype-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["doctypedev"]
+description = "Core Rust implementation for Doctype - AST analysis and signature hashing"
+license = "MIT"
+repository = "https://github.com/doctypedev/doctype"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Core dependencies will be added as needed
+# Example dependencies for future use:
+# serde = { version = "1.0", features = ["derive"] }
+# sha2 = "0.10"
+# tree-sitter = "0.20"
+
+[dev-dependencies]
+# Test dependencies will be added as needed
