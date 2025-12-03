@@ -57,6 +57,16 @@ jobs:
           git push --follow-tags
           echo "NEW_TAG=$(git describe --abbrev=0)" >> $GITHUB_OUTPUT
 
+      # Cache node_modules to speed up builds
+      - name: Cache node_modules
+        if: steps.bump.outputs.type
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Update npm
         if: steps.bump.outputs.type
         run: npm install -g npm@latest
@@ -84,35 +94,24 @@ jobs:
         if: steps.bump.outputs.type
         run: npm run build
 
+      # Save build artifacts to reuse in publish-native job
+      - name: Upload build artifacts
+        if: steps.bump.outputs.type
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            dist/
+            package.json
+            package-lock.json
+          retention-days: 1
+
+      # Use composite action for publishing
       - name: Publish to NPM
         if: steps.bump.outputs.type
-        run: |
-          # TODO: Refine version check by comparing current (publishing) version with latest available
-          # to handle edge cases more robustly (e.g., downgrades, prereleases)
-          # See: https://github.com/doctypedev/doctype/issues/70
-          VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view @doctypedev/doctype version 2>/dev/null || echo "")
-
-          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "📦 Version $VERSION already published, skipping"
-            exit 0
-          fi
-
-          echo "📦 Publishing @doctypedev/doctype@$VERSION"
-
-          # Try to publish, but handle "already published" error gracefully
-          if ! npm publish --provenance 2>&1 | tee /tmp/publish.log; then
-            if grep -q "cannot publish over the previously published versions" /tmp/publish.log; then
-              echo "✅ Version already published (publish succeeded but npm reported it as error)"
-              exit 0
-            else
-              echo "❌ Publish failed"
-              cat /tmp/publish.log
-              exit 1
-            fi
-          fi
-
-          echo "✅ Published successfully"
+        uses: ./.github/actions/npm-publish
+        with:
+          package_dir: '.'
 
   publish-native:
     name: Publish Native Packages (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
@@ -135,6 +134,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
+      - name: Pull latest changes (including new tag)
+        run: git pull --tags
+
+      # Download build artifacts from previous job instead of rebuilding
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -145,15 +153,19 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Pull latest changes (including new tag)
-        run: git pull --tags
+      # Cache Rust dependencies to speed up builds
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            crates/core/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Update npm
-        run: npm install -g npm@latest
-
-      - name: Install root dependencies
-        run: npm ci
-
+      # Only install napi-rs dependencies (not root project)
       - name: Install napi-rs dependencies
         run: |
           cd crates/core
@@ -232,48 +244,11 @@ jobs:
           echo "📦 Package contents:"
           ls -lah crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}/
 
-      - name: 🔍 Verify package.json version
-        run: |
-          cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          echo "============================================"
-          echo "📋 About to publish:"
-          echo "   Name: $PACKAGE_NAME"
-          echo "   Version: $PACKAGE_VERSION"
-          echo "============================================"
-
+      # Use composite action for publishing
       - name: Publish to NPM
-        run: |
-          cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
-
-          # TODO: Refine version check by comparing current (publishing) version with latest available
-          # to handle edge cases more robustly (e.g., downgrades, prereleases)
-          # See: https://github.com/doctypedev/doctype/issues/70
-          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
-          VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
-
-          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "📦 Version $VERSION already published, skipping"
-            exit 0
-          fi
-
-          echo "📦 Publishing $PACKAGE_NAME@$VERSION"
-
-          # Try to publish, but handle "already published" error gracefully
-          if ! npm publish --provenance 2>&1 | tee /tmp/publish.log; then
-            if grep -q "cannot publish over the previously published versions" /tmp/publish.log; then
-              echo "✅ Version already published (publish succeeded but npm reported it as error)"
-              exit 0
-            else
-              echo "❌ Publish failed"
-              cat /tmp/publish.log
-              exit 1
-            fi
-          fi
-
-          echo "✅ Published successfully"
+        uses: ./.github/actions/npm-publish
+        with:
+          package_dir: 'crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}'
 
   create-release:
     name: Create GitHub Release

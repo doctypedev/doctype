@@ -1,0 +1,52 @@
+name: 'Publish to NPM with version check'
+description: 'Publishes a package to NPM with duplicate version detection'
+
+inputs:
+  package_dir:
+    description: 'Directory containing package.json to publish'
+    required: false
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Verify package version
+      shell: bash
+      working-directory: ${{ inputs.package_dir }}
+      run: |
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        PACKAGE_NAME=$(node -p "require('./package.json').name")
+        echo "============================================"
+        echo "📋 About to publish:"
+        echo "   Name: $PACKAGE_NAME"
+        echo "   Version: $PACKAGE_VERSION"
+        echo "============================================"
+
+    - name: Publish to NPM
+      shell: bash
+      working-directory: ${{ inputs.package_dir }}
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        PACKAGE_NAME=$(node -p "require('./package.json').name")
+        PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
+
+        if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
+          echo "📦 Version $VERSION already published, skipping"
+          exit 0
+        fi
+
+        echo "📦 Publishing $PACKAGE_NAME@$VERSION"
+
+        # Try to publish, but handle "already published" error gracefully
+        if ! npm publish --provenance 2>&1 | tee /tmp/publish.log; then
+          if grep -q "cannot publish over the previously published versions" /tmp/publish.log; then
+            echo "✅ Version already published (publish succeeded but npm reported it as error)"
+            exit 0
+          else
+            echo "❌ Publish failed"
+            cat /tmp/publish.log
+            exit 1
+          fi
+        fi
+
+        echo "✅ Published successfully"
