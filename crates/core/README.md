@@ -1,60 +1,142 @@
 # Doctype Core (Rust)
 
-High-performance Rust implementation of Doctype's core functionality.
+High-performance Rust implementation of Doctype's core functionality using **napi-rs**.
 
 ## Overview
 
-This crate provides native implementations of CPU-intensive operations for the Doctype documentation system:
+This crate provides native Node.js bindings for CPU-intensive operations:
 
-- **AST Analysis**: Parse and analyze source code to extract public symbols and signatures
-- **Signature Hashing**: Generate deterministic SHA256 hashes from code signatures
-- **Drift Detection**: Compare code signature hashes to detect documentation drift
+- **AST Analysis**: Parse and analyze TypeScript/JavaScript code *(placeholder)*
+- **Signature Hashing**: Generate deterministic SHA256 hashes *(future)*
+- **Drift Detection**: Compare code signatures *(future)*
+
+## Quick Start
+
+### Build
+
+```bash
+# Install dependencies
+npm install
+
+# Build for your platform
+npm run build
+
+# Build debug version
+npm run build:debug
+```
+
+### Test Locally
+
+```bash
+# Run the example
+node example.js
+```
+
+**Expected output:**
+```
+🦀 Doctype Rust Core - Example
+
+1. Hello World:
+   Hello from Doctype Rust Core! 🦀
+
+2. Version:
+   0.1.0
+
+3. AST Analyzer:
+   analyzeFile: Hello from Rust! Analyzing file: src/index.ts
+   getSymbols: [ 'function1', 'function2', 'MyClass' ]
+
+✅ All tests passed!
+```
+
+## API
+
+### Functions
+
+```javascript
+const { helloWorld, getVersion, AstAnalyzer } = require('@doctypedev/doctype-darwin-arm64');
+
+// Simple hello world
+helloWorld() // => "Hello from Doctype Rust Core! 🦀"
+
+// Get version
+getVersion() // => "0.1.0"
+```
+
+### AstAnalyzer Class
+
+```javascript
+const analyzer = new AstAnalyzer();
+
+// Analyze a file (placeholder)
+analyzer.analyzeFile('src/index.ts')
+// => "Hello from Rust! Analyzing file: src/index.ts"
+
+// Get symbols (placeholder)
+analyzer.getSymbols('src/index.ts')
+// => ['function1', 'function2', 'MyClass']
+```
 
 ## Architecture
 
-The Rust core is designed to be called from the TypeScript layer via FFI (Foreign Function Interface), providing:
+Built with [napi-rs](https://napi.rs/), providing:
+- ✅ **Type-safe** Node.js bindings
+- ✅ **Zero-copy** data transfer where possible
+- ✅ **Async support** for long-running operations
+- ✅ **Cross-platform** compilation
 
-- **Native Performance**: CPU-intensive operations run at native speeds
-- **Seamless Integration**: Exposed to TypeScript through Node.js bindings
-- **Existing Workflow**: Maintains the current CLI and user experience
-
-## Module Structure
+## Project Structure
 
 ```
 crates/core/
-├── Cargo.toml           # Package configuration
+├── Cargo.toml              # Rust package config
+├── build.rs                # napi build script
+├── package.json            # npm package for @napi-rs/cli
 ├── src/
-│   ├── lib.rs          # Main library entry point
-│   ├── ast.rs          # AST analysis module
-│   ├── signature.rs    # Signature hashing module
-│   └── drift.rs        # Drift detection module
-└── README.md           # This file
+│   └── lib.rs             # napi-rs bindings
+├── npm/
+│   └── darwin-arm64/      # Platform-specific npm package
+├── scripts/
+│   ├── build.sh           # Build helper
+│   └── sync-version.js    # Version sync
+└── example.js             # Usage example
 ```
+
+## Adding Functionality
+
+To add new functions or classes:
+
+1. **Add Rust code** in `src/lib.rs`:
+```rust
+#[napi]
+pub fn my_function(input: String) -> String {
+    format!("Processed: {}", input)
+}
+```
+
+2. **Rebuild**:
+```bash
+npm run build
+```
+
+3. **Use in JavaScript**:
+```javascript
+const { myFunction } = require('@doctypedev/doctype-darwin-arm64');
+myFunction('hello') // => "Processed: hello"
+```
+
+## Publishing
+
+Packages are published automatically via GitHub Actions when the main package is released.
 
 ## Development Status
 
-🚧 **Currently in early development** - The structure is in place, but core functionality is not yet implemented.
-
-## Future Implementation
-
-- [ ] TypeScript AST parsing using tree-sitter
-- [ ] SHA256 signature hashing
-- [ ] FFI bindings for Node.js (using napi-rs or similar)
-- [ ] Performance benchmarks vs TypeScript implementation
-- [ ] Comprehensive test suite
-
-## Building
-
-```bash
-# Build the library
-cargo build
-
-# Run tests
-cargo test
-
-# Build for release (optimized)
-cargo build --release
-```
+- ✅ napi-rs setup complete
+- ✅ Hello world functions working
+- ✅ AST Analyzer class (placeholder)
+- 🚧 Real AST parsing (TODO)
+- 🚧 Signature hashing (TODO)
+- 🚧 Drift detection (TODO)
 
 ## License
 

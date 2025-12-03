@@ -89,3 +89,72 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.NEW_TAG }}
           generate_release_notes: true
+
+  publish-native:
+    name: Publish Native Packages (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
+    needs: publish
+    runs-on: ${{ matrix.settings.host }}
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          # macOS ARM64 (Apple Silicon)
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            platform: darwin
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.settings.target }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Pull latest changes (including new tag)
+        run: git pull --tags
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install napi-rs dependencies
+        run: |
+          cd crates/core
+          npm install
+
+      - name: Sync version to native packages
+        run: node crates/core/scripts/sync-version.js
+
+      - name: Build with napi-rs
+        run: |
+          cd crates/core
+          npm run build
+        env:
+          CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
+
+      - name: Copy binary to npm package
+        run: |
+          NODE_BINARY_NAME="doctype-core.${{ matrix.settings.platform }}-${{ matrix.settings.arch }}.node"
+          NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+
+          cp "crates/core/$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
+          echo "✅ Binary copied to $NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
+
+      - name: List package contents
+        run: |
+          echo "📦 Package contents:"
+          ls -lah crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}/
+
+      - name: Publish to NPM
+        run: |
+          cd crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}
+          npm publish --provenance

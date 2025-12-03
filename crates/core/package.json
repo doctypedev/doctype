@@ -1,0 +1,25 @@
+{
+  "name": "@doctypedev/doctype-core-build",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build package for Doctype Rust core",
+  "scripts": {
+    "build": "napi build --platform --release --pipe \"prettier -w\"",
+    "build:debug": "napi build --platform",
+    "artifacts": "napi artifacts",
+    "prepublishOnly": "napi prepublish -t npm"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0",
+    "prettier": "^3.0.0"
+  },
+  "napi": {
+    "name": "doctype-core",
+    "triples": {
+      "defaults": false,
+      "additional": [
+        "aarch64-apple-darwin"
+      ]
+    }
+  }
+}
