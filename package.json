@@ -27,7 +27,8 @@
     "generate:sidebar": "tsx docs/scripts/generateSidebar.ts",
     "docs:dev": "npm run generate:sidebar && vitepress dev docs",
     "docs:build": "npm run generate:sidebar && vitepress build docs",
-    "docs:preview": "npm run generate:sidebar && vitepress preview docs"
+    "docs:preview": "npm run generate:sidebar && vitepress preview docs",
+    "release": "changeset publish"
   },
   "keywords": [
     "documentation",
@@ -50,7 +51,8 @@
     "@doctypedev/core-darwin-arm64": "^0.3.10"
   },
   "devDependencies": {
-    "@doctypedev/core": "file:./crates/core",
+    "@changesets/cli": "^2.29.8",
+    "@doctypedev/core": "workspace:*",
     "@types/node": "^20.10.6",
     "@types/vue": "^1.0.31",
     "@types/yargs": "^17.0.32",
@@ -69,5 +71,6 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  }
+  },
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }
