@@ -182,6 +182,20 @@ jobs:
       - name: Sync version to native packages
         run: node crates/core/scripts/sync-version.js
 
+      - name: 🔍 DEBUG - Check npm after sync-version
+        run: |
+          echo "============================================"
+          echo "🔍 DEBUG CHECKPOINT 1: After sync-version"
+          echo "============================================"
+          echo ""
+          echo "Check if package is already on npm:"
+          echo "https://www.npmjs.com/package/@doctypedev/doctype-darwin-arm64"
+          echo ""
+          echo "Waiting 3 minutes before continuing..."
+          echo "Press Ctrl+C in the Actions UI to cancel if needed"
+          echo ""
+          sleep 180
+
       - name: Download previous binary (if no Rust changes)
         if: steps.rust_changes.outputs.has_changes == 'false'
         run: |
@@ -221,10 +235,41 @@ jobs:
           cp "crates/core/$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
           echo "✅ Binary copied to $NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
 
+      - name: 🔍 DEBUG - Check npm after build
+        run: |
+          echo "============================================"
+          echo "🔍 DEBUG CHECKPOINT 2: After build/copy"
+          echo "============================================"
+          echo ""
+          echo "Check if package is already on npm:"
+          echo "https://www.npmjs.com/package/@doctypedev/doctype-darwin-arm64"
+          echo ""
+          echo "Waiting 3 minutes before continuing..."
+          echo "Press Ctrl+C in the Actions UI to cancel if needed"
+          echo ""
+          sleep 180
+
       - name: List package contents
         run: |
           echo "📦 Package contents:"
           ls -lah crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}/
+
+      - name: 🔍 DEBUG - Check npm before publish
+        run: |
+          echo "============================================"
+          echo "🔍 DEBUG CHECKPOINT 3: Before npm publish"
+          echo "============================================"
+          echo ""
+          echo "LAST CHECK - if package is already on npm:"
+          echo "https://www.npmjs.com/package/@doctypedev/doctype-darwin-arm64"
+          echo ""
+          echo "If it's ALREADY there, we found the bug!"
+          echo "If NOT, then the next step will publish it."
+          echo ""
+          echo "Waiting 3 minutes before continuing..."
+          echo "Press Ctrl+C in the Actions UI to cancel if needed"
+          echo ""
+          sleep 180
 
       - name: Publish to NPM
         run: |
