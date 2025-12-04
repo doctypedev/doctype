@@ -63,9 +63,6 @@ importers:
         specifier: ^17.7.2
         version: 17.7.2
     devDependencies:
-      '@doctypedev/core-native':
-        specifier: workspace:*
-        version: link:../../crates/core
       '@types/node':
         specifier: ^20.10.6
         version: 20.19.25
