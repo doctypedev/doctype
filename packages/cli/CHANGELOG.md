@@ -1,5 +1,12 @@
 # @doctypedev/doctype
 
+## 0.3.30
+
+### Patch Changes
+
+- Updated dependencies [5106561]
+  - @doctypedev/core@0.3.29
+
 ## 0.3.29
 
 ### Patch Changes

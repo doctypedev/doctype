@@ -1,5 +1,11 @@
 # @doctypedev/core
 
+## 0.3.29
+
+### Patch Changes
+
+- 5106561: Align versions
+
 ## 0.3.28
 
 ### Patch Changes
