@@ -130,18 +130,50 @@ jobs:
           
           # Publish
           cd "$NPM_PACKAGE_DIR"
-          echo "📦 Publishing native package from $(pwd)"
+          echo "Publishing native package from $(pwd)"
           
           # Check if version exists
           PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
-          VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
-
-          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "📦 Version $VERSION already published, skipping"
+          
+          # Extract version from package.json with error handling
+          VERSION=$(node -p "require('./package.json').version 2>/dev/null" 2>/dev/null)
+          if [ -z "$VERSION" ]; then
+            echo "Error: Failed to extract version from package.json"
+            exit 1
+          fi
+          echo "Package: $PACKAGE_NAME"
+          echo "Local Version: $VERSION"
+          
+          # Check published version with retry logic and timeout
+          PUBLISHED_VERSION=""
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Checking published version (attempt $((RETRY_COUNT+1))/$MAX_RETRIES)..."
+            PUBLISHED_VERSION=$(timeout 10 npm view "$PACKAGE_NAME" version 2>/dev/null || echo "")
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Retrying in 2 seconds..."
+              sleep 2
+            fi
+          done
+          
+          echo "Published Version: ${PUBLISHED_VERSION:-'not found'}"
+          
+          # Robust version comparison
+          if [ -n "$PUBLISHED_VERSION" ] && [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version $VERSION already published, skipping"
+          elif [ -z "$PUBLISHED_VERSION" ]; then
+            echo "ℹPackage not yet published, proceeding with publish..."
+            echo "Publishing $PACKAGE_NAME@$VERSION..."
+            npm publish --access public --provenance
           else
-            echo "🚀 Publishing $PACKAGE_NAME@$VERSION..."
             # Publish with public access using OIDC (provenance)
             # Note: OIDC requires --provenance
+            echo "Publishing $PACKAGE_NAME@$VERSION (previous: $PUBLISHED_VERSION)..."
             npm publish --access public --provenance
           fi
