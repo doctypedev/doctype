@@ -45,6 +45,37 @@ function getPlatformPackageName(): string {
  * Load the native module
  */
 function loadNativeModule(): any {
+  // Test mode: return mock for unsupported platforms
+  if (process.env.VITEST || process.env.NODE_ENV === 'test') {
+    const platform = `${os.platform()}-${os.arch()}`;
+    if (!PLATFORM_PACKAGES[platform]) {
+      // Return a mock object for testing on unsupported platforms
+      return {
+        SymbolType: {
+          Function: 'Function',
+          Class: 'Class',
+          Interface: 'Interface',
+          TypeAlias: 'TypeAlias',
+          Enum: 'Enum',
+          Variable: 'Variable',
+          Const: 'Const',
+        },
+        discoverFiles: () => ({
+          markdownFiles: [],
+          sourceFiles: [],
+          totalFiles: 0,
+          errors: 0,
+        }),
+        helloWorld: () => 'mock hello',
+        getVersion: () => '0.0.0-mock',
+        AstAnalyzer: class MockAstAnalyzer {
+          analyzeFile() { return 'mock'; }
+          getSymbols() { return []; }
+        },
+      };
+    }
+  }
+
   // Development mode: try to load from local crates/core first
   if (process.env.NODE_ENV !== 'production') {
     try {
