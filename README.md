@@ -20,7 +20,7 @@ Doctype automatically detects when your code changes and updates your documentat
 
 **The Problem:** You change a function signature. Your documentation becomes outdated. Your team wastes time debugging with wrong info. Sound familiar?
 
-**The Solution:** Doctype detects code changes automatically and regenerates documentation using GPT-4. Your docs stay in sync, your team stays productive.
+**The Solution:** Doctype detects code changes automatically and regenerates documentation using a Large Language Model. Your docs stay in sync, your team stays productive.
 
 ### What Makes It Different
 
@@ -53,7 +53,7 @@ This will:
 - Generate SHA256 hashes of all code signatures
 - Create `doctype-map.json` to track everything (commit this file)
 - Create `doctype.config.json` with your project configuration (commit this file)
-- Optionally set your OpenAI API key for AI-powered updates
+- Optionally select an AI provider and configure its API key for AI-powered updates
 
 **Doctype will create documentation files with anchors like this:**
 
@@ -141,7 +141,7 @@ doctype init
 5. Generates SHA256 hashes of all code signatures
 6. Creates `doctype-map.json` to track everything (commit this)
 7. Creates `doctype.config.json` with project configuration (commit this)
-8. Optionally configures your OpenAI API key
+8. Optionally configures your selected AI provider's API key
 
 **Initial anchors are created with TODO placeholders:**
 ```markdown
@@ -347,23 +347,19 @@ console.log(transaction.id); // "txn_abc123"
 <!-- doctype:end id="f47ac10b-58cc-4372-a567-0e02b2c3d479" -->
 ```
 
-**You didn't write this. GPT-4 did. Automatically.**
+**You didn't write this. Your selected AI provider did. Automatically.**
 
 ---
 
 ## Cost
 
-### OpenAI Pricing
+### AI Provider Pricing
 
-Doctype uses OpenAI GPT-4 by default:
+Doctype uses your selected AI provider:
 
-- **Input:** ~$0.03 per 1K tokens
-- **Output:** ~$0.06 per 1K tokens
-- **Per documentation update:** ~$0.06-$0.15
-
-**Example cost:**
-- 10 function changes = ~$1.50
-- 100 function changes = ~$15.00
+- **Input:** Pricing varies per provider and model.
+- **Output:** Pricing varies per provider and model.
+- **Per documentation update:** Pricing varies per provider and model.
 
 ### Cost Optimization Tips
 
@@ -376,15 +372,7 @@ Doctype uses OpenAI GPT-4 by default:
 
    **Note:** `--no-ai` does not update documentation content, only for testing.
 
-3. **Upgrade to GPT-4-turbo** (faster, cheaper):
-   ```bash
-   export DOCTYPE_AI_MODEL=gpt-4-turbo
-   ```
-
-4. **Use GPT-3.5-turbo** for simple docs (10x cheaper):
-   ```bash
-   export DOCTYPE_AI_MODEL=gpt-3.5-turbo
-   ```
+3. **Choose cheaper models**: Some AI providers offer models that are faster and cheaper. Check your provider's documentation for options.
 
 ---
 
@@ -404,18 +392,18 @@ doctype fix --no-ai --dry-run
 
 **Important:** `--no-ai` does not actually update documentation content - it only tests the pipeline. For real documentation updates, you need AI (OpenAI) or manual editing.
 
-### Can I use this without OpenAI?
+### Can I use this without an AI provider?
 
-For **drift detection**: Yes. `doctype check` works without AI.
+For **drift detection**: Yes. `doctype check` works without an AI provider.
 
-For **automatic fixing**: No. You need an AI provider (OpenAI or Gemini in the future).
+For **automatic fixing**: No. You need an AI provider.
 
 ### Does this work with private codebases?
 
-Yes. Your code is sent to OpenAI's API, but:
-- OpenAI doesn't train on API data (per their [terms](https://openai.com/policies/api-data-usage-policies))
-- You can use `--no-ai` for sensitive code
-- Gemini and local LLM support coming soon
+Yes. Your code can be sent to your selected AI provider's API, but always review their data usage policies.
+- Many AI providers do not train on API data.
+- You can use `--no-ai` for sensitive code.
+- Support for local LLMs is planned.
 
 ### What languages are supported?
 
@@ -424,23 +412,6 @@ Currently **TypeScript only**. Support for JavaScript, Python, Go, Rust, and Jav
 ### Can I customize the AI prompts?
 
 Not yet, but it's on the roadmap. For now, Doctype uses optimized prompts designed for technical documentation.
-
----
-
-## Roadmap
-
-- [x] TypeScript support
-- [x] OpenAI GPT-4 integration
-- [x] Auto-commit functionality
-- [x] GitHub Actions integration
-- [ ] Gemini AI support
-- [ ] Local LLM support (Llama, Mistral)
-- [ ] JavaScript support
-- [ ] Python support
-- [ ] Custom prompt templates
-- [ ] Integration with documentation tools (VitePress, Docusaurus, etc.)
-- [ ] VSCode extension
-- [ ] Doctype Cloud (hosted service, no API key needed)
 
 ---
 

@@ -146,6 +146,8 @@ export interface InitResult {
   error?: string;
 }
 
+export type AIProvider = 'openai' | 'gemini' | 'anthropic' | 'mistral';
+
 /**
  * Doctype configuration file structure
  */
@@ -162,4 +164,6 @@ export interface DoctypeConfig {
   outputStrategy?: OutputStrategy;
   /** Directory where the config file was found (internal use) */
   baseDir?: string;
+  /** AI provider to use for generation */
+  aiProvider?: AIProvider;
 }

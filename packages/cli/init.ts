@@ -17,7 +17,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as p from '@clack/prompts';
-import { InitOptions, InitResult, DoctypeConfig } from './types';
+import { InitOptions, InitResult, DoctypeConfig, AIProvider } from './types';
+
+const AI_PROVIDERS: { value: AIProvider; label: string; hint?: string }[] = [
+  { value: 'openai', label: 'OpenAI', hint: 'OPENAI_API_KEY' },
+  { value: 'gemini', label: 'Google Gemini', hint: 'GEMINI_API_KEY' },
+  { value: 'anthropic', label: 'Anthropic', hint: 'ANTHROPIC_API_KEY' },
+  { value: 'mistral', label: 'Mistral AI', hint: 'MISTRAL_API_KEY' },
+];
 import { scanAndCreateAnchors, OutputStrategy } from './init-orchestrator';
 
 
@@ -48,6 +55,21 @@ function addToGitignore(line: string): void {
   fs.writeFileSync(gitignorePath, gitignoreContent, 'utf-8');
 }
 
+
+function getApiKeyEnvVarName(provider: AIProvider): string {
+  switch (provider) {
+    case 'openai':
+      return 'OPENAI_API_KEY';
+    case 'gemini':
+      return 'GEMINI_API_KEY';
+    case 'anthropic':
+      return 'ANTHROPIC_API_KEY';
+    case 'mistral':
+      return 'MISTRAL_API_KEY';
+    default:
+      return 'OPENAI_API_KEY'; // Default to OpenAI
+  }
+}
 
 /**
  * Execute the init command
@@ -140,19 +162,32 @@ export async function initCommand(
       return { success: false, error: 'Cancelled by user' };
     }
 
-    // Prompt 6: OpenAI API Key
+    // Prompt for AI Provider
+    const aiProviderSelection = await p.select({
+      message: 'Which AI provider would you like to use?',
+      options: AI_PROVIDERS,
+      initialValue: 'openai',
+    });
+
+    if (p.isCancel(aiProviderSelection)) {
+      p.cancel('Initialization cancelled.');
+      return { success: false, error: 'Cancelled by user' };
+    }
+
+    const aiProvider: AIProvider = aiProviderSelection as AIProvider;
+
     const envPath = path.join(process.cwd(), '.env');
+    const apiKeyEnvVarName = getApiKeyEnvVarName(aiProvider);
     let existingApiKey: string | null = null;
+    let apiKey = '';
 
     if (fs.existsSync(envPath)) {
       const envContent = fs.readFileSync(envPath, 'utf-8');
-      const match = envContent.match(/OPENAI_API_KEY=(.+)/);
+      const match = envContent.match(new RegExp(`${apiKeyEnvVarName}=(.+)`));
       if (match) {
         existingApiKey = match[1].trim();
       }
     }
-
-    let apiKey = '';
 
     if (existingApiKey) {
       p.note(
@@ -161,7 +196,7 @@ export async function initCommand(
       );
 
       const replaceKey = await p.confirm({
-        message: 'Do you want to replace the existing API key?',
+        message: `Do you want to replace the existing ${apiKeyEnvVarName} in your .env file?`,
         initialValue: false,
       });
 
@@ -172,7 +207,7 @@ export async function initCommand(
 
       if (replaceKey) {
         const newApiKey = await p.password({
-          message: 'Enter your new OpenAI API key:',
+          message: `Enter your new ${aiProvider} API key (for ${apiKeyEnvVarName}):`,
         });
 
         if (p.isCancel(newApiKey)) {
@@ -186,12 +221,12 @@ export async function initCommand(
       }
     } else {
       p.note(
-        'Your API key will be saved securely in a local .env file',
-        '🔑 OpenAI API Key'
+        `Your ${aiProvider} API key will be saved securely in a local .env file as ${apiKeyEnvVarName}`,
+        `🔑 ${aiProvider} API Key`
       );
 
       const newApiKey = await p.password({
-        message: 'Enter your OpenAI API key (optional, press Enter to skip):',
+        message: `Enter your ${aiProvider} API key (for ${apiKeyEnvVarName}, optional, press Enter to skip):`,
       });
 
       if (p.isCancel(newApiKey)) {
@@ -209,6 +244,7 @@ export async function initCommand(
       docsFolder: docsFolder as string,
       mapFile: mapFile as string,
       outputStrategy: outputStrategy as OutputStrategy,
+      aiProvider: aiProvider as AIProvider,
     };
 
     // Create spinner for file operations
@@ -230,28 +266,23 @@ export async function initCommand(
       'utf-8'
     );
 
-    // Save API key to .env file if provided
     if (apiKey) {
-      s.message('Saving API key to .env...');
+      s.message(`Saving ${apiKeyEnvVarName} to .env...`);
       let envContent = '';
 
       if (fs.existsSync(envPath)) {
         envContent = fs.readFileSync(envPath, 'utf-8');
 
-        if (envContent.includes('OPENAI_API_KEY=')) {
-          envContent = envContent.replace(
-            /OPENAI_API_KEY=.*/,
-            `OPENAI_API_KEY=${apiKey}`
-          );
-        } else {
-          if (!envContent.endsWith('\n')) {
-            envContent += '\n';
-          }
-          envContent += `OPENAI_API_KEY=${apiKey}\n`;
+        // Remove old entry for this API key if it exists
+        envContent = envContent.replace(new RegExp(`^${apiKeyEnvVarName}=.*\\n?`, 'gm'), '');
+        // Ensure there's a newline if content isn't empty and doesn't end with one
+        if (envContent && !envContent.endsWith('\n')) {
+          envContent += '\n';
         }
-      } else {
-        envContent = `OPENAI_API_KEY=${apiKey}\n`;
       }
+
+      // Add the new API key entry
+      envContent += `${apiKeyEnvVarName}=${apiKey}\n`;
 
       fs.writeFileSync(envPath, envContent, 'utf-8');
 
@@ -301,7 +332,9 @@ export async function initCommand(
         `Project Root: ${config.projectRoot}`,
         `Docs Folder:  ${config.docsFolder}`,
         `Map File:     ${config.mapFile}`,
-        apiKey ? `API Key:      ${'*'.repeat(20)}` : '',
+        `AI Provider:  ${config.aiProvider}`,
+        apiKey ? `API Key Env Var: ${apiKeyEnvVarName}` : '',
+        apiKey ? `API Key Value: ${'*'.repeat(20)}` : '',
       ]
         .filter(Boolean)
         .join('\n'),
@@ -316,6 +349,7 @@ export async function initCommand(
         '✓ Map file initialized',
         '',
         'Next steps:',
+        `• Make sure your ${aiProvider} API key is set in your .env file as ${apiKeyEnvVarName} if not already provided.`,
         '• Review and edit generated documentation files to add documentation',
         '• Run "doctype check" to verify documentation is in sync',
       ].join('\n'),

@@ -121,6 +121,7 @@ export function loadConfig(
     mapFile: rawConfig.mapFile,
     outputStrategy: rawConfig.outputStrategy,
     baseDir: path.dirname(resolvedPath),
+    aiProvider: rawConfig.aiProvider,
   };
 }
 
