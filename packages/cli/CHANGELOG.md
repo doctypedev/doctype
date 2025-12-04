@@ -1,5 +1,18 @@
 # @doctypedev/doctype
 
+## 0.4.0
+
+### Minor Changes
+
+- 3794e03: Rewrited doctype core using Rust to improve performance
+- b596675: Implement signature-hasher in Rust code instead of Typescript to improve performances
+
+### Patch Changes
+
+- Updated dependencies [3794e03]
+- Updated dependencies [b596675]
+  - @doctypedev/core@0.4.0
+
 ## 0.3.33
 
 ### Patch Changes
