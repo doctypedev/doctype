@@ -12,5 +12,5 @@ pub mod drift;
 
 // Re-export commonly used types
 pub use analyzer::{AstAnalyzerInternal, SymbolInfo, AnalysisResult};
-pub use hasher::{SignatureHasher, hash_signature};
+pub use hasher::SignatureHasher;
 pub use drift::{DriftDetector, DriftResult, DriftStatus};

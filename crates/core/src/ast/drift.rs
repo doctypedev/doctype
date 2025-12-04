@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 use crate::types::{CodeSignature, DoctypeMapEntry};
-use crate::ast::hasher::hash_signature;
+use crate::ast::hasher::SignatureHasher;
 
 /// Status of drift detection for a symbol
 #[derive(Debug, Clone, PartialEq)]
@@ -93,7 +93,9 @@ impl DriftDetector {
 
         match self.saved_map.get(&key) {
             Some(saved_entry) => {
-                let new_hash = hash_signature(signature);
+                let hasher = SignatureHasher::new();
+                let hash_result = hasher.hash(signature.clone());
+                let new_hash = hash_result.hash;
 
                 if new_hash == saved_entry.code_signature_hash {
                     DriftStatus::InSync
@@ -192,10 +194,12 @@ mod tests {
             symbol_type: SymbolType::Function,
             signature_text: "function test(): void".to_string(),
             is_exported: true,
+            hash: None,
         };
 
-        let hash = hash_signature(&sig);
-        let entry = create_test_entry("test.ts", "test", &hash);
+        let hasher = SignatureHasher::new();
+        let hash_result = hasher.hash(sig.clone());
+        let entry = create_test_entry("test.ts", "test", &hash_result.hash);
 
         let detector = DriftDetector::new(vec![entry]);
         let status = detector.check_signature("test.ts", &sig);
@@ -210,6 +214,7 @@ mod tests {
             symbol_type: SymbolType::Function,
             signature_text: "function test(): void".to_string(),
             is_exported: true,
+            hash: None,
         };
 
         let new_sig = CodeSignature {
@@ -217,10 +222,12 @@ mod tests {
             symbol_type: SymbolType::Function,
             signature_text: "function test(): string".to_string(), // Changed return type
             is_exported: true,
+            hash: None,
         };
 
-        let old_hash = hash_signature(&old_sig);
-        let entry = create_test_entry("test.ts", "test", &old_hash);
+        let hasher = SignatureHasher::new();
+        let hash_result = hasher.hash(old_sig.clone());
+        let entry = create_test_entry("test.ts", "test", &hash_result.hash);
 
         let detector = DriftDetector::new(vec![entry]);
         let status = detector.check_signature("test.ts", &new_sig);

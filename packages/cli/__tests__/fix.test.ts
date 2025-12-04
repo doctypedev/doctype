@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { fixCommand } from '../fix';
 import { DoctypeMapManager } from '../../content/map-manager';
-import { AstAnalyzer, SignatureHasher } from '@doctypedev/core';
+import { AstAnalyzer } from '@doctypedev/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -45,13 +45,16 @@ Old documentation
     const oldCode = `export function testFunc(x: number): number {
   return x;
 }`;
+    // Write old code to a temp file to analyze it
+    const tempOldFile = join(testDir, 'temp-old.ts');
+    writeFileSync(tempOldFile, oldCode);
+
     const analyzer = new AstAnalyzer();
-    const hasher = new SignatureHasher();
-    const oldSignatures = analyzer.analyzeCode(oldCode);
+    const oldSignatures = analyzer.analyzeFile(tempOldFile);
     const oldSignature = oldSignatures.find((s) => s.symbolName === 'testFunc');
 
-    if (oldSignature) {
-      const oldHash = hasher.hash(oldSignature).hash;
+    if (oldSignature && oldSignature.hash) {
+      const oldHash = oldSignature.hash;
       const manager = new DoctypeMapManager(testMapPath);
       manager.addEntry({
         id: 'test-id',
@@ -148,12 +151,11 @@ Old documentation
   it('should handle no drift detected', async () => {
     // Update map to match current code
     const analyzer = new AstAnalyzer();
-    const hasher = new SignatureHasher();
     const signatures = analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
 
-    if (signature) {
-      const currentHash = hasher.hash(signature).hash;
+    if (signature && signature.hash) {
+      const currentHash = signature.hash;
       const manager = new DoctypeMapManager(testMapPath);
       manager.updateEntry('test-id', {
         codeSignatureHash: currentHash,
@@ -185,12 +187,11 @@ Old documentation
 
     // Verify hash was updated
     const analyzer = new AstAnalyzer();
-    const hasher = new SignatureHasher();
     const signatures = analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
 
-    if (signature) {
-      const currentHash = hasher.hash(signature).hash;
+    if (signature && signature.hash) {
+      const currentHash = signature.hash;
       expect(entry?.codeSignatureHash).toBe(currentHash);
     }
   });

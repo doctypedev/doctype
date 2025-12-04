@@ -21,7 +21,7 @@ pub struct CodeRef {
  * Signature information extracted from code
  */
 #[napi(object)]
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct CodeSignature {
     /// Name of the symbol
     pub symbol_name: String,
@@ -31,6 +31,8 @@ pub struct CodeSignature {
     pub signature_text: String,
     /// Whether the symbol is exported
     pub is_exported: bool,
+    /// SHA256 hash of the signature (computed by Rust analyzer)
+    pub hash: Option<String>,
 }
 
 /**
@@ -58,8 +60,8 @@ pub struct SignatureHash {
     pub hash: String,
     /// Original signature that was hashed
     pub signature: CodeSignature,
-    /// Timestamp when hash was generated
-    pub timestamp: f64,
+    /// Timestamp when hash was generated (milliseconds since Unix epoch)
+    pub timestamp: i64,
 }
 
 /**

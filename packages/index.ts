@@ -7,7 +7,6 @@
 // Core AST & Drift Detection
 export {
   ASTAnalyzer,
-  SignatureHasher,
   SymbolType,
   discoverFiles,
   helloWorld,

@@ -6,7 +6,7 @@
  */
 
 import { DoctypeMapManager } from '../content';
-import { SignatureHasher, CodeSignature, DoctypeMapEntry, AstAnalyzer } from '@doctypedev/core';
+import { CodeSignature, DoctypeMapEntry, AstAnalyzer } from '@doctypedev/core';
 import { Logger } from './logger';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
@@ -45,14 +45,12 @@ export interface DriftDetectionOptions {
  *
  * @param mapManager - The doctype map manager
  * @param analyzer - AST analyzer instance
- * @param hasher - Signature hasher instance
  * @param options - Detection options
  * @returns Array of drift information for entries that have drifted
  */
 export function detectDrift(
   mapManager: DoctypeMapManager,
   analyzer: InstanceType<typeof AstAnalyzer>,
-  hasher: SignatureHasher,
   options: DriftDetectionOptions = {}
 ): DriftInfo[] {
   const { basePath = process.cwd(), logger } = options;
@@ -85,9 +83,12 @@ export function detectDrift(
         continue;
       }
 
-      // Generate current hash
-      const currentHashObj = hasher.hash(currentSignature);
-      const currentHash = currentHashObj.hash;
+      // Get current hash from signature (computed by Rust analyzer)
+      const currentHash = currentSignature.hash!;
+      if (!currentHash) {
+        logger?.warn(`No hash computed for ${Logger.symbol(entry.codeRef.symbolName)}`);
+        continue;
+      }
 
       // Check for drift
       if (mapManager.hasDrift(entry.id, currentHash)) {
@@ -99,6 +100,7 @@ export function detectDrift(
             symbolType: currentSignature.symbolType, // Assume same type
             signatureText: entry.codeSignatureText,
             isExported: currentSignature.isExported, // Assume same export status
+            hash: undefined,
           };
         }
 

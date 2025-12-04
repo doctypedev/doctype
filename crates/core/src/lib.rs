@@ -67,7 +67,7 @@ pub use types::{
 
 // AST & Drift Detection
 pub use ast::{
-    hash_signature, AstAnalyzerInternal, DriftDetector, DriftResult, DriftStatus, SignatureHasher,
+    AstAnalyzerInternal, DriftDetector, DriftResult, DriftStatus, SignatureHasher,
 };
 
 // Content & Mapping

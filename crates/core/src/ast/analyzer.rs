@@ -122,6 +122,7 @@ impl AstAnalyzerInternal {
             symbol_type: symbol.symbol_type.clone(),
             signature_text: symbol.signature.clone(),
             is_exported: symbol.is_exported,
+            hash: None, // Hash will be computed by the NAPI layer
         }
     }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { checkCommand } from '../check';
 import { DoctypeMapManager } from '../../content/map-manager';
-import { AstAnalyzer, SignatureHasher } from '@doctypedev/core';
+import { AstAnalyzer } from '@doctypedev/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
@@ -48,12 +48,11 @@ Test documentation
 
     // Create test map with correct hash
     const analyzer = new AstAnalyzer();
-    const hasher = new SignatureHasher();
     const signatures = analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
 
-    if (signature) {
-      const hash = hasher.hash(signature).hash;
+    if (signature && signature.hash) {
+      const hash = signature.hash;
       const manager = new DoctypeMapManager(testMapPath);
       manager.addEntry({
         id: 'test-id',

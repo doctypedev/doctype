@@ -10,9 +10,6 @@ import { AstAnalyzer as RustAstAnalyzer } from './native-loader';
 // Re-export with TypeScript-compatible name for backward compatibility
 export { RustAstAnalyzer as ASTAnalyzer };
 
-// TypeScript implementations
-export { SignatureHasher } from './signature-hasher';
-
 // Rust native bindings (loaded via platform-specific package)
 export {
   SymbolType,

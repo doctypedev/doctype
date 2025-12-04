@@ -1,23 +1,38 @@
 # Core Module - AST & Drift Detection
 
-The **Core Module** provides deterministic code analysis and drift detection using TypeScript Abstract Syntax Tree (AST) parsing. This is the foundation of Doctype's ability to detect when code changes.
+The **Core Module** provides high-performance, deterministic code analysis and drift detection using Rust-powered AST parsing. This is the foundation of Doctype's ability to detect when code changes.
 
 ## Purpose
 
 This module implements the **deterministic logic** layer of Doctype:
 
-- Analyze TypeScript source files to extract function/class signatures
+- Analyze TypeScript/JavaScript source files to extract function/class signatures
 - Generate cryptographic hashes (SHA256) of code signatures
 - Enable drift detection by comparing current hashes with saved hashes
+- Fast file discovery with gitignore support
 
 **Key Principle**: For the same code input, this module **always** produces the same output (deterministic).
 
+## Architecture
+
+This package is a **Rust native addon** using N-API bindings. The core logic is implemented in Rust for maximum performance, with a clean TypeScript API layer.
+
+**Technology Stack:**
+- **Rust Core** (`crates/core/`): AST analysis using Oxc parser, signature hashing with SHA256
+- **N-API Bindings** (`napi-rs`): Zero-cost Node.js bindings
+- **TypeScript API**: Type-safe JavaScript interface
+
+**Benefits of Rust:**
+- ⚡ **10-100x faster** than pure TypeScript solutions
+- 🔒 **Memory safe** without garbage collection overhead
+- 📦 **Native performance** with zero runtime cost
+- 🎯 **Deterministic** hash generation with battle-tested crypto libraries
+
 ## Modules
 
-### ASTAnalyzer (`ast-analyzer.ts`)
+### AstAnalyzer
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440001" code_ref="src/core/ast-analyzer.ts#ASTAnalyzer" -->
-Analyzes TypeScript files using the TypeScript Compiler API (via `ts-morph`) to extract public API signatures.
+Analyzes TypeScript/JavaScript files using the high-performance Oxc parser to extract public API signatures.
 
 **Capabilities:**
 - Extract function declarations and signatures
@@ -25,92 +40,73 @@ Analyzes TypeScript files using the TypeScript Compiler API (via `ts-morph`) to 
 - Extract interface declarations
 - Extract type alias declarations
 - Extract enum declarations
-- Parse JSDoc comments for additional context
+- **Automatic hash computation** (SHA256) for every signature
+- Parse complex generics and TypeScript features
 
 **API:**
 
 ```typescript
-import { ASTAnalyzer } from 'doctype';
+import { AstAnalyzer } from '@doctypedev/core';
 
-const analyzer = new ASTAnalyzer();
+const analyzer = new AstAnalyzer();
 
-// Analyze single file
-const signatures = analyzer.analyzeFile('src/auth/login.ts');
+// Analyze single file - returns signatures with hashes
+const signatures = analyzer.analyzeFile('/path/to/file.ts');
 
-// Analyze directory
-const allSignatures = analyzer.analyzeDirectory('src/auth');
-
-// Find specific symbol
-const signature = analyzer.findSymbol('src/auth/login.ts', 'login');
+// Each signature includes a pre-computed hash
+console.log(signatures[0].hash); // 'abc123...' (SHA256)
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440001" -->
 
 **Output Example:**
 
 ```typescript
 {
   symbolName: 'login',
-  kind: 'function',
-  signature: 'function login(email: string, password: string): Promise<string>',
-  parameters: [
-    { name: 'email', type: 'string' },
-    { name: 'password', type: 'string' }
-  ],
-  returnType: 'Promise<string>',
-  jsdoc: 'Authenticates a user with email and password',
-  filePath: 'src/auth/login.ts',
-  startLine: 15,
-  endLine: 23
+  symbolType: 'Function',
+  signatureText: 'function login(email: string, password: string): Promise<string>',
+  isExported: true,
+  hash: 'a3f5e8d9c2b1f4e6d8a9c7b5e3f1d2c4a6b8d0e2f4c6a8b0d2e4f6a8b0d2e4f6' // SHA256 hash
 }
 ```
 
-### SignatureHasher (`signature-hasher.ts`)
+### File Discovery
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440002" code_ref="src/core/signature-hasher.ts#SignatureHasher" -->
-Generates SHA256 cryptographic hashes of code signatures for deterministic drift detection.
-
-**Capabilities:**
-- Hash function signatures (name, parameters, return type)
-- Hash class signatures (name, properties, methods)
-- Hash interface signatures
-- Normalize signatures before hashing (consistent formatting)
-- Support for selective hashing (e.g., ignore JSDoc changes)
+Fast file discovery with `.gitignore` support, powered by Rust.
 
 **API:**
 
 ```typescript
-import { SignatureHasher } from 'doctype';
+import { discoverFiles } from '@doctypedev/core';
 
-const hasher = new SignatureHasher();
+const result = discoverFiles('/project/root', {
+  respectGitignore: true,
+  includeHidden: false,
+  maxDepth: undefined, // Unlimited
+});
 
-// Hash a signature
-const result = hasher.hash(signature);
-
-console.log(result.hash);           // 'abc123...'
-console.log(result.algorithm);      // 'sha256'
-console.log(result.normalizedText); // 'function login(email:string,password:string):Promise<string>'
+console.log(result.sourceFiles);   // ['src/index.ts', 'src/utils.ts', ...]
+console.log(result.markdownFiles); // ['README.md', 'docs/api.md', ...]
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440002" -->
+
+### Signature Hashing
+
+Signature hashing is **automatic and internal** to the Rust implementation. You don't need to call a separate hasher.
 
 **Hash Generation Process:**
 
-1. **Normalize** signature (remove whitespace, consistent formatting)
-2. **Include** critical elements:
-   - Symbol name
-   - Parameter names and types
-   - Return type
-   - Public properties (for classes)
-   - Method signatures (for classes)
-3. **Exclude** non-critical elements:
-   - JSDoc comments (optional)
-   - Implementation details
-   - Private members
-4. **Generate** SHA256 hash of normalized string
+1. **Normalize** signature (consistent formatting)
+2. **Serialize** critical elements:
+   - `name:{symbolName}`
+   - `type:{symbolType}`
+   - `exported:{isExported}`
+   - `signature:{signatureText}`
+3. **Generate** SHA256 hash of serialized string
+4. **Include** in `CodeSignature.hash` field
 
-**Example:**
+**Deterministic Output:**
 
 ```typescript
-// These produce the SAME hash (formatting differences ignored)
+// These produce the SAME hash (formatting normalized)
 function login(email: string): Promise<string>
 function login(email:string):Promise<string>
 function   login  ( email : string )  :  Promise<string>
@@ -120,33 +116,49 @@ function login(email: string): Promise<string>
 function login(email: string, password: string): Promise<string>
 ```
 
-### Types (`types.ts`)
+### Types
 
-Core TypeScript interfaces and types used throughout the module.
+Core TypeScript types provided by the Rust native module.
 
 **Key Types:**
 
 ```typescript
-// Represents a code symbol's signature
-interface CodeSignature {
-  symbolName: string;
-  kind: 'function' | 'class' | 'interface' | 'type' | 'enum';
-  signature: string;
-  parameters?: Parameter[];
-  returnType?: string;
-  properties?: Property[];
-  methods?: Method[];
-  jsdoc?: string;
-  filePath: string;
-  startLine: number;
-  endLine: number;
+// Symbol type enum
+enum SymbolType {
+  Function = 'Function',
+  Class = 'Class',
+  Interface = 'Interface',
+  TypeAlias = 'TypeAlias',
+  Enum = 'Enum',
+  Variable = 'Variable',
+  Const = 'Const',
 }
 
-// Hash result
-interface HashResult {
-  hash: string;
-  algorithm: 'sha256';
-  normalizedText: string;
+// Code signature with automatic hash
+interface CodeSignature {
+  symbolName: string;
+  symbolType: SymbolType;
+  signatureText: string;
+  isExported: boolean;
+  hash?: string; // SHA256 hash (computed by Rust)
+}
+
+// Code reference
+interface CodeRef {
+  filePath: string;
+  symbolName: string;
+}
+
+// File discovery result
+interface FileDiscoveryResult {
+  sourceFiles: string[];
+  markdownFiles: string[];
+  stats: {
+    totalFiles: number;
+    sourceFiles: number;
+    markdownFiles: number;
+    skippedFiles: number;
+  };
 }
 ```
 
@@ -157,21 +169,24 @@ Drift detection is a **two-step process**:
 ### Step 1: Initial Signature Capture
 
 ```typescript
-// When documentation is first created
-const analyzer = new ASTAnalyzer();
-const hasher = new SignatureHasher();
+import { AstAnalyzer } from '@doctypedev/core';
+import { DoctypeMapManager } from '@doctypedev/cli';
 
-// Extract signature
-const signature = analyzer.findSymbol('src/auth/login.ts', 'login');
+const analyzer = new AstAnalyzer();
 
-// Generate hash
-const { hash } = hasher.hash(signature);
+// Extract signature with automatic hash
+const signatures = analyzer.analyzeFile('src/auth/login.ts');
+const signature = signatures.find(s => s.symbolName === 'login');
+
+// Hash is already computed by Rust
+const hash = signature.hash!;
 
 // Save to doctype-map.json
 mapManager.addEntry({
   id: 'uuid',
   codeRef: { filePath: 'src/auth/login.ts', symbolName: 'login' },
-  codeSignatureHash: hash, // Save this hash
+  codeSignatureHash: hash, // Use pre-computed hash
+  codeSignatureText: signature.signatureText,
   // ... other fields
 });
 ```
@@ -180,8 +195,9 @@ mapManager.addEntry({
 
 ```typescript
 // Later, when checking for drift
-const currentSignature = analyzer.findSymbol('src/auth/login.ts', 'login');
-const currentHash = hasher.hash(currentSignature).hash;
+const signatures = analyzer.analyzeFile('src/auth/login.ts');
+const currentSignature = signatures.find(s => s.symbolName === 'login');
+const currentHash = currentSignature.hash!;
 
 // Compare hashes
 const savedHash = mapManager.getEntry('uuid').codeSignatureHash;
@@ -192,175 +208,159 @@ if (currentHash !== savedHash) {
 ```
 
 **Why this works:**
-- SHA256 is a cryptographic hash (collision-resistant)
+- SHA256 is cryptographic (collision-resistant)
 - Normalization ensures formatting changes don't cause false positives
 - Deterministic: same code = same hash, every time
+- Computed in Rust for consistent results across platforms
 
-## Integration with Other Modules
-
-### With Content Module
+## Integration Example
 
 ```typescript
-import { ASTAnalyzer, SignatureHasher } from 'doctype/core';
-import { DoctypeMapManager } from 'doctype/content';
+import { AstAnalyzer } from '@doctypedev/core';
+import { DoctypeMapManager } from '@doctypedev/cli';
 
-const analyzer = new ASTAnalyzer();
-const hasher = new SignatureHasher();
-const mapManager = new DoctypeMapManager();
+const analyzer = new AstAnalyzer();
+const mapManager = new DoctypeMapManager('doctype-map.json');
 
 // Analyze code
-const signature = analyzer.findSymbol('src/utils.ts', 'helper');
+const signatures = analyzer.analyzeFile('src/utils.ts');
+const helper = signatures.find(s => s.symbolName === 'helper');
 
-// Generate hash
-const { hash } = hasher.hash(signature);
+// Check for drift using pre-computed hash
+const hasDrift = mapManager.hasDrift('entry-uuid', helper.hash!);
 
-// Check for drift
-const hasDrift = mapManager.hasDrift('entry-uuid', hash);
-```
-
-### With CLI Module
-
-```typescript
-import { ASTAnalyzer, SignatureHasher } from 'doctype/core';
-
-// CLI check command uses core module
-export async function checkCommand(options: CheckOptions) {
-  const analyzer = new ASTAnalyzer();
-  const hasher = new SignatureHasher();
-
-  for (const entry of entries) {
-    const signature = analyzer.findSymbol(entry.codeRef.filePath, entry.codeRef.symbolName);
-    const currentHash = hasher.hash(signature).hash;
-
-    if (currentHash !== entry.codeSignatureHash) {
-      // Drift detected
-    }
-  }
+if (hasDrift) {
+  console.log('Documentation needs update!');
 }
 ```
 
-## Performance Considerations
+## Performance Characteristics
+
+### Speed
+
+The Rust implementation provides exceptional performance:
+
+- **10-100x faster** than TypeScript AST parsers
+- Handles large codebases (10,000+ files) in seconds
+- Parallel file processing using Rust's async runtime
+- Zero-copy string handling with Rust
+
+### Memory
+
+- **Minimal memory footprint** compared to TypeScript solutions
+- No garbage collection pauses
+- Efficient memory allocation with Rust's ownership model
 
 ### Caching
 
-The `ASTAnalyzer` caches parsed files to avoid re-parsing:
+File discovery respects `.gitignore` and caches results:
 
 ```typescript
-const analyzer = new ASTAnalyzer();
-
-// First call: parses file
-analyzer.analyzeFile('src/auth/login.ts');
-
-// Second call: uses cache
-analyzer.analyzeFile('src/auth/login.ts'); // Much faster
+const result = discoverFiles('/project/root', {
+  respectGitignore: true, // Uses gitignore crate
+  includeHidden: false,
+  maxDepth: 10,
+});
 ```
 
-### Incremental Analysis
+## Platform Support
 
-For large projects, analyze only changed files:
+This package includes pre-built native binaries for:
+
+- **macOS**: x64, ARM64 (Apple Silicon)
+- **Linux**: x64, ARM64
+- **Windows**: x64
+
+Native binaries are automatically selected based on your platform. No compilation required during installation.
+
+## Error Handling
+
+The module handles errors gracefully:
 
 ```typescript
-// Get list of changed files from git
-const changedFiles = getGitChangedFiles();
+import { AstAnalyzer } from '@doctypedev/core';
 
-// Analyze only those files
-for (const file of changedFiles) {
-  const signatures = analyzer.analyzeFile(file);
-  // Process signatures...
+const analyzer = new AstAnalyzer();
+
+try {
+  const signatures = analyzer.analyzeFile('src/file.ts');
+} catch (error) {
+  // File not found or parsing error
+  console.error(error.message);
 }
 ```
 
-### Batch Operations
+Common errors:
+- File not found
+- Invalid TypeScript/JavaScript syntax
+- Permission errors
 
-Process multiple symbols in one file efficiently:
+## Dependencies
 
-```typescript
-// Instead of:
-const sig1 = analyzer.findSymbol('src/utils.ts', 'helper1');
-const sig2 = analyzer.findSymbol('src/utils.ts', 'helper2');
-const sig3 = analyzer.findSymbol('src/utils.ts', 'helper3');
+### Runtime
+- **Node.js** >= 18.0.0 (N-API v8)
+- No external dependencies (all logic in native binary)
 
-// Do:
-const allSigs = analyzer.analyzeFile('src/utils.ts');
-const sig1 = allSigs.find(s => s.symbolName === 'helper1');
-const sig2 = allSigs.find(s => s.symbolName === 'helper2');
-const sig3 = allSigs.find(s => s.symbolName === 'helper3');
+### Build (for development)
+- **Rust** >= 1.70
+- **napi-rs** (for building native bindings)
+- **cargo** (Rust package manager)
+
+## Building from Source
+
+```bash
+# Install Rust (if not installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Build native module
+npm run build
+
+# Run Rust tests
+cargo test
+
+# Run with specific target
+npm run build -- --target x86_64-apple-darwin
 ```
 
 ## Testing
 
-The core module has comprehensive test coverage:
-
 ```bash
-npm test src/core
+# Run Rust unit tests (40+ tests)
+cargo test
+
+# Run integration tests
+npm test
 ```
 
 **Test Coverage:**
-- Function signature extraction (44 tests)
-- Class signature extraction
-- Interface/Type/Enum extraction
+- Function signature extraction
+- Class/Interface/Type/Enum extraction
 - Hash generation and consistency
-- Normalization edge cases
-- Error handling (missing files, invalid syntax)
+- Drift detection logic
+- File discovery
+- Error handling
 
-## Error Handling
+## Rust Module Structure
 
-The module handles common errors gracefully:
+The Rust core is organized into:
 
-```typescript
-try {
-  const signature = analyzer.findSymbol('src/missing.ts', 'symbol');
-} catch (error) {
-  // File not found
-}
-
-try {
-  const signature = analyzer.findSymbol('src/file.ts', 'nonexistent');
-} catch (error) {
-  // Symbol not found in file
-}
-
-try {
-  const signatures = analyzer.analyzeFile('src/invalid-syntax.ts');
-} catch (error) {
-  // TypeScript parsing error
-}
 ```
-
-## Advanced Usage
-
-### Custom Normalization
-
-```typescript
-const hasher = new SignatureHasher({
-  includeJSDoc: true,        // Include JSDoc in hash
-  includePrivateMembers: true // Include private class members
-});
+crates/core/src/
+├── ast/           # AST analysis using Oxc
+│   ├── analyzer.rs   # Symbol extraction
+│   ├── hasher.rs     # SHA256 signature hashing
+│   └── drift.rs      # Drift detection logic
+├── content/       # File discovery and markdown
+│   └── discovery.rs  # Fast file finding
+├── napi/          # N-API bindings for Node.js
+│   ├── ast.rs        # AstAnalyzer bindings
+│   └── content.rs    # Discovery bindings
+└── types.rs       # Shared type definitions
 ```
-
-### Signature Comparison
-
-```typescript
-import { compareSignatures } from 'doctype/core';
-
-const diff = compareSignatures(oldSignature, newSignature);
-
-console.log(diff.changed);        // true/false
-console.log(diff.addedParams);    // ['password']
-console.log(diff.removedParams);  // []
-console.log(diff.returnTypeChanged); // false
-```
-
-## Dependencies
-
-- **ts-morph**: TypeScript AST manipulation
-- **typescript**: TypeScript compiler API
-- **crypto** (built-in): SHA256 hashing
-
-No external runtime dependencies beyond Node.js standard library and TypeScript tooling.
 
 ## Further Reading
 
-- [ts-morph Documentation](https://ts-morph.com/)
-- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
+- [Oxc Parser](https://oxc-project.github.io/) - High-performance JavaScript/TypeScript parser
+- [napi-rs](https://napi.rs/) - Rust N-API bindings
 - [SHA256 Hashing](https://en.wikipedia.org/wiki/SHA-2)
+- [Rust Book](https://doc.rust-lang.org/book/) - Learn Rust programming

@@ -9,7 +9,7 @@
 
 import { DoctypeMapManager } from '../content/map-manager';
 import { ContentInjector } from '../content/content-injector';
-import { AstAnalyzer, SignatureHasher } from '@doctypedev/core';
+import { AstAnalyzer } from '@doctypedev/core';
 import { Logger } from './logger';
 import { FixResult, FixOptions, FixDetail } from './types';
 import { detectDrift } from './drift-detector';
@@ -98,8 +98,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
   // Detect drift using centralized logic
   const analyzer = new AstAnalyzer();
-  const hasher = new SignatureHasher();
-  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
+  const detectedDrifts = detectDrift(mapManager, analyzer, {
     logger,
     basePath: codeRoot,
   });
@@ -222,7 +221,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
         // Update the map with new hash and signature text
         if (!options.dryRun) {
-          const newHash = hasher.hash(currentSignature).hash;
+          const newHash = currentSignature.hash!; // Hash computed by Rust analyzer
           mapManager.updateEntry(entry.id, {
             codeSignatureHash: newHash,
             codeSignatureText: currentSignature.signatureText, // Store for future AI context

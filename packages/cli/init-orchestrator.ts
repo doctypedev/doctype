@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AstAnalyzer, SignatureHasher, SymbolType, discoverFiles } from '@doctypedev/core';
+import { AstAnalyzer, SymbolType, discoverFiles } from '@doctypedev/core';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
 import type { DoctypeMapEntry, SymbolTypeValue } from '@doctypedev/core';
@@ -152,7 +152,6 @@ export async function scanAndCreateAnchors(
 
   // Initialize modules
   const analyzer = new AstAnalyzer();
-  const hasher = new SignatureHasher();
   const mapManager = new DoctypeMapManager(mapFilePath);
   const anchorInserter = new MarkdownAnchorInserter();
 
@@ -192,7 +191,14 @@ export async function scanAndCreateAnchors(
 
       for (const signature of signatures) {
         if (signature.isExported) {
-          const hashResult = hasher.hash(signature);
+          // Hash is already computed by Rust analyzer
+          const hash = signature.hash;
+          if (!hash) {
+            const errorMsg = `No hash computed for ${signature.symbolName} in ${tsFile}`;
+            result.errors.push(errorMsg);
+            onProgress?.(errorMsg);
+            continue;
+          }
 
           const targetDocFile = determineOutputFile(
             config.outputStrategy || 'mirror',
@@ -206,7 +212,7 @@ export async function scanAndCreateAnchors(
             symbolName: signature.symbolName,
             symbolType: signature.symbolType,
             signatureText: signature.signatureText,
-            hash: hashResult.hash,
+            hash: hash,
             targetDocFile,
           });
         }
