@@ -23,11 +23,6 @@ export interface AnchorInsertionResult {
   content: string;
   /** Generated anchor ID */
   anchorId: string;
-  /** Line numbers where anchor was inserted */
-  location: {
-    startLine: number;
-    endLine: number;
-  };
   /** Error message if insertion failed */
   error?: string;
 }
@@ -77,7 +72,6 @@ export class MarkdownAnchorInserter {
         success: false,
         content: '',
         anchorId: '',
-        location: { startLine: 0, endLine: 0 },
         error: error instanceof Error ? error.message : String(error),
       };
     }
@@ -107,7 +101,6 @@ export class MarkdownAnchorInserter {
         success: false,
         content,
         anchorId: '',
-        location: { startLine: 0, endLine: 0 },
         error: `Invalid code_ref format: "${codeRef}". Expected "file_path#symbol_name"`,
       };
     }
@@ -145,7 +138,6 @@ export class MarkdownAnchorInserter {
         success: false,
         content,
         anchorId: '',
-        location: { startLine: 0, endLine: 0 },
         error: `Section "${sectionTitle}" not found and createSection is false`,
       };
     }
@@ -161,10 +153,6 @@ export class MarkdownAnchorInserter {
       '',
     ];
 
-    // Calculate line numbers (accounting for array index vs line number)
-    const startLine = insertionPoint + 3; // The actual doctype:start line
-    const endLine = insertionPoint + 5;   // The actual doctype:end line
-
     // Insert the anchor
     lines.splice(insertionPoint, 0, ...anchorLines);
 
@@ -172,7 +160,6 @@ export class MarkdownAnchorInserter {
       success: true,
       content: lines.join('\n'),
       anchorId,
-      location: { startLine, endLine },
     };
   }
 
@@ -227,7 +214,6 @@ export class MarkdownAnchorInserter {
           success: false,
           content: '',
           anchorId: '',
-          location: { startLine: 0, endLine: 0 },
           error: error instanceof Error ? error.message : String(error),
         },
       ];

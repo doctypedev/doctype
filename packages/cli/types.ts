@@ -32,8 +32,6 @@ export interface DriftDetail {
   codeFilePath: string;
   /** Documentation file path */
   docFilePath: string;
-  /** Line number in documentation */
-  docLine: number;
   /** Old signature hash */
   oldHash: string;
   /** New signature hash */

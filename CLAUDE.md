@@ -76,15 +76,21 @@ Doctype will be built using a layered architecture with four independent logical
 
 This file tracks every anchor in the repository and is essential for drift detection. It is saved in the repository and managed exclusively by Doctype.
 
+**Design Principles**:
+- **Minimal metadata only** - No content duplication
+- **Single source of truth** - Markdown files contain the actual documentation content
+- **ID-based anchor lookup** - No fragile line numbers that break on edits
+
 **Schema**:
 
 | Field | Description | Purpose |
 |-------|-------------|---------|
-| `id` | Unique UUID for the anchor | Tracking and Markdown reference |
+| `id` | Unique UUID for the anchor | Tracking and Markdown reference - used to locate content between `doctype:start` and `doctype:end` tags |
 | `code_ref` | Source file path (`file_path`) and symbol name (`symbol_name`) | Locating the symbol in the code |
 | `code_signature_hash` | SHA256 hash of the symbol's public signature | Deterministic drift trigger - checked against saved hash on every CI run |
-| `doc_ref` | Markdown file path, start/end lines of content | Target for AI content injection |
-| `original_markdown_content` | The outdated text between anchor tags | Provides context (the "before") to the LLM for correction |
+| `code_signature_text` | The actual signature text (optional) | Provides context for AI generation |
+| `doc_ref` | Markdown file path only | Points to the markdown file containing the anchor |
+| `last_updated` | Timestamp in milliseconds | Tracks when the entry was last modified |
 
 ## Operational Flows
 
@@ -107,14 +113,17 @@ This file tracks every anchor in the repository and is essential for drift detec
 - New code (from current AST)
 
 **Process**:
-1. Gen AI Module creates detailed prompt with obsolete content and signature change details
-2. LLM generates updated, formatted Markdown text
-3. Content Module injects AI response into Markdown file within anchor tags
-4. Updates `code_signature_hash` in `doctype-map.json`
+1. Content Module reads current markdown content from file using anchor ID
+2. Gen AI Module creates detailed prompt with current content and signature change details
+3. LLM generates updated, formatted Markdown text
+4. Content Module injects AI response into Markdown file within anchor tags
+5. Updates `code_signature_hash` and `code_signature_text` in `doctype-map.json`
 
 **Output**:
 - Executes `git commit` and automatic `git push` to PR
 - Standard commit message: `🤖 Doctype Bot: Auto-fix documentation for [Symbol Name]`
+
+**Important**: Content is read from markdown files at runtime, not stored in the map file. This keeps the map minimal and avoids duplication.
 
 ### C. Initialization: `npx doctype init`
 

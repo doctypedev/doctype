@@ -9,13 +9,13 @@
 
 import { DoctypeMapManager } from '../content/map-manager';
 import { ContentInjector } from '../content/content-injector';
-import { AstAnalyzer } from '@doctypedev/core';
+import { AstAnalyzer, extractAnchors, DoctypeAnchor } from '@doctypedev/core';
 import { Logger } from './logger';
 import { FixResult, FixOptions, FixDetail } from './types';
 import { detectDrift } from './drift-detector';
 import { createAgentFromEnv, AIAgent } from '../ai';
 import { GitHelper } from './git-helper';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import {
   loadConfig,
@@ -160,7 +160,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
     logger.newline();
     logger.info(`${Logger.symbol(entry.codeRef.symbolName)} - ${Logger.path(entry.codeRef.filePath)}`);
-    logger.info(`  Documentation: ${Logger.path(entry.docRef.filePath)}:${entry.docRef.startLine}`);
+    logger.info(`  Documentation: ${Logger.path(entry.docRef.filePath)} (anchor: ${entry.id})`);
 
     try {
       let newContent: string;
@@ -170,13 +170,27 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
         logger.debug('Generating AI-powered documentation...');
 
         try {
+          // Read current markdown content from file for AI context
+          const projectBase = config ? (config.baseDir || process.cwd()) : dirname(mapPath);
+          const docFilePath = resolve(projectBase, entry.docRef.filePath);
+          let currentMarkdownContent = '';
+
+          if (existsSync(docFilePath)) {
+            const docContent = readFileSync(docFilePath, 'utf-8');
+            const extractionResult = extractAnchors(docFilePath, docContent);
+            const anchor = extractionResult.anchors.find((a: DoctypeAnchor) => a.id === entry.id);
+            if (anchor) {
+              currentMarkdownContent = anchor.content;
+            }
+          }
+
           // If we have old signature, use it; otherwise AI will infer from old docs
           if (oldSignature) {
             newContent = await aiAgent.generateFromDrift(
               entry.codeRef.symbolName,
               oldSignature,
               currentSignature,
-              entry.originalMarkdownContent || '',
+              currentMarkdownContent,
               entry.codeRef.filePath
             );
           } else {
@@ -225,7 +239,6 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
           mapManager.updateEntry(entry.id, {
             codeSignatureHash: newHash,
             codeSignatureText: currentSignature.signatureText, // Store for future AI context
-            originalMarkdownContent: newContent,
           });
         }
 
