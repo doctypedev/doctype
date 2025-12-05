@@ -413,19 +413,9 @@ export async function scanAndCreateAnchors(
           codeSignatureText: symbol.signatureText,
           docRef: {
             filePath: path.relative(process.cwd(), docPath),
-            startLine: insertResult.location.startLine,
-            endLine: insertResult.location.endLine,
           },
-          originalMarkdownContent: `<!-- ${normalizedContent.substring(0, 50).replace(/\n/g, ' ')}... -->`, // Approximate original content for drift detection context
           lastUpdated: Date.now(),
         };
-
-        // Store full generated content if AI was used/available
-        if (generatedContentMap.has(codeRef)) {
-            mapEntry.originalMarkdownContent = normalizedContent;
-        } else {
-            mapEntry.originalMarkdownContent = `<!-- TODO: Add documentation for this symbol -->`;
-        }
 
         mapManager.addEntry(mapEntry);
         result.anchorsCreated++;

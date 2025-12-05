@@ -63,10 +63,7 @@ Test documentation
         codeSignatureHash: hash,
         docRef: {
           filePath: testDocFile,
-          startLine: 1,
-          endLine: 3,
         },
-        originalMarkdownContent: 'Test documentation',
         lastUpdated: Date.now(),
       });
       manager.save();

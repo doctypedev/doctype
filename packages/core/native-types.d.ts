@@ -59,13 +59,13 @@ export interface SignatureHash {
 export interface DocRef {
   /** Path to the markdown file */
   filePath: string;
-  /** Line number where the anchor starts */
-  startLine: number;
-  /** Line number where the anchor ends */
-  endLine: number;
 }
 /**
  * Complete mapping entry in doctype-map.json
+ *
+ * Note: Content is not stored here to avoid duplication.
+ * The markdown file is the single source of truth for content.
+ * Use the anchor ID to locate content between doctype:start and doctype:end tags.
  */
 export interface DoctypeMapEntry {
   /** Unique identifier for this anchor */
@@ -78,8 +78,6 @@ export interface DoctypeMapEntry {
   codeSignatureText?: string;
   /** Reference to the documentation */
   docRef: DocRef;
-  /** Original markdown content between anchors */
-  originalMarkdownContent: string;
   /** Last updated timestamp */
   lastUpdated: number;
 }

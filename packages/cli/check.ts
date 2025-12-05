@@ -101,7 +101,6 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     symbolName: drift.entry.codeRef.symbolName,
     codeFilePath: drift.entry.codeRef.filePath,
     docFilePath: drift.entry.docRef.filePath,
-    docLine: drift.entry.docRef.startLine,
     oldHash: drift.oldHash,
     newHash: drift.currentHash,
     oldSignature: undefined, // Could be retrieved from map if needed
@@ -120,7 +119,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
     for (const drift of drifts) {
       logger.log(`  ${Logger.symbol(drift.symbolName)} in ${Logger.path(drift.codeFilePath)}`);
-      logger.log(`    Doc: ${Logger.path(drift.docFilePath)}:${drift.docLine}`);
+      logger.log(`    Doc: ${Logger.path(drift.docFilePath)} (anchor: ${drift.id})`);
       logger.log(`    Old hash: ${Logger.hash(drift.oldHash)}`);
       logger.log(`    New hash: ${Logger.hash(drift.newHash)}`);
       if (options.verbose && drift.newSignature) {

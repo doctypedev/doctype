@@ -83,10 +83,7 @@ Old documentation
         codeSignatureHash: oldHash,
         docRef: {
           filePath: testDocFile,
-          startLine: 1,
-          endLine: 3,
         },
-        originalMarkdownContent: 'Old documentation',
         lastUpdated: Date.now(),
       });
       manager.save();

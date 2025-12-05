@@ -72,14 +72,14 @@ pub struct SignatureHash {
 pub struct DocRef {
     /// Path to the markdown file
     pub file_path: String,
-    /// Line number where the anchor starts
-    pub start_line: i32,
-    /// Line number where the anchor ends
-    pub end_line: i32,
 }
 
 /**
  * Complete mapping entry in doctype-map.json
+ *
+ * Note: Content is not stored here to avoid duplication.
+ * The markdown file is the single source of truth for content.
+ * Use the anchor ID to locate content between doctype:start and doctype:end tags.
  */
 #[napi(object)]
 #[derive(Debug, Serialize)]
@@ -94,8 +94,6 @@ pub struct DoctypeMapEntry {
     pub code_signature_text: Option<String>,
     /// Reference to the documentation
     pub doc_ref: DocRef,
-    /// Original markdown content between anchors
-    pub original_markdown_content: String,
     /// Last updated timestamp
     pub last_updated: f64,
 }

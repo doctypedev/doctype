@@ -31,10 +31,7 @@ describe('DoctypeMapManager', () => {
     codeSignatureHash: 'abc123hash',
     docRef: {
       filePath: 'docs/test.md',
-      startLine: 10,
-      endLine: 20,
     },
-    originalMarkdownContent: 'Test content',
     lastUpdated: Date.now(),
   });
 
@@ -124,13 +121,13 @@ describe('DoctypeMapManager', () => {
   describe('getEntriesByDocFile', () => {
     it('should return entries in the specified doc file', () => {
       const entry1 = createTestEntry('entry-1');
-      entry1.docRef = { filePath: 'docs/a.md', startLine: 1, endLine: 10 };
+      entry1.docRef = { filePath: 'docs/a.md' };
 
       const entry2 = createTestEntry('entry-2');
-      entry2.docRef = { filePath: 'docs/a.md', startLine: 20, endLine: 30 };
+      entry2.docRef = { filePath: 'docs/a.md' };
 
       const entry3 = createTestEntry('entry-3');
-      entry3.docRef = { filePath: 'docs/b.md', startLine: 1, endLine: 10 };
+      entry3.docRef = { filePath: 'docs/b.md' };
 
       manager.addEntry(entry1);
       manager.addEntry(entry2);
@@ -161,7 +158,7 @@ describe('DoctypeMapManager', () => {
       // Wait a bit to ensure timestamp changes
       await new Promise<void>((resolve) => {
         setTimeout(() => {
-          manager.updateEntry('update-timestamp', { originalMarkdownContent: 'new content' });
+          manager.updateEntry('update-timestamp', { codeSignatureHash: 'new-hash' });
 
           const updated = manager.getEntryById('update-timestamp');
           expect(updated?.lastUpdated).toBeGreaterThan(originalTime);
