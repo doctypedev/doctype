@@ -31,9 +31,9 @@ Examples:
 
 ## Version Synchronization
 
-All native packages share the same version as the main `@doctypedev/doctype` package.
+This directory contains the native npm packages for the different platforms.
 
-Versions are synchronized automatically by the `scripts/sync-version.js` script during the publish workflow.
+
 
 ## Binary Format
 

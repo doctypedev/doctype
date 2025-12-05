@@ -96,10 +96,9 @@ crates/core/
 │   └── lib.rs             # napi-rs bindings
 ├── npm/
 │   └── darwin-arm64/      # Platform-specific npm package
-├── scripts/
-│   ├── build.sh           # Build helper
-│   └── sync-version.js    # Version sync
-└── example.js             # Usage example
+    ├── scripts/
+    │   └── README.md          # Scripts documentation
+    ├── src/
 ```
 
 ## Adding Functionality

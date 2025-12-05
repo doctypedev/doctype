@@ -2,6 +2,11 @@ name: Release Native Packages
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 0.1.0)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -49,8 +54,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Sync version to native packages
-        run: node crates/core/scripts/sync-version.js
+      - name: Set version for native package
+        run: |
+          NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          echo "Setting version to ${{ inputs.version }} in $NPM_PACKAGE_DIR"
+          cd "$NPM_PACKAGE_DIR"
+          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
 
       - name: Build and Publish Native Package
         env:
