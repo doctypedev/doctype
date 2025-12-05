@@ -63,19 +63,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # NPM_TOKEN not needed for trusted publishing (OIDC)
-
-  check-native-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      native_changed: ${{ steps.filter.outputs.native }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          # Check changes with the base branch (main)
-          base: main
-          filters: |
-            native:
-              - 'crates/**'
