@@ -137,15 +137,44 @@ export interface IAIProvider {
   /**
    * Generate documentation for multiple symbols in batch (optional)
    * If not implemented, falls back to sequential generation
+   *
+   * Returns partial results: successfully generated docs + failures with errors
+   * This prevents wasting tokens when only a few items fail validation
    */
   generateBatchDocumentation?(
     items: Array<{ symbolName: string; signatureText: string }>
-  ): Promise<Array<{ symbolName: string; content: string }>>;
+  ): Promise<BatchDocumentationResult>;
 
   /**
    * Validate API key and connection
    */
   validateConnection(): Promise<boolean>;
+}
+
+/**
+ * Result of batch documentation generation with partial success support
+ */
+export interface BatchDocumentationResult {
+  /** Successfully generated and validated documentations */
+  success: Array<{
+    symbolName: string;
+    content: string;
+  }>;
+
+  /** Failed items with validation errors */
+  failures: Array<{
+    symbolName: string;
+    errors: string[];
+    /** The original AI-generated content before sanitization (for debugging) */
+    originalContent?: string;
+  }>;
+
+  /** Overall statistics */
+  stats: {
+    total: number;
+    succeeded: number;
+    failed: number;
+  };
 }
 
 /**

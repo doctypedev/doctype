@@ -1,10 +1,11 @@
-import { IAIProvider, AIProvider, DocumentationRequest, DocumentationResponse, AIModel, AIProviderError } from '../types';
+import { IAIProvider, AIProvider, DocumentationRequest, DocumentationResponse, AIModel, AIProviderError, BatchDocumentationResult } from '../types';
 import { generateText, generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createMistral } from '@ai-sdk/mistral';
 import { PromptBuilder } from '../prompt-builder';
+import { sanitizeContent, validateSanitizedContent } from '../content-sanitizer';
 import { z } from 'zod';
 
 export class VercelAIProvider implements IAIProvider {
@@ -90,9 +91,23 @@ export class VercelAIProvider implements IAIProvider {
       const { text, usage } = await generateText(options);
       const usageAny = usage as any;
 
-      // Sanitize output: convert any accidental headers to bold text to preserve document structure
-      // e.g. "## Usage" -> "**Usage**"
-      const sanitizedText = text.replace(/^#+\s+(.*)$/gm, '**$1**');
+      // Sanitize output to preserve document structure and prevent anchor tag corruption
+      const sanitizedText = sanitizeContent(text);
+
+      // Validate that sanitization was successful
+      const validationErrors = validateSanitizedContent(sanitizedText);
+      if (validationErrors.length > 0) {
+        const errorMessage = `Content validation failed after sanitization: ${validationErrors.join(', ')}`;
+
+        if (this.debug) {
+          console.warn('[VercelAIProvider] Validation warnings:', validationErrors);
+          console.warn('[VercelAIProvider] Original text:', text);
+          console.warn('[VercelAIProvider] Sanitized text:', sanitizedText);
+        }
+
+        // Throw error to prevent corrupted content from being injected
+        throw new Error(errorMessage);
+      }
 
       return {
         content: sanitizedText,
@@ -125,7 +140,7 @@ export class VercelAIProvider implements IAIProvider {
 
   async generateBatchDocumentation(
     items: Array<{ symbolName: string; signatureText: string }>
-  ): Promise<Array<{ symbolName: string; content: string }>> {
+  ): Promise<BatchDocumentationResult> {
     const model = this.getModel();
     const prompt = PromptBuilder.buildBatchPrompt(items);
     const systemPrompt = PromptBuilder.buildSystemPrompt();
@@ -147,7 +162,7 @@ export class VercelAIProvider implements IAIProvider {
 
       // Increase token limit for batches
       if (this.modelConfig.maxTokens) {
-        options.maxTokens = this.modelConfig.maxTokens * items.length; 
+        options.maxTokens = this.modelConfig.maxTokens * items.length;
       } else {
          // Default generous limit for batches if not specified
          options.maxTokens = 4096;
@@ -159,17 +174,66 @@ export class VercelAIProvider implements IAIProvider {
 
       const result: any = await generateObject(options);
 
-      return result.object.documentations.map((doc: any) => ({
-        symbolName: doc.symbolName,
-        // Sanitize output: convert any accidental headers to bold text
-        content: doc.content.replace(/^#+\s+(.*)$/gm, '**$1**'),
-      }));
+      // Collect successes and failures separately (partial success pattern)
+      const success: Array<{ symbolName: string; content: string }> = [];
+      const failures: Array<{ symbolName: string; errors: string[]; originalContent?: string }> = [];
+
+      // Process each documentation entry
+      result.object.documentations.forEach((doc: any) => {
+        const sanitizedContent = sanitizeContent(doc.content);
+
+        // Validate sanitized content
+        const validationErrors = validateSanitizedContent(sanitizedContent);
+
+        if (validationErrors.length > 0) {
+          // Validation failed - collect the failure but continue processing others
+          failures.push({
+            symbolName: doc.symbolName,
+            errors: validationErrors,
+            originalContent: this.debug ? doc.content : undefined,
+          });
+
+          if (this.debug) {
+            console.warn(`[VercelAIProvider] Validation failed for ${doc.symbolName}:`, validationErrors);
+            console.warn('[VercelAIProvider] Original content:', doc.content);
+            console.warn('[VercelAIProvider] Sanitized content:', sanitizedContent);
+          }
+        } else {
+          // Validation passed - collect the success
+          success.push({
+            symbolName: doc.symbolName,
+            content: sanitizedContent,
+          });
+        }
+      });
+
+      return {
+        success,
+        failures,
+        stats: {
+          total: items.length,
+          succeeded: success.length,
+          failed: failures.length,
+        },
+      };
     } catch (error) {
         const err = error as any;
-        // Just log and rethrow, let the caller handle fallback
-        // If batch fails, caller might fallback to individual or just fail
-        console.warn('Batch generation failed:', err.message);
-        throw error; 
+        // Complete batch failure (network, API error, etc.)
+        console.warn('[VercelAIProvider] Batch generation failed completely:', err.message);
+
+        // Return empty result with all items marked as failures
+        return {
+          success: [],
+          failures: items.map(item => ({
+            symbolName: item.symbolName,
+            errors: [`Batch generation error: ${err.message}`],
+          })),
+          stats: {
+            total: items.length,
+            succeeded: 0,
+            failed: items.length,
+          },
+        };
     }
   }
 

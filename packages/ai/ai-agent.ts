@@ -82,6 +82,9 @@ export class AIAgent {
 
   /**
    * Generate documentation for a batch of symbols
+   *
+   * Uses partial success pattern: preserves successful generations and
+   * retries only failed items sequentially
    */
   async generateBatch(
     items: Array<{ symbolName: string; signatureText: string }>
@@ -91,17 +94,56 @@ export class AIAgent {
     // Try batch generation if provider supports it
     if (this.provider.generateBatchDocumentation) {
         try {
-            return await this.executeWithRetry(() =>
+            const batchResult = await this.executeWithRetry(() =>
                 this.provider.generateBatchDocumentation!(items)
             );
+
+            // Start with successful generations from batch
+            const results = [...batchResult.success];
+
+            // Log batch statistics
+            if (batchResult.stats.failed > 0) {
+                this.log(
+                    `Batch generated ${batchResult.stats.succeeded}/${batchResult.stats.total} successfully. ` +
+                    `Retrying ${batchResult.stats.failed} failed items sequentially...`
+                );
+
+                // Retry failed items sequentially
+                for (const failure of batchResult.failures) {
+                    try {
+                        this.log(`Retrying ${failure.symbolName} (failed validation: ${failure.errors.join(', ')})`);
+
+                        // Find the original item to get the signature
+                        const originalItem = items.find(item => item.symbolName === failure.symbolName);
+                        if (!originalItem) {
+                            this.log(`Could not find original item for ${failure.symbolName}, skipping`);
+                            continue;
+                        }
+
+                        const content = await this.generateInitial(
+                            originalItem.symbolName,
+                            { signatureText: originalItem.signatureText } as CodeSignature
+                        );
+                        results.push({ symbolName: originalItem.symbolName, content });
+                        this.log(`Successfully regenerated ${failure.symbolName}`);
+                    } catch (error) {
+                        // Log and continue, omitting this item
+                        this.log(`Retry failed for ${failure.symbolName}`, error);
+                    }
+                }
+            } else {
+                this.log(`Batch completed successfully: ${batchResult.stats.succeeded}/${batchResult.stats.total}`);
+            }
+
+            return results;
         } catch (error) {
-            // Batch failed, fallback to sequential
-            this.log('Batch generation failed, falling back to sequential generation', error);
+            // Complete batch failure, fallback to sequential
+            this.log('Batch generation failed completely, falling back to sequential generation', error);
         }
     }
 
-    // Fallback: sequential generation if provider doesn't support batching or batch failed
-    this.log('Using sequential generation');
+    // Fallback: sequential generation if provider doesn't support batching or batch failed completely
+    this.log('Using sequential generation for all items');
     const results = [];
     for (const item of items) {
         try {
