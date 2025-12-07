@@ -22,6 +22,8 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { getMapPath } from './config-loader';
 import { DoctypeConfig } from './types';
+import { retry } from './retry';
+import { spinner } from '@clack/prompts';
 
 /**
  * Helper function to limit concurrency
@@ -29,14 +31,22 @@ import { DoctypeConfig } from './types';
 async function pMap<T, R>(
     items: T[],
     mapper: (item: T) => Promise<R>,
-    concurrency: number
+    concurrency: number,
+    onProgress?: (completed: number, total: number) => void
 ): Promise<R[]> {
     const results: R[] = new Array(items.length);
     let index = 0;
+    let completed = 0;
+    const total = items.length;
+
     const execThread = async (): Promise<void> => {
         while (index < items.length) {
             const curIndex = index++;
             results[curIndex] = await mapper(items[curIndex]);
+            completed++;
+            if (onProgress) {
+                onProgress(completed, total);
+            }
         }
     };
     const threads = [];
@@ -110,7 +120,8 @@ export async function executeFixes(
   const projectBase = config ? (config.baseDir || process.cwd()) : dirname(mapPath);
 
   // Phase 1: Generation (Parallel)
-  logger.info(`Processing ${drifts.length} items with concurrency limit...`);
+  const s = spinner();
+  s.start(`Processing ${drifts.length} items...`);
   
   const generateTask = async (drift: DriftInfo): Promise<GenerationResult> => {
       const { entry, currentSignature, oldSignature } = drift;
@@ -138,27 +149,34 @@ export async function executeFixes(
                       }
                   }
 
-                  if (oldSignature) {
-                      newContent = await aiAgent.generateFromDrift(
-                          entry.codeRef.symbolName,
-                          oldSignature,
-                          currentSignature,
-                          currentMarkdownContent,
-                          entry.codeRef.filePath
-                      );
-                  } else {
-                      newContent = await aiAgent.generateInitial(
-                          entry.codeRef.symbolName,
-                          currentSignature,
-                          {
-                              includeExamples: true,
-                              style: 'detailed',
-                          }
-                      );
-                  }
+                  newContent = await retry(async () => {
+                      if (oldSignature) {
+                          return await aiAgent!.generateFromDrift(
+                              entry.codeRef.symbolName,
+                              oldSignature,
+                              currentSignature,
+                              currentMarkdownContent,
+                              entry.codeRef.filePath
+                          );
+                      } else {
+                          return await aiAgent!.generateInitial(
+                              entry.codeRef.symbolName,
+                              currentSignature,
+                              {
+                                  includeExamples: true,
+                                  style: 'detailed',
+                              }
+                          );
+                      }
+                  }, {
+                      retries: 3,
+                      onRetry: (err, attempt) => {
+                          logger.debug(`Retry ${attempt}/3 for ${entry.codeRef.symbolName}: ${err.message}`);
+                      }
+                  });
               } catch (aiError) {
                   const errorMsg = aiError instanceof Error ? aiError.message : String(aiError);
-                  logger.warn(`AI generation failed for ${entry.codeRef.symbolName}: ${errorMsg}`);
+                  logger.error(`AI generation failed for ${entry.codeRef.symbolName} after retries: ${errorMsg}`);
                   newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
               }
           } else {
@@ -172,7 +190,11 @@ export async function executeFixes(
       }
   };
 
-  const results = await pMap(drifts, generateTask, 5); // Concurrency limit 5
+  const results = await pMap(drifts, generateTask, 5, (completed, total) => {
+      s.message(`Processing items... (${completed}/${total})`);
+  }); // Concurrency limit 5
+  
+  s.stop(`Processed ${drifts.length} items`);
 
   // Phase 2: Application (Sequential per file)
   const injector = new ContentInjector();

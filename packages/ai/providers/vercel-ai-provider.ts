@@ -102,19 +102,20 @@ export class VercelAIProvider implements IAIProvider {
       };
     } catch (error) {
       const err = error as any;
-      const providerError: AIProviderError = {
-        code: 'GENERATION_FAILED',
-        message: err.message || 'Unknown error during generation',
-        provider: this.provider,
-        originalError: error,
-      };
+      let code = 'GENERATION_FAILED';
+      const message = err.message || 'Unknown error during generation';
 
       // Map common error codes if possible
       if (err.name === 'APICallError' && err.statusCode === 429) {
-          providerError.code = 'RATE_LIMIT';
+          code = 'RATE_LIMIT';
       }
 
-      throw providerError;
+      throw new AIProviderError(
+        code,
+        message,
+        this.provider,
+        error
+      );
     }
   }
 

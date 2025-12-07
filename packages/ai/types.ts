@@ -88,18 +88,28 @@ export interface DocumentationResponse {
 /**
  * Error from AI provider
  */
-export interface AIProviderError {
+export class AIProviderError extends Error {
   /** Error code */
   code: string;
-
-  /** Error message */
-  message: string;
 
   /** Provider name */
   provider: AIProvider;
 
   /** Original error (if available) */
   originalError?: unknown;
+
+  constructor(
+    code: string,
+    message: string,
+    provider: AIProvider,
+    originalError?: unknown
+  ) {
+    super(message);
+    this.name = 'AIProviderError';
+    this.code = code;
+    this.provider = provider;
+    this.originalError = originalError;
+  }
 }
 
 /**
