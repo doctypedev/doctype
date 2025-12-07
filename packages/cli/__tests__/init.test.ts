@@ -18,7 +18,7 @@ vi.mock('../../ai', () => {
 });
 
 // Mock @clack/prompts - use vi.hoisted to ensure variables are available during hoisting
-const {
+const { 
   mockIntro,
   mockOutro,
   mockCancel,
@@ -75,11 +75,9 @@ describe('CLI: init command', () => {
     projectRoot?: string;
     docsFolder?: string;
     mapFile?: string;
-    outputStrategy?: 'mirror' | 'module' | 'type'; // Added
-    replaceKey?: boolean;
-    apiKey?: string;
+    outputStrategy?: 'mirror' | 'module' | 'type';
   }): void => {
-    // Reset previous mocks to avoid accumulation of mockResolvedValueOnce
+    // Reset previous mocks
     mockConfirm.mockReset();
     mockText.mockReset();
     mockPassword.mockReset();
@@ -87,7 +85,7 @@ describe('CLI: init command', () => {
     mockIntro.mockReset();
     mockOutro.mockReset();
     mockSpinner.mockReset();
-    mockSelect.mockReset(); // Added mockSelect reset
+    mockSelect.mockReset();
 
     // Mock intro (always called)
     mockIntro.mockReturnValue(undefined);
@@ -105,34 +103,10 @@ describe('CLI: init command', () => {
       .mockResolvedValueOnce(responses.mapFile || 'doctype-map.json');
 
     // Mock select prompt for outputStrategy
-    mockSelect.mockResolvedValueOnce(responses.outputStrategy || 'mirror'); // Added mockSelect
+    mockSelect.mockResolvedValueOnce(responses.outputStrategy || 'mirror');
 
-    // Mock note (called when showing API key info)
+    // Mock note (if called)
     mockNote.mockReturnValue(undefined);
-
-    // Mock API key prompts based on scenario
-    if (responses.replaceKey !== undefined) {
-      // There's an existing key, so confirm is asked
-      mockConfirm.mockResolvedValueOnce(responses.replaceKey);
-
-      // Only mock password if user wants to replace (replaceKey is true)
-      if (responses.replaceKey === true) {
-        // User chose to replace, so password prompt is shown
-        if (responses.apiKey !== undefined) {
-          mockPassword.mockResolvedValueOnce(responses.apiKey);
-        } else {
-          mockPassword.mockResolvedValueOnce('');
-        }
-      }
-      // If replaceKey is false, password is NOT called - existing key is kept
-    } else {
-      // No existing key scenario - password prompt is always shown
-      if (responses.apiKey !== undefined) {
-        mockPassword.mockResolvedValueOnce(responses.apiKey);
-      } else {
-        mockPassword.mockResolvedValueOnce('');
-      }
-    }
 
     // Mock spinner (always called)
     const mockSpinnerInstance = {
@@ -178,7 +152,7 @@ describe('CLI: init command', () => {
   });
 
   it('should create config file with default values', async () => {
-    // Mock user using defaults, skip API key
+    // Mock user using defaults
     mockClackResponses({});
 
     const result = await initCommand({ verbose: false });
@@ -195,13 +169,10 @@ describe('CLI: init command', () => {
     expect(config.projectRoot).toBe('.');
     expect(config.docsFolder).toBe('./docs');
     expect(config.mapFile).toBe('doctype-map.json');
-
-    // Verify .env was not created (API key skipped)
-    expect(existsSync(envPath)).toBe(false);
   });
 
   it('should create config file with custom values', async () => {
-    // Mock custom responses (skip API key)
+    // Mock custom responses
     mockClackResponses({
       projectName: 'My Custom Project',
       projectRoot: './src',
@@ -236,7 +207,7 @@ describe('CLI: init command', () => {
       JSON.stringify(existingConfig, null, 2)
     );
 
-    // Mock responses: 'yes' to overwrite, then defaults (skip API key)
+    // Mock responses: 'yes' to overwrite, then defaults
     mockClackResponses({
       confirmOverwrite: true,
     });
@@ -286,7 +257,7 @@ describe('CLI: init command', () => {
     const newProjectRoot = './new-project-root';
     const newProjectRootPath = join(testDir, newProjectRoot);
 
-    // Mock responses with non-existent project root (skip API key)
+    // Mock responses with non-existent project root
     mockClackResponses({
       projectName: 'Test Project',
       projectRoot: newProjectRoot,
@@ -334,7 +305,7 @@ describe('CLI: init command', () => {
       JSON.stringify(existingConfig, null, 2)
     );
 
-    // Test with confirm=true for overwrite, then defaults (skip API key)
+    // Test with confirm=true for overwrite, then defaults
     mockClackResponses({
       confirmOverwrite: true,
     });
@@ -368,7 +339,7 @@ describe('CLI: init command', () => {
   });
 
   it('should use project directory name as default project name', async () => {
-    // Mock empty/default responses (all defaults, skip API key)
+    // Mock empty/default responses (all defaults)
     mockClackResponses({});
 
     const result = await initCommand({ verbose: false });
@@ -416,191 +387,6 @@ describe('CLI: init command', () => {
     // Verify no extra fields
     expect(Object.keys(config)).toHaveLength(5);
   });
-
-  // Tests for API key handling
-
-  it('should save API key to .env file when provided', async () => {
-    mockClackResponses({
-      projectName: 'Test',
-      apiKey: 'sk-test-api-key-12345',
-    });
-
-    const result = await initCommand({ verbose: false });
-
-    expect(result.success).toBe(true);
-
-    // Verify .env file was created
-    expect(existsSync(envPath)).toBe(true);
-
-    // Verify .env content
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toBe('OPENAI_API_KEY=sk-test-api-key-12345\n');
-
-    // Verify .gitignore was created with .env entry
-    expect(existsSync(gitignorePath)).toBe(true);
-    const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
-    expect(gitignoreContent).toContain('.env');
-
-    // Verify API key is NOT in config file
-    const configContent = readFileSync(configPath, 'utf-8');
-    expect(configContent).not.toContain('sk-test-api-key');
-  });
-
-  it('should not create .env file when API key is skipped', async () => {
-    mockClackResponses({
-      projectName: 'Test',
-      apiKey: '',
-    });
-
-    const result = await initCommand({ verbose: false });
-
-    expect(result.success).toBe(true);
-    expect(existsSync(envPath)).toBe(false);
-    expect(existsSync(gitignorePath)).toBe(false);
-  });
-
-  it('should update existing .env file with new API key', async () => {
-    // Create existing .env with different key
-    writeFileSync(envPath, 'OPENAI_API_KEY=old-api-key\n');
-
-    // Mock responses: config values, then 'yes' to replace, then new key
-    mockClackResponses({
-      projectName: 'Test',
-      replaceKey: true,
-      apiKey: 'sk-new-api-key',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify .env was updated
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toBe('OPENAI_API_KEY=sk-new-api-key\n');
-    expect(envContent).not.toContain('old-api-key');
-  });
-
-  it('should append API key to existing .env without OPENAI_API_KEY', async () => {
-    // Create existing .env with other variables
-    writeFileSync(envPath, 'NODE_ENV=production\nDEBUG=true\n');
-
-    mockClackResponses({
-      projectName: 'Test',
-      apiKey: 'sk-test-key',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify .env was appended
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toContain('NODE_ENV=production');
-    expect(envContent).toContain('DEBUG=true');
-    expect(envContent).toContain('OPENAI_API_KEY=sk-test-key');
-    expect(envContent.split('\n').length).toBe(4); // 3 lines + final newline
-  });
-
-  it('should handle .env file with missing final newline', async () => {
-    // Create existing .env without final newline
-    writeFileSync(envPath, 'NODE_ENV=production');
-
-    mockClackResponses({
-      projectName: 'Test',
-      apiKey: 'sk-test-key',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify .env has proper formatting
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toBe('NODE_ENV=production\nOPENAI_API_KEY=sk-test-key\n');
-  });
-
-  it('should trim whitespace from API key input', async () => {
-    mockClackResponses({
-      projectName: 'Test',
-      apiKey: '  sk-test-key  ',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify API key was used as-is (trimming might happen in UI layer)
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toContain('OPENAI_API_KEY=');
-    expect(envContent).toContain('sk-test-key');
-  });
-
-  it('should detect existing API key and ask to replace it - user keeps existing', async () => {
-    // Create existing .env with API key
-    writeFileSync(envPath, 'OPENAI_API_KEY=sk-existing-key\n');
-
-    // Mock responses: config values, then 'no' to keep existing key
-    mockClackResponses({
-      projectName: 'Test',
-      replaceKey: false,
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify existing API key was kept
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toBe('OPENAI_API_KEY=sk-existing-key\n');
-  });
-
-  it('should detect existing API key and ask to replace it - user replaces', async () => {
-    // Create existing .env with API key
-    writeFileSync(envPath, 'OPENAI_API_KEY=sk-old-key\n');
-
-    // Mock responses: config values, then 'yes' to replace, then new key
-    mockClackResponses({
-      projectName: 'Test',
-      replaceKey: true,
-      apiKey: 'sk-new-key',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify API key was replaced
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toBe('OPENAI_API_KEY=sk-new-key\n');
-    expect(envContent).not.toContain('sk-old-key');
-  });
-
-  it('should handle case-insensitive response for replacing existing key', async () => {
-    // Create existing .env with API key
-    writeFileSync(envPath, 'OPENAI_API_KEY=sk-old-key\n');
-
-    // Mock responses: confirm=true to replace, then new key
-    mockClackResponses({
-      projectName: 'Test',
-      replaceKey: true,
-      apiKey: 'sk-new-key',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify API key was replaced
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toBe('OPENAI_API_KEY=sk-new-key\n');
-  });
-
-  it('should preserve other env variables when replacing API key', async () => {
-    // Create existing .env with API key and other variables
-    writeFileSync(envPath, 'NODE_ENV=production\nOPENAI_API_KEY=sk-old-key\nDEBUG=true\n');
-
-    // Mock responses: config values, then 'yes' to replace, then new key
-    mockClackResponses({
-      projectName: 'Test',
-      replaceKey: true,
-      apiKey: 'sk-new-key',
-    });
-
-    await initCommand({ verbose: false });
-
-    // Verify API key was replaced but other variables preserved
-    const envContent = readFileSync(envPath, 'utf-8');
-    expect(envContent).toContain('NODE_ENV=production');
-    expect(envContent).toContain('DEBUG=true');
-    expect(envContent).toContain('OPENAI_API_KEY=sk-new-key');
-    expect(envContent).not.toContain('sk-old-key');
-  });
 });
 
 describe('determineOutputFile', () => {
@@ -612,8 +398,6 @@ describe('determineOutputFile', () => {
     expect(result).toBe(join(docsFolder, 'src/auth/login.md'));
     
     // Windows style path input should still work with join
-    // (Simulating what might happen if passed from a non-normalized source, though scanAndCreateAnchors normalizes it)
-    // But here we test the logic of determineOutputFile itself
     const result2 = determineOutputFile('mirror', docsFolder, 'src/utils.ts', SymbolType.Class);
     expect(result2).toBe(join(docsFolder, 'src/utils.md'));
   });

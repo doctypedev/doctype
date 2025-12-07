@@ -49,11 +49,10 @@ doctype init
 This will:
 - Prompt you for project configuration (name, root, docs folder)
 - **Automatically scan your TypeScript codebase** for exported symbols
-- **Create documentation files** based on your chosen strategy (Mirror, Module, or Type)
+- **Create documentation files** with "TODO" placeholders based on your chosen strategy
 - Generate SHA256 hashes of all code signatures
 - Create `doctype-map.json` to track everything (commit this file)
 - Create `doctype.config.json` with your project configuration (commit this file)
-- Optionally select an AI provider and configure its API key for AI-powered updates
 
 **Doctype will create documentation files with anchors like this:**
 
@@ -69,11 +68,17 @@ This will:
 <!-- doctype:end id="550e8400-e29b-41d4-a716-446655440000" -->
 ```
 
-**After running init, you can:**
-1. Manually fill in the documentation between the anchor tags, OR
-2. Use `doctype generate` (planned) to auto-generate initial content with AI
+### 3. Generate Content
 
-### 3. Check for Drift
+Once initialized, generate the actual documentation content using AI:
+
+```bash
+doctype generate
+```
+
+This command scans for "TODO" placeholders and uses your configured AI provider to write comprehensive documentation for each symbol.
+
+### 4. Check for Drift
 
 ```bash
 doctype check
@@ -84,7 +89,7 @@ doctype check
 ✓ All documentation is in sync with code
 ```
 
-### 4. Update Code, Fix Docs
+### 5. Update Code, Fix Docs
 
 Change your code:
 ```typescript
@@ -141,7 +146,6 @@ doctype init
 5. Generates SHA256 hashes of all code signatures
 6. Creates `doctype-map.json` to track everything (commit this)
 7. Creates `doctype.config.json` with project configuration (commit this)
-8. Optionally configures your selected AI provider's API key
 
 **Initial anchors are created with TODO placeholders:**
 ```markdown
@@ -150,7 +154,28 @@ doctype init
 <!-- doctype:end id="uuid" -->
 ```
 
-You can then manually document each symbol, or use `doctype generate` (planned) to auto-fill with AI.
+You can then manually document each symbol, or use `doctype generate` to auto-fill with AI.
+
+### `doctype generate`
+
+Generate documentation content using AI.
+
+```bash
+doctype generate
+```
+
+**Options:**
+- `--dry-run` - Preview generation without writing files
+- `--auto-commit` - Automatically commit changes to git
+- `--no-ai` - Use placeholder content instead of AI generation
+- `--verbose` - Show detailed output
+
+**What it does:**
+1. Scans for "TODO" placeholders in your documentation
+2. Detects documentation drift (out of sync code)
+3. Sends code context to your AI provider
+4. Injects intelligent, generated documentation
+5. Updates `doctype-map.json` hashes
 
 ### `doctype check`
 
@@ -384,13 +409,15 @@ Doctype uses your selected AI provider:
 
 ### What if I don't want to use AI?
 
-The `--no-ai` flag is designed for **testing CI/CD pipelines** without consuming tokens:
+You can manually edit the documentation files. Doctype will still track changes and warn you (via `doctype check`) if your manual documentation gets out of sync with the code.
+
+If you want to use the tooling but skip AI generation during updates, use the `--no-ai` flag:
 
 ```bash
-doctype fix --no-ai --dry-run
+doctype fix --no-ai
 ```
 
-**Important:** `--no-ai` does not actually update documentation content - it only tests the pipeline. For real documentation updates, you need AI (OpenAI) or manual editing.
+This will update the `doctype-map.json` hashes but inject a placeholder instead of AI content.
 
 ### Can I use this without an AI provider?
 

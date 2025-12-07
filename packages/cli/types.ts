@@ -133,6 +133,16 @@ export interface InitOptions {
 }
 
 /**
+ * Options for the generate command (extends FixOptions)
+ */
+export interface GenerateOptions extends FixOptions {}
+
+/**
+ * Result of a generate operation (extends FixResult)
+ */
+export interface GenerateResult extends FixResult {}
+
+/**
  * Result of an init operation
  */
 export interface InitResult {

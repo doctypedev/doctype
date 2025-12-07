@@ -269,16 +269,19 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
   if (doc.parameters?.length) {
     parts.push('\n**Parameters:**');
     doc.parameters.forEach(p => {
-      parts.push(`- \`${p.name}\` (\`${p.type}\`): ${p.description}`);
+      parts.push(`- lexible{p.name}lexible ( lexible{p.type}): ${p.description}`);
     });
   }
 
   if (doc.returnType) {
-    parts.push(`\n**Returns:** \`${doc.returnType.type}\` - ${doc.returnType.description}`);
+    parts.push(`\n**Returns:** lexible{doc.returnType.type}lexible - ${doc.returnType.description}`);
   }
 
   if (doc.usageExample) {
-    parts.push(`\n**Usage Example:**\n\`\`\`typescript\n${doc.usageExample}\n\`\`\`\n`);
+    parts.push(`\n**Usage Example:**\n\
+```typescript
+${doc.usageExample}
+```\n`);
   }
 
   return parts.join('\n');
@@ -297,7 +300,7 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 
 ### INIT Flow (`npx doctype init`)
 
-**Purpose:** Initialize Doctype, scan codebase, create anchors and map
+**Purpose:** Initialize Doctype, scan codebase, and scaffold documentation files.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -307,7 +310,7 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 2. TypeScript: InitOrchestrator                             │
-│    - Interactive prompts (docs folder, AI provider, etc.)   │
+│    - Interactive prompts (docs folder, map name, etc.)      │
 │    - Saves doctype.config.json                              │
 └────────────────┬────────────────────────────────────────────┘
                  │
@@ -335,25 +338,16 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 │    ├─ Creates docs/ files with strategy (mirror/module/type)│
 │    ├─ Inserts anchor tags:                                  │
 │    │   <!-- doctype:start id="uuid" code_ref="..." -->      │
-│    │   TODO: Add documentation                              │
+│    │   TODO: Add documentation for this symbol              │
 │    │   <!-- doctype:end id="uuid" -->                       │
 │    └─ One anchor per exported symbol                        │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 6. TypeScript: AI Agent (OPTIONAL if --ai flag)             │
-│    ├─ Batch process symbols:                                │
-│    │   AI → Structured JSON → buildMarkdown()               │
-│    ├─ Replaces "TODO" with generated documentation          │
-│    └─ Saves to .md files                                    │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 7. TypeScript: DoctypeMapManager                            │
+│ 6. TypeScript: DoctypeMapManager                            │
 │    ├─ Creates doctype-map.json                              │
-│    └─ For each anchor saves:                                │
+│    └─ For each anchor saves real hash (for drift tracking): │
 │        {                                                     │
 │          id: "uuid",                                         │
 │          codeRef: { filePath, symbolName },                 │
@@ -364,10 +358,46 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Key Files Created:**
-- `doctype.config.json` - Project configuration
-- `doctype-map.json` - Tracking map with hashes
-- `docs/**/*.md` - Documentation files with anchors
+### GENERATE Flow (`npx doctype generate`)
+
+**Purpose:** Generate initial documentation content using AI by finding TODO placeholders.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. User runs: npx doctype generate                          │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. TypeScript: Identify Work Items                          │
+│    ├─ Detect Drift: Hash mismatch (same as check)           │
+│    └─ Detect Placeholders:                                  │
+│         a. RUST: extractAnchors() scans Markdown            │
+│         b. TS: Checks if anchor content contains "TODO"     │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. TypeScript: FixOrchestrator (Parallel Processing)        │
+│    ├─ Uses pMap with concurrency limit (e.g., 5)            │
+│    ├─ For each item (Drift or Placeholder):                 │
+│    │   a. RUST: AstAnalyzer gets current CodeSignature      │
+│    │   b. TS: Builds Prompt (Code + Old Docs)               │
+│    │   c. TS: Calls AI Agent (OpenAI/Gemini/Anthropic)      │
+│    │   d. AI: Returns structured JSON                       │
+│    │   e. TS: Transforms JSON → Markdown                    │
+│    └─ Collects results in memory                            │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. TypeScript: ContentInjector (Atomic Writes)              │
+│    ├─ Groups results by destination file                    │
+│    ├─ Reads file ONCE                                       │
+│    ├─ Applies all anchor updates for that file              │
+│    └─ Writes file ONCE (prevents race conditions)           │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -413,9 +443,12 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 
 ---
 
+
 ### FIX Flow (`npx doctype fix`)
 
-**Purpose:** Automatically fix drift and update documentation
+**Purpose:** Automatically fix drift and update documentation.
+
+*Note: `fix` and `generate` share the same underlying `FixOrchestrator` logic.*
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -431,38 +464,22 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3. TypeScript: AI Agent for each drifted symbol             │
-│    ├─ Build structured prompt:                              │
-│    │   - Old signature text                                 │
-│    │   - New signature text                                 │
-│    │   - Current documentation content                      │
-│    ├─ AI generates JSON:                                    │
-│    │   {purpose, parameters, returnType, usageExample...}   │
-│    ├─ Validate with Zod schema                              │
-│    └─ buildMarkdownFromStructure(json) → Updated Markdown   │
+│ 3. TypeScript: FixOrchestrator (Parallel Processing)        │
+│    ├─ Same parallel flow as Generate                        │
+│    ├─ Uses context of OLD signature vs NEW signature        │
+│    └─ Generates update-specific documentation               │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 4. TypeScript: ContentInjector                              │
-│    ├─ Read Markdown file                                    │
-│    ├─ Locate anchor by ID                                   │
-│    ├─ Replace content between doctype:start and :end        │
-│    └─ Save updated Markdown file                            │
+│ 4. TypeScript: ContentInjector & Map Update                 │
+│    ├─ Updates Markdown files                                │
+│    └─ Updates doctype-map.json with new hashes              │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 5. TypeScript: Update doctype-map.json                      │
-│    ├─ SAVED_HASH → CURRENT_HASH                             │
-│    ├─ Update codeSignatureText                              │
-│    ├─ Update lastUpdated timestamp                          │
-│    └─ Save updated map                                      │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 6. TypeScript: Git operations (if --auto-commit)            │
+│ 5. TypeScript: Git operations (if --auto-commit)            │
 │    ├─ git add docs/ doctype-map.json                        │
 │    ├─ git commit -m "🤖 Doctype: Auto-fix..."              │
 │    └─ git push (if configured)                              │
@@ -475,6 +492,7 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 - `--no-ai` - Use placeholder instead of AI generation
 
 ---
+
 
 ## Design Decisions
 
@@ -497,6 +515,7 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 
 ---
 
+
 ### Why TypeScript for AI and Orchestration?
 
 #### Developer Experience
@@ -515,6 +534,7 @@ function buildMarkdownFromStructure(doc: DocumentationStructure): string {
 - **Git integration**: simple-git for version control operations
 
 ---
+
 
 ### Why Structured JSON Output?
 
@@ -541,6 +561,7 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
 
 ---
 
+
 ### Why Not Use Rust GenAI Module?
 
 **Initial Plan:** Implement AI calls in Rust
@@ -557,6 +578,7 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
 **Result:** Rust handles compute-intensive tasks (parsing, hashing), TypeScript handles I/O and user interaction
 
 ---
+
 
 ## Data Model
 
@@ -598,6 +620,7 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
 
 ---
 
+
 ## Performance Characteristics
 
 ### File Discovery
@@ -620,13 +643,15 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
 
 **Bottleneck:** Negligible (crypto is fast in Rust)
 
-### AI Generation
+### AI Generation (Parallelized)
 - **Per symbol**: ~2-5s (network + LLM)
-- **Batch (10 symbols)**: ~3-8s (parallelized)
+- **Concurrency**: 5 parallel requests
+- **Orchestration**: Processing is batched in parallel, but file writing is sequential per file for safety.
 
 **Bottleneck:** API latency (network + LLM inference time)
 
 ---
+
 
 ## Future Enhancements
 
@@ -653,6 +678,7 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
    - Rust support (using syn crate)
 
 ---
+
 
 ## Conclusion
 

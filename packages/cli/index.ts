@@ -18,8 +18,9 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { checkCommand } from './check';
 import { fixCommand } from './fix';
+import { generateCommand } from './generate';
 import { initCommand } from './init';
-import { CheckOptions, FixOptions, InitOptions } from './types';
+import { CheckOptions, FixOptions, GenerateOptions, InitOptions } from './types';
 
 // Parse command line arguments
 yargs(hideBin(process.argv))
@@ -47,6 +48,70 @@ yargs(hideBin(process.argv))
 
       const result = await initCommand(options);
 
+      if (!result.success) {
+        process.exit(1);
+      }
+    }
+  )
+
+  // Generate command
+  .command(
+    'generate',
+    'Generate documentation content using AI',
+    (yargs) => {
+      return yargs
+        .option('map', {
+          alias: 'm',
+          type: 'string',
+          description: 'Path to doctype-map.json (overrides config)',
+        })
+        .option('verbose', {
+          type: 'boolean',
+          description: 'Enable verbose logging',
+          default: false,
+        })
+        .option('dry-run', {
+          alias: 'd',
+          type: 'boolean',
+          description: 'Preview changes without writing files',
+          default: false,
+        })
+        .option('auto-commit', {
+          alias: 'a',
+          type: 'boolean',
+          description: 'Automatically commit changes with git',
+          default: false,
+        })
+        .option('interactive', {
+          alias: 'i',
+          type: 'boolean',
+          description: 'Prompt before each generation (future feature)',
+          default: false,
+        })
+        .option('no-ai', {
+          type: 'boolean',
+          description: 'Disable AI-generated content (use placeholder instead)',
+          default: false,
+        });
+    },
+    async (argv) => {
+      const options: GenerateOptions = {
+        map: argv.map as string,
+        verbose: argv.verbose as boolean,
+        dryRun: argv['dry-run'] as boolean,
+        autoCommit: argv['auto-commit'] as boolean,
+        interactive: argv.interactive as boolean,
+        noAI: argv['no-ai'] as boolean,
+      };
+
+      const result = await generateCommand(options);
+
+      // Always exit with error if there's a configuration error
+      if (result.configError) {
+        process.exit(1);
+      }
+
+      // Exit with error code if any generations failed
       if (!result.success) {
         process.exit(1);
       }
@@ -162,6 +227,7 @@ yargs(hideBin(process.argv))
 
   // Help and examples
   .example('$0 init', 'Initialize Doctype for your project')
+  .example('$0 generate', 'Generate documentation using AI')
   .example('$0 check', 'Check for documentation drift')
   .example('$0 check --verbose', 'Check with detailed output')
   .example('$0 fix', 'Fix detected drift with AI-generated docs')
