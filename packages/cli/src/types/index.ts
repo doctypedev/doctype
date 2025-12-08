@@ -12,8 +12,12 @@ export interface CheckResult {
   totalEntries: number;
   /** Number of entries with drift detected */
   driftedEntries: number;
+  /** Number of entries with missing symbols */
+  missingEntries: number;
   /** List of drifted entry details */
   drifts: DriftDetail[];
+  /** List of missing symbol details */
+  missing: MissingSymbolDetail[];
   /** Overall success status (false if any drift detected) */
   success: boolean;
   /** Configuration error (e.g., map file not found) - should always exit with error regardless of --strict */
@@ -41,6 +45,23 @@ export interface DriftDetail {
   /** New signature text */
   newSignature?: string;
 }
+
+/**
+ * Details about a missing symbol
+ */
+export interface MissingSymbolDetail {
+  /** Anchor ID */
+  id: string;
+  /** Symbol name that is missing */
+  symbolName: string;
+  /** File path where the symbol was expected */
+  codeFilePath: string;
+  /** Documentation file path */
+  docFilePath: string;
+  /** Reason for missing */
+  reason: 'file_not_found' | 'symbol_not_found';
+}
+
 
 /**
  * Result of a fix operation

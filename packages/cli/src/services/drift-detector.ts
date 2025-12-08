@@ -28,6 +28,23 @@ export interface DriftInfo {
 }
 
 /**
+ * Information about a missing symbol
+ */
+export interface MissingSymbolInfo {
+  entry: DoctypeMapEntry;
+  reason: 'file_not_found' | 'symbol_not_found';
+  codeFilePath: string;
+}
+
+/**
+ * Result of drift detection
+ */
+export interface DriftResult {
+  drifts: DriftInfo[];
+  missing: MissingSymbolInfo[];
+}
+
+/**
  * Options for drift detection
  */
 export interface DriftDetectionOptions {
@@ -46,16 +63,17 @@ export interface DriftDetectionOptions {
  * @param mapManager - The doctype map manager
  * @param analyzer - AST analyzer instance
  * @param options - Detection options
- * @returns Array of drift information for entries that have drifted
+ * @returns Object containing drifts and missing symbols
  */
 export function detectDrift(
   mapManager: DoctypeMapManager,
   analyzer: InstanceType<typeof AstAnalyzer>,
   options: DriftDetectionOptions = {}
-): DriftInfo[] {
+): DriftResult {
   const { basePath = process.cwd(), logger } = options;
   const entries = mapManager.getEntries();
   const drifts: DriftInfo[] = [];
+  const missing: MissingSymbolInfo[] = [];
 
   for (const entry of entries) {
     // Resolve code file path relative to base path
@@ -69,6 +87,11 @@ export function detectDrift(
         logger?.warn(
           `Code file not found: ${Logger.path(codeFilePath)} (${Logger.symbol(entry.codeRef.symbolName)})`
         );
+        missing.push({
+          entry,
+          reason: 'file_not_found',
+          codeFilePath
+        });
         continue;
       }
 
@@ -80,6 +103,11 @@ export function detectDrift(
         logger?.warn(
           `Symbol ${Logger.symbol(entry.codeRef.symbolName)} not found in ${Logger.path(codeFilePath)}`
         );
+        missing.push({
+          entry,
+          reason: 'symbol_not_found',
+          codeFilePath
+        });
         continue;
       }
 
@@ -122,5 +150,5 @@ export function detectDrift(
     }
   }
 
-  return drifts;
+  return { drifts, missing };
 }

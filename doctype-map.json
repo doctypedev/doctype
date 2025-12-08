@@ -1216,12 +1216,12 @@
         "filePath": "packages/cli/src/types/index.ts",
         "symbolName": "CheckResult"
       },
-      "codeSignatureHash": "02158f8f6122bd3c38bc2fe8cc48347fa75f34f2be16d13d7f0ba3ad85829177",
-      "codeSignatureText": "interface CheckResult{totalEntries: number;  driftedEntries: number;  drifts: DriftDetail[];  success: boolean;  configError?: string; }",
+      "codeSignatureHash": "9a6db303f912da1c536e1634bea6d3c792eb6a4eaf6d4a2539dce0bef342be1d",
+      "codeSignatureText": "interface CheckResult{totalEntries: number;  driftedEntries: number;  missingEntries: number;  drifts: DriftDetail[];  missing: MissingSymbolDetail[];  success: boolean;  configError?: string; }",
       "docRef": {
         "filePath": "docs/packages/cli/src/types/index.md"
       },
-      "lastUpdated": 1765209229030
+      "lastUpdated": 1765232919551
     },
     {
       "id": "5be2d6d9-33ea-42de-b9af-b41853d67503",
@@ -4266,32 +4266,6 @@
       "lastUpdated": 1765209229034
     },
     {
-      "id": "9121a19e-877c-41ec-8425-2a822196cee2",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/fix.ts",
-        "symbolName": "mapManager"
-      },
-      "codeSignatureHash": "b6491eb827203e49a5757648e1d1828ad0b3644f10f3a16cd36faed15d1b303b",
-      "codeSignatureText": "mapManager = new DoctypeMapManager(mapPath)",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/fix.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "831336f9-c45f-452e-a13a-0f9abeaeae12",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/fix.ts",
-        "symbolName": "entries"
-      },
-      "codeSignatureHash": "ec2964e9276dc1a242d116890eb4277f255c98a215c8d4baf190438604120bec",
-      "codeSignatureText": "entries = mapManager.getEntries()",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/fix.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
       "id": "9df61279-3a02-4adf-86be-9b027697e81d",
       "codeRef": {
         "filePath": "packages/cli/src/commands/fix.ts",
@@ -4299,32 +4273,6 @@
       },
       "codeSignatureHash": "22600b17450366e70e28ce8b069267c3ba78e2ca7fe1eb1d516f6b5609bbed11",
       "codeSignatureText": "codeRoot = config ? resolve(config.baseDir || process.cwd(),  config.projectRoot): dirname(mapPath)",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/fix.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "2c291fc6-1083-4d28-ace6-9377b8dd92bc",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/fix.ts",
-        "symbolName": "analyzer"
-      },
-      "codeSignatureHash": "8595b7ed5c8aa848b61437a14874d8ac25d6077dc078faaaff4c79d5ebb3fc36",
-      "codeSignatureText": "analyzer = new AstAnalyzer()",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/fix.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "559df450-ff6c-40aa-aa0b-4bfc93f51ce8",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/fix.ts",
-        "symbolName": "detectedDrifts"
-      },
-      "codeSignatureHash": "d077d2c583df49cc0bab0d7d827d649eb7d94e9928ffb5ecdb9312fae67327b3",
-      "codeSignatureText": "detectedDrifts = detectDrift(mapManager,  analyzer, {logger,  basePath: codeRoot, })",
       "docRef": {
         "filePath": "docs/packages/cli/src/commands/fix.md"
       },
@@ -4416,19 +4364,6 @@
       },
       "codeSignatureHash": "b076f2b2a3f11edf5d6c159d510e1dbdc388f875038288fbc54fc1eda04a1162",
       "codeSignatureText": "resolvedPackageNames = selection.packageNames",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/changeset.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "a13ad2d4-21ba-4e05-96fd-d307995c60a7",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/changeset.ts",
-        "symbolName": "analyzer"
-      },
-      "codeSignatureHash": "9e78c7091344c5f6f712c139d0326b7277c30bf4cb99bb30a1359d0f4ea734a0",
-      "codeSignatureText": "analyzer = new ChangesetAnalyzer(logger)",
       "docRef": {
         "filePath": "docs/packages/cli/src/commands/changeset.md"
       },
@@ -4565,32 +4500,6 @@
       "lastUpdated": 1765209229034
     },
     {
-      "id": "ca09fd6d-1aa4-41e5-8147-d0c18bd1ba83",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/generate.ts",
-        "symbolName": "mapManager"
-      },
-      "codeSignatureHash": "b6491eb827203e49a5757648e1d1828ad0b3644f10f3a16cd36faed15d1b303b",
-      "codeSignatureText": "mapManager = new DoctypeMapManager(mapPath)",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/generate.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "4a612751-7ac7-4f99-b717-dbf1b412d6d7",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/generate.ts",
-        "symbolName": "entries"
-      },
-      "codeSignatureHash": "ec2964e9276dc1a242d116890eb4277f255c98a215c8d4baf190438604120bec",
-      "codeSignatureText": "entries = mapManager.getEntries()",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/generate.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
       "id": "f166e48e-35fa-41ba-8b15-ab9e89bc0118",
       "codeRef": {
         "filePath": "packages/cli/src/commands/generate.ts",
@@ -4598,45 +4507,6 @@
       },
       "codeSignatureHash": "22600b17450366e70e28ce8b069267c3ba78e2ca7fe1eb1d516f6b5609bbed11",
       "codeSignatureText": "codeRoot = config ? resolve(config.baseDir || process.cwd(),  config.projectRoot): dirname(mapPath)",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/generate.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "89250d1c-849d-4f2b-aaff-7a4f2282a799",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/generate.ts",
-        "symbolName": "analyzer"
-      },
-      "codeSignatureHash": "8595b7ed5c8aa848b61437a14874d8ac25d6077dc078faaaff4c79d5ebb3fc36",
-      "codeSignatureText": "analyzer = new AstAnalyzer()",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/generate.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "1b15410c-fd1c-438f-b7dd-8d6521ab3d52",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/generate.ts",
-        "symbolName": "detectedDrifts"
-      },
-      "codeSignatureHash": "d077d2c583df49cc0bab0d7d827d649eb7d94e9928ffb5ecdb9312fae67327b3",
-      "codeSignatureText": "detectedDrifts = detectDrift(mapManager,  analyzer, {logger,  basePath: codeRoot, })",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/generate.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "5c7247fa-22ef-48fe-a947-b054c5eb949e",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/generate.ts",
-        "symbolName": "driftedIds"
-      },
-      "codeSignatureHash": "9750876fb0b4a7be55a524f266dd9518283d4ebf7368adcf44c797e2f8716271",
-      "codeSignatureText": "driftedIds = new Set(detectedDrifts.map(d => d.entry.id))",
       "docRef": {
         "filePath": "docs/packages/cli/src/commands/generate.md"
       },
@@ -4812,32 +4682,6 @@
       "lastUpdated": 1765209229034
     },
     {
-      "id": "4cfdbda4-e083-4c7c-9f3e-23c7abdec0d9",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/check.ts",
-        "symbolName": "mapManager"
-      },
-      "codeSignatureHash": "b6491eb827203e49a5757648e1d1828ad0b3644f10f3a16cd36faed15d1b303b",
-      "codeSignatureText": "mapManager = new DoctypeMapManager(mapPath)",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/check.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "c3271a77-c0cb-42eb-9335-edbbe8b4da8b",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/check.ts",
-        "symbolName": "entries"
-      },
-      "codeSignatureHash": "ec2964e9276dc1a242d116890eb4277f255c98a215c8d4baf190438604120bec",
-      "codeSignatureText": "entries = mapManager.getEntries()",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/check.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
       "id": "06e6ccfe-9be0-4ef2-8861-7197a73f12d8",
       "codeRef": {
         "filePath": "packages/cli/src/commands/check.ts",
@@ -4845,45 +4689,6 @@
       },
       "codeSignatureHash": "22600b17450366e70e28ce8b069267c3ba78e2ca7fe1eb1d516f6b5609bbed11",
       "codeSignatureText": "codeRoot = config ? resolve(config.baseDir || process.cwd(),  config.projectRoot): dirname(mapPath)",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/check.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "2bbe2e02-e521-4a61-b449-504b08c54819",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/check.ts",
-        "symbolName": "analyzer"
-      },
-      "codeSignatureHash": "8595b7ed5c8aa848b61437a14874d8ac25d6077dc078faaaff4c79d5ebb3fc36",
-      "codeSignatureText": "analyzer = new AstAnalyzer()",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/check.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "2ae8ddcd-9105-4369-ab50-1c670feddd81",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/check.ts",
-        "symbolName": "detectedDrifts"
-      },
-      "codeSignatureHash": "d077d2c583df49cc0bab0d7d827d649eb7d94e9928ffb5ecdb9312fae67327b3",
-      "codeSignatureText": "detectedDrifts = detectDrift(mapManager,  analyzer, {logger,  basePath: codeRoot, })",
-      "docRef": {
-        "filePath": "docs/packages/cli/src/commands/check.md"
-      },
-      "lastUpdated": 1765209229034
-    },
-    {
-      "id": "fc49cdc2-9223-44d6-970e-a7015344f50c",
-      "codeRef": {
-        "filePath": "packages/cli/src/commands/check.ts",
-        "symbolName": "drifts"
-      },
-      "codeSignatureHash": "6fc2ba1f74b0ee8cb54a53c8b178de1ee0dc261f34728d021cae80798428cb3e",
-      "codeSignatureText": "drifts: DriftDetail[]= detectedDrifts.map((drift)=>({id: drift.entry.id,  symbolName: drift.entry.codeRef.symbolName,  codeFilePath: drift.entry.codeRef.filePath,  docFilePath: drift.entry.docRef.filePath,  oldHash: drift.oldHash,  newHash: drift.currentHash,  oldSignature: undefined,  newSignature: drift.currentSignature.signatureText, }))",
       "docRef": {
         "filePath": "docs/packages/cli/src/commands/check.md"
       },
@@ -4908,12 +4713,12 @@
         "filePath": "packages/cli/src/commands/check.ts",
         "symbolName": "result"
       },
-      "codeSignatureHash": "08fa977c52962bcc4ee4ea638f091dbae9279c427eeb8cf485e29709327e74fc",
-      "codeSignatureText": "result: CheckResult ={totalEntries: entries.length,  driftedEntries: drifts.length,  drifts,  success: drifts.length === 0, }",
+      "codeSignatureHash": "d3243f9915f7c2ca73976aef167e1dd5ec86bbe7c3769e556dd75cae93d61395",
+      "codeSignatureText": "result: CheckResult ={totalEntries: entries.length,  driftedEntries: drifts.length,  missingEntries: missingDetails.length,  drifts,  missing: missingDetails,  success: drifts.length === 0 && missingDetails.length === 0, }",
       "docRef": {
         "filePath": "docs/packages/cli/src/commands/check.md"
       },
-      "lastUpdated": 1765209229034
+      "lastUpdated": 1765232916143
     },
     {
       "id": "fc115443-1d32-4181-b86f-6ef8d6fde961",
@@ -5350,12 +5155,12 @@
         "filePath": "packages/cli/src/services/drift-detector.ts",
         "symbolName": "detectDrift"
       },
-      "codeSignatureHash": "140bbea11da5b11f92d7e713d61555493cd8a0c98fd54b87d7e50b62cbbd6be5",
-      "codeSignatureText": "function detectDrift(mapManager: DoctypeMapManager,  analyzer: InstanceType<typeof AstAnalyzer>,  options: DriftDetectionOptions ={}): DriftInfo[]",
+      "codeSignatureHash": "2f0f73dd77126e662eabd464784e04df7ee3c7c27363e9d48a3a953465e07085",
+      "codeSignatureText": "function detectDrift(mapManager: DoctypeMapManager,  analyzer: InstanceType<typeof AstAnalyzer>,  options: DriftDetectionOptions ={}): DriftResult",
       "docRef": {
         "filePath": "docs/packages/cli/src/services/drift-detector.md"
       },
-      "lastUpdated": 1765209229035
+      "lastUpdated": 1765232917192
     },
     {
       "id": "0de3a4dd-17b4-4113-a2cc-b7fa973aeb2c",

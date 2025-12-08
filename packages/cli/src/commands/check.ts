@@ -37,7 +37,9 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
       return {
         totalEntries: 0,
         driftedEntries: 0,
+        missingEntries: 0,
         drifts: [],
+        missing: [],
         success: false,
         configError: error.message,
       };
@@ -59,7 +61,9 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     return {
       totalEntries: 0,
       driftedEntries: 0,
+      missingEntries: 0,
       drifts: [],
+      missing: [],
       success: false,
       configError: `Map file not found: ${mapPath}`,
     };
@@ -75,7 +79,9 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     return {
       totalEntries: 0,
       driftedEntries: 0,
+      missingEntries: 0,
       drifts: [],
+      missing: [],
       success: true,
     };
   }
@@ -90,7 +96,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
   // Analyze current code and detect drift using centralized logic
   const analyzer = new AstAnalyzer();
-  const detectedDrifts = detectDrift(mapManager, analyzer, {
+  const { drifts: detectedDrifts, missing: missingSymbols } = detectDrift(mapManager, analyzer, {
     logger,
     basePath: codeRoot,
   });
@@ -107,28 +113,56 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     newSignature: drift.currentSignature.signatureText,
   }));
 
+  // Convert MissingSymbolInfo to MissingSymbolDetail
+  const missingDetails: import('../types').MissingSymbolDetail[] = missingSymbols.map((m) => ({
+    id: m.entry.id,
+    symbolName: m.entry.codeRef.symbolName,
+    codeFilePath: m.entry.codeRef.filePath,
+    docFilePath: m.entry.docRef.filePath,
+    reason: m.reason,
+  }));
+
   // Display results
   logger.divider();
 
-  if (drifts.length === 0) {
+  if (drifts.length === 0 && missingDetails.length === 0) {
     logger.success('All documentation is in sync with code');
     logger.info(`Checked ${entries.length} entries, no drift detected`);
   } else {
-    logger.error(`Documentation drift detected in ${drifts.length} ${drifts.length === 1 ? 'entry' : 'entries'}`);
-    logger.newline();
+    if (drifts.length > 0) {
+        logger.error(`Documentation drift detected in ${drifts.length} ${drifts.length === 1 ? 'entry' : 'entries'}`);
+        logger.newline();
 
-    for (const drift of drifts) {
-      logger.log(`  ${Logger.symbol(drift.symbolName)} in ${Logger.path(drift.codeFilePath)}`);
-      logger.log(`    Doc: ${Logger.path(drift.docFilePath)} (anchor: ${drift.id})`);
-      logger.log(`    Old hash: ${Logger.hash(drift.oldHash)}`);
-      logger.log(`    New hash: ${Logger.hash(drift.newHash)}`);
-      if (options.verbose && drift.newSignature) {
-        logger.log(`    New signature: ${drift.newSignature}`);
-      }
-      logger.newline();
+        for (const drift of drifts) {
+        logger.log(`  ${Logger.symbol(drift.symbolName)} in ${Logger.path(drift.codeFilePath)}`);
+        logger.log(`    Doc: ${Logger.path(drift.docFilePath)} (anchor: ${drift.id})`);
+        logger.log(`    Old hash: ${Logger.hash(drift.oldHash)}`);
+        logger.log(`    New hash: ${Logger.hash(drift.newHash)}`);
+        if (options.verbose && drift.newSignature) {
+            logger.log(`    New signature: ${drift.newSignature}`);
+        }
+        logger.newline();
+        }
     }
 
-    logger.info('Run `npx doctype fix` to update the documentation');
+    if (missingDetails.length > 0) {
+        logger.error(`Missing symbols detected in ${missingDetails.length} ${missingDetails.length === 1 ? 'entry' : 'entries'}`);
+        logger.newline();
+
+        for (const m of missingDetails) {
+            logger.log(`  ${Logger.symbol(m.symbolName)} in ${Logger.path(m.codeFilePath)}`);
+            logger.log(`    Doc: ${Logger.path(m.docFilePath)} (anchor: ${m.id})`);
+            logger.log(`    Reason: ${m.reason === 'file_not_found' ? 'Code file not found' : 'Symbol not found in file'}`);
+            if (m.reason === 'symbol_not_found') {
+                logger.log(`    Tip: Did you rename the function? Update the map or the code.`);
+            }
+            logger.newline();
+        }
+    }
+
+    if (drifts.length > 0) {
+        logger.info('Run `npx doctype fix` to update the documentation');
+    }
   }
 
   logger.divider();
@@ -136,8 +170,10 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   const result: CheckResult = {
     totalEntries: entries.length,
     driftedEntries: drifts.length,
+    missingEntries: missingDetails.length,
     drifts,
-    success: drifts.length === 0,
+    missing: missingDetails,
+    success: drifts.length === 0 && missingDetails.length === 0,
   };
 
   return result;

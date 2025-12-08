@@ -64,7 +64,22 @@ TODO: Add documentation for this symbol
 ### detectDrift
 
 <!-- doctype:start id="02e09b54-a3b7-4b54-9b36-3d0399c6ce45" code_ref="packages/cli/src/services/drift-detector.ts#detectDrift" -->
-TODO: Add documentation for this symbol
+**Purpose:** The detectDrift function analyzes a given document structure and identifies discrepancies between its expected and actual state, which is crucial for maintaining data integrity.
+
+**Parameters:**
+- `mapManager` (`DoctypeMapManager`): An instance of DoctypeMapManager responsible for managing the document types and their maps.
+- `analyzer` (`InstanceType<typeof AstAnalyzer>`): An instance of AstAnalyzer used to analyze the document's abstract syntax tree.
+- `options` (optional) (`DriftDetectionOptions`): Configuration options for drift detection. Default: `{}`
+
+**Returns:** `DriftResult` - An object containing the results of the drift detection, including any discrepancies found.
+
+**Usage Example:**
+```typescript
+const driftResults = detectDrift(mapManagerInstance, astAnalyzerInstance, { threshold: 0.1 });
+```
+
+**Notes:**
+- The options parameter can customize the sensitivity of the drift detection process.
 <!-- doctype:end id="02e09b54-a3b7-4b54-9b36-3d0399c6ce45" -->
 
 

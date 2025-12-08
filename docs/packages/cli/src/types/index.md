@@ -101,7 +101,23 @@ TODO: Add documentation for this symbol
 ### CheckResult
 
 <!-- doctype:start id="2b3114ca-4363-4fbf-9ed7-cf7af9f82bdd" code_ref="packages/cli/src/types/index.ts#CheckResult" -->
-TODO: Add documentation for this symbol
+**Purpose:** The CheckResult interface defines the structure of the results returned from a check operation, encapsulating relevant metrics about the entries processed.
+
+**Parameters:**
+- `totalEntries` (`number`): The total number of entries processed in the check operation.
+- `driftedEntries` (`number`): The number of entries that have drifted from their expected state.
+- `missingEntries` (`number`): The count of entries that are missing from the expected dataset.
+- `drifts` (`DriftDetail[]`): An array of details about the drifts found during the check.
+- `missing` (`MissingSymbolDetail[]`): An array of details about the missing entries.
+- `success` (`boolean`): Indicates whether the check operation was successful or not.
+- `configError` (optional) (`string`): An optional string describing any configuration errors encountered during the check. Default: `undefined`
+
+**Returns:** `void` - This interface does not have a return type as it is a definition for an object structure.
+
+**Usage Example:**
+```typescript
+const result: CheckResult = { totalEntries: 100, driftedEntries: 5, missingEntries: 2, drifts: [], missing: [], success: true };
+```
 <!-- doctype:end id="2b3114ca-4363-4fbf-9ed7-cf7af9f82bdd" -->
 
 

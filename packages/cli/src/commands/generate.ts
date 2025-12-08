@@ -94,10 +94,14 @@ export async function generateCommand(options: GenerateOptions): Promise<Generat
 
   // Detect drift (which includes missing content for new entries)
   const analyzer = new AstAnalyzer();
-  const detectedDrifts = detectDrift(mapManager, analyzer, {
+  const { drifts: detectedDrifts, missing } = detectDrift(mapManager, analyzer, {
     logger,
     basePath: codeRoot,
   });
+
+  if (missing.length > 0) {
+    logger.warn(`Skipping ${missing.length} missing symbols/files (cannot generate documentation). Run 'check' command for details.`);
+  }
 
   // Second pass: Scan for "TODO" placeholders even if hashes match
   // This enables "doctype generate" to work after "doctype init"

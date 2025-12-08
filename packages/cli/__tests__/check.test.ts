@@ -158,9 +158,29 @@ Test documentation
       verbose: false,
     });
 
-    // Should not crash, just skip the missing file
-    expect(result.success).toBe(true);
+    // Should detect missing file
+    expect(result.success).toBe(false);
     expect(result.driftedEntries).toBe(0);
+    expect(result.missingEntries).toBe(1);
+    expect(result.missing[0].reason).toBe('file_not_found');
+  });
+
+  it('should detect missing symbol (rename) in existing file', async () => {
+    // Rename function in code (simulating a rename)
+    const modifiedCode = `export function renamedFunc(x: number): number {
+  return x * 2;
+}`;
+    writeFileSync(testCodeFile, modifiedCode);
+
+    const result = await checkCommand({
+      map: testMapPath,
+      verbose: false,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.missingEntries).toBe(1);
+    expect(result.missing[0].reason).toBe('symbol_not_found');
+    expect(result.missing[0].symbolName).toBe('testFunc');
   });
 
   it('should provide detailed drift information in verbose mode', async () => {

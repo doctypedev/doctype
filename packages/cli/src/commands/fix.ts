@@ -96,10 +96,14 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
   // Detect drift using centralized logic
   const analyzer = new AstAnalyzer();
-  const detectedDrifts = detectDrift(mapManager, analyzer, {
+  const { drifts: detectedDrifts, missing } = detectDrift(mapManager, analyzer, {
     logger,
     basePath: codeRoot,
   });
+
+  if (missing.length > 0) {
+    logger.warn(`Skipping ${missing.length} missing symbols/files (cannot fix automatically). Run 'check' command for details.`);
+  }
 
   if (detectedDrifts.length === 0) {
     logger.success('No drift detected - all documentation is up to date');

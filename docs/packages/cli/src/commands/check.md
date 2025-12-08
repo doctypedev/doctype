@@ -8,7 +8,14 @@ Auto-generated documentation via Doctype.
 ### result
 
 <!-- doctype:start id="1d0d419c-5f3c-4aff-8f9a-412030c45bad" code_ref="packages/cli/src/commands/check.ts#result" -->
-TODO: Add documentation for this symbol
+**Purpose:** The 'result' variable holds an object that summarizes the outcome of a check operation, indicating the counts of total, drifted, and missing entries, as well as the success status of the check.
+
+**Returns:** `CheckResult` - An object containing the total number of entries checked, the number of drifted entries, the number of missing entries, arrays of drifted and missing entries, and a success flag.
+
+**Usage Example:**
+```typescript
+const result: CheckResult = { totalEntries: entries.length, driftedEntries: drifts.length, missingEntries: missingDetails.length, drifts, missing: missingDetails, success: drifts.length === 0 && missingDetails.length === 0 };
+```
 <!-- doctype:end id="1d0d419c-5f3c-4aff-8f9a-412030c45bad" -->
 
 
