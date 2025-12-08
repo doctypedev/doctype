@@ -328,7 +328,15 @@ yargs(hideBin(process.argv))
   .example('$0 changeset --skip-ai', 'Generate changeset without AI analysis')
   .example('$0 changeset -t minor -d "Add new feature"', 'Manually specify version and description')
 
-  .demandCommand(1, 'You must provide a command (init, check, fix, generate, or changeset)')
+  .command(
+    '$0',
+    'Open interactive menu',
+    () => {},
+    async () => {
+      const { showMainMenu } = await import('./commands/menu');
+      await showMainMenu();
+    }
+  )
   .strict()
   .recommendCommands()
   .showHelpOnFail(true)

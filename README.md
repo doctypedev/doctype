@@ -40,13 +40,50 @@ Doctype automatically detects when your code changes and updates your documentat
 npm install -g @doctypedev/doctype
 ```
 
-### 2. Initialize Tracking
+### 2. Run the Interactive Menu
 
+The easiest way to use Doctype is through its interactive menu. Just run:
+
+```bash
+doctype
+```
+
+You'll be presented with a menu to:
+- **Initialize** your project
+- **Check** for documentation drift
+- **Fix** outdated documentation
+- **Generate** new content
+- **Create Changesets**
+
+### 3. Or Use Individual Commands
+
+If you prefer scripting or know exactly what you want:
+
+**Initialize Tracking:**
 ```bash
 doctype init
 ```
 
-This will:
+**Generate Content (AI):**
+```bash
+doctype generate
+```
+
+**Check for Drift:**
+```bash
+doctype check
+```
+
+**Fix Drift (Update Docs):**
+```bash
+doctype fix
+```
+
+---
+
+### Initialization Details
+
+Running `doctype init` (or selecting "Initialize" in the menu) will:
 - Prompt you for project configuration (name, root, docs folder)
 - **Automatically scan your TypeScript codebase** for exported symbols
 - **Create documentation files** with "TODO" placeholders based on your chosen strategy
