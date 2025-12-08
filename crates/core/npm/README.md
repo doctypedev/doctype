@@ -19,8 +19,8 @@ Native packages follow this naming convention:
 
 Examples:
 - `@doctypedev/doctype-darwin-arm64`
-- `@doctypedev/doctype-linux-x64` *(future)*
-- `@doctypedev/doctype-win32-x64` *(future)*
+- `@doctypedev/doctype-linux-x64`
+- `@doctypedev/doctype-win32-x64`
 
 ## How It Works
 

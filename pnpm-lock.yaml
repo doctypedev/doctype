@@ -39,6 +39,12 @@ importers:
         specifier: ^3.0.0
         version: 3.7.4
 
+  crates/core/npm/darwin-arm64: {}
+
+  crates/core/npm/linux-x64-gnu: {}
+
+  crates/core/npm/win32-x64-msvc: {}
+
   packages/cli:
     dependencies:
       '@ai-sdk/anthropic':
@@ -144,8 +150,14 @@ importers:
         version: 5.9.3
     optionalDependencies:
       '@doctypedev/core-darwin-arm64':
-        specifier: ^0.4.4
-        version: 0.4.4
+        specifier: 0.5.0
+        version: link:../../crates/core/npm/darwin-arm64
+      '@doctypedev/core-linux-x64-gnu':
+        specifier: 0.5.0
+        version: link:../../crates/core/npm/linux-x64-gnu
+      '@doctypedev/core-win32-x64-msvc':
+        specifier: 0.5.0
+        version: link:../../crates/core/npm/win32-x64-msvc
 
 packages:
 
@@ -376,11 +388,6 @@ packages:
         optional: true
       search-insights:
         optional: true
-
-  '@doctypedev/core-darwin-arm64@0.4.4':
-    resolution: {integrity: sha512-cU5yIqLpSyxzqMtKefofgiURDdrKX1BBflkGKZxhBZhtkb2jU0yaDcZHRBRL5/wiFhIpQbSNiVBWdBrqsCCl5w==}
-    cpu: [arm64]
-    os: [darwin]
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -2687,9 +2694,6 @@ snapshots:
       search-insights: 2.17.3
     transitivePeerDependencies:
       - '@algolia/client-search'
-
-  '@doctypedev/core-darwin-arm64@0.4.4':
-    optional: true
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true

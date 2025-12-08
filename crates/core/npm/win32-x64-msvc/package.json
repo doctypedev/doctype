@@ -1,0 +1,32 @@
+{
+    "name": "@doctypedev/core-win32-x64-msvc",
+    "version": "0.5.0",
+    "description": "Doctype native core for Windows x64 (MSVC)",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/doctypedev/doctype.git"
+    },
+    "keywords": [
+        "doctype",
+        "ast",
+        "native",
+        "rust",
+        "windows"
+    ],
+    "author": "doctypedev",
+    "license": "MIT",
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "index.js",
+        "doctype-core.win32-x64-msvc.node"
+    ]
+}

@@ -24,6 +24,17 @@ jobs:
             target: aarch64-apple-darwin
             platform: darwin
             arch: arm64
+            npm_dir: darwin-arm64
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            platform: linux
+            arch: x64
+            npm_dir: linux-x64-gnu
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+            platform: win32
+            arch: x64
+            npm_dir: win32-x64-msvc
 
     steps:
       - uses: actions/checkout@v4
@@ -55,13 +66,15 @@ jobs:
         run: pnpm install
 
       - name: Set version for native package
+        shell: bash
         run: |
-          NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.npm_dir }}"
           echo "Setting version to ${{ inputs.version }} in $NPM_PACKAGE_DIR"
           cd "$NPM_PACKAGE_DIR"
           npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
 
       - name: Build and Publish Native Package
+        shell: bash
         env:
           CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
         run: |
@@ -71,8 +84,9 @@ jobs:
           pnpm run build
           
           # Copy binary to npm package location
-          NODE_BINARY_NAME="doctype-core.${{ matrix.settings.platform }}-${{ matrix.settings.arch }}.node"
-          NPM_PACKAGE_DIR="npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          # Copy binary to npm package location
+          NODE_BINARY_NAME="doctype-core.${{ matrix.settings.npm_dir }}.node"
+          NPM_PACKAGE_DIR="npm/${{ matrix.settings.npm_dir }}"
           
           # Ensure directory exists
           mkdir -p "$NPM_PACKAGE_DIR"
@@ -84,7 +98,7 @@ jobs:
           echo "📦 Publishing native package from $(pwd)"
           
           # Check if version exists
-          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.npm_dir }}"
           VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
 
