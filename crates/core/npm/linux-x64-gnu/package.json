@@ -1,0 +1,32 @@
+{
+    "name": "@doctypedev/core-linux-x64-gnu",
+    "version": "0.5.0",
+    "description": "Doctype native core for Linux x64 (glibc)",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/doctypedev/doctype.git"
+    },
+    "keywords": [
+        "doctype",
+        "ast",
+        "native",
+        "rust",
+        "linux"
+    ],
+    "author": "doctypedev",
+    "license": "MIT",
+    "os": [
+        "linux"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "index.js",
+        "doctype-core.linux-x64-gnu.node"
+    ]
+}

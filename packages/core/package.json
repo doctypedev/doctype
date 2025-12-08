@@ -28,7 +28,9 @@
     "ts-morph": "^21.0.1"
   },
   "optionalDependencies": {
-    "@doctypedev/core-darwin-arm64": "^0.4.4"
+    "@doctypedev/core-darwin-arm64": "0.5.0",
+    "@doctypedev/core-linux-x64-gnu": "0.5.0",
+    "@doctypedev/core-win32-x64-msvc": "0.5.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
