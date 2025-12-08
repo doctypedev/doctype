@@ -13,6 +13,15 @@ vi.mock('child_process', async (importOriginal) => {
   };
 });
 
+// Mock @doctypedev/core to avoid native binding issues
+vi.mock('@doctypedev/core', () => {
+  return {
+    ASTAnalyzer: vi.fn().mockImplementation(() => ({
+      analyzeFile: vi.fn().mockResolvedValue([]),
+    })),
+  };
+});
+
 describe('CLI: changeset command', () => {
   let originalCwd: string;
   let testDir: string;
@@ -24,7 +33,9 @@ describe('CLI: changeset command', () => {
       rmSync(testDir, { recursive: true, force: true });
     }
     mkdirSync(testDir, { recursive: true });
-    process.chdir(testDir);
+    // Mock process.cwd
+    vi.spyOn(process, 'cwd').mockReturnValue(testDir);
+    // process.chdir(testDir); // Not supported in workers
 
     // Initialize a dummy git repository
     (execSync as vi.Mock).mockClear(); // Clear mocks before setting up git
@@ -80,7 +91,7 @@ describe('CLI: changeset command', () => {
   });
 
   afterEach(() => {
-    process.chdir(originalCwd);
+    // process.chdir(originalCwd);
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
     }
@@ -115,6 +126,15 @@ describe('CLI: changeset command', () => {
     );
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0][0]).toBe('git fetch origin main');
+
+    // Also verify that subsequent git diff/show calls use origin/main
+    const diffCalls = (execSync as vi.Mock).mock.calls.filter(call =>
+      (call[0] as string).startsWith('git diff origin/main') ||
+      (call[0] as string).startsWith('git merge-base origin/main')
+    );
+    // Depending on implementation details, it might call merge-base or diff directly
+    // checking for at least one call that uses origin/main
+    expect(diffCalls.length).toBeGreaterThan(0);
   });
 
   it('should fetch from specified base branch when forceFetch is true', async () => {

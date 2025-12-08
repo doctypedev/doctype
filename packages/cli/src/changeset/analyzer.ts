@@ -82,11 +82,17 @@ export class ChangesetAnalyzer {
     this.logger.debug(`Analyzing changes against ${baseBranch}`);
     this.logger.debug(`Force fetch: ${forceFetch}`);
 
+    let effectiveBaseBranch = baseBranch;
+
     if (forceFetch) {
       try {
         this.logger.info(`Fetching latest changes from origin/${baseBranch}...`);
         execSync(`git fetch origin ${baseBranch}`, { stdio: 'pipe' });
         this.logger.success(`Successfully fetched origin/${baseBranch}`);
+
+        // When force fetching, we want to compare against the remote branch
+        // to avoid issues where local base branch is stale
+        effectiveBaseBranch = `origin/${baseBranch}`;
       } catch (error) {
         this.logger.warn(
           `Failed to fetch origin/${baseBranch}. Using local branch for analysis. Error: ${error instanceof Error ? error.message : String(error)
@@ -96,7 +102,7 @@ export class ChangesetAnalyzer {
     }
 
     // Get git diff
-    const gitDiff = this.getGitDiff(baseBranch, stagedOnly);
+    const gitDiff = this.getGitDiff(effectiveBaseBranch, stagedOnly);
 
     if (!gitDiff) {
       this.logger.info('No changes detected');
@@ -116,7 +122,7 @@ export class ChangesetAnalyzer {
     // Analyze symbols in changed files
     const symbolChanges = await this.analyzeSymbolChanges(
       changedFiles,
-      baseBranch,
+      effectiveBaseBranch,
       projectRoot
     );
 
