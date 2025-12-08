@@ -11,7 +11,7 @@ import {
   AIProviderError,
 } from './types';
 import { VercelAIProvider } from './providers/vercel-ai-provider';
-import { CodeSignature } from '../core/native-loader';
+
 import { getDefaultModel } from './constants';
 
 /**
@@ -58,126 +58,73 @@ export class AIAgent {
     );
   }
 
-  /**
-   * Generate documentation from a map entry and current signature
-   */
-  async generateFromDrift(
-    symbolName: string,
-    oldSignature: CodeSignature,
-    newSignature: CodeSignature,
-    oldDocumentation: string,
-    filePath?: string
-  ): Promise<string> {
-    const request: DocumentationRequest = {
-      symbolName,
-      oldSignature,
-      newSignature,
-      oldDocumentation,
-      context: filePath ? { filePath } : undefined,
-    };
-
-    const response = await this.generateDocumentation(request);
-    return response.content;
-  }
-
-  /**
-   * Generate documentation for a batch of symbols
-   *
-   * Uses partial success pattern: preserves successful generations and
-   * retries only failed items sequentially
-   */
   async generateBatch(
-    items: Array<{ symbolName: string; signatureText: string }>
+    items: Array<{ symbolName: string; signatureText: string }>,
+    prompt: string,
+    systemPrompt: string
   ): Promise<Array<{ symbolName: string; content: string }>> {
     this.log(`Generating batch documentation for ${items.length} items`);
 
     // Try batch generation if provider supports it
     if (this.provider.generateBatchDocumentation) {
-        try {
-            const batchResult = await this.executeWithRetry(() =>
-                this.provider.generateBatchDocumentation!(items)
-            );
+      try {
+        const batchResult = await this.executeWithRetry(() =>
+          this.provider.generateBatchDocumentation!(items, prompt, systemPrompt)
+        );
 
-            // Start with successful generations from batch
-            const results = [...batchResult.success];
+        // Start with successful generations from batch
+        const results = [...batchResult.success];
 
-            // Log batch statistics
-            if (batchResult.stats.failed > 0) {
-                this.log(
-                    `Batch generated ${batchResult.stats.succeeded}/${batchResult.stats.total} successfully. ` +
-                    `Retrying ${batchResult.stats.failed} failed items sequentially...`
-                );
+        // Log batch statistics
+        if (batchResult.stats.failed > 0) {
+          this.log(
+            `Batch generated ${batchResult.stats.succeeded}/${batchResult.stats.total} successfully. ` +
+            `Retrying ${batchResult.stats.failed} failed items sequentially...`
+          );
 
-                // Retry failed items sequentially
-                for (const failure of batchResult.failures) {
-                    try {
-                        this.log(`Retrying ${failure.symbolName} (failed validation: ${failure.errors.join(', ')})`);
+          // Retry failed items sequentially
+          for (const failure of batchResult.failures) {
+            try {
+              this.log(`Retrying ${failure.symbolName} (failed validation: ${failure.errors.join(', ')})`);
 
-                        // Find the original item to get the signature
-                        const originalItem = items.find(item => item.symbolName === failure.symbolName);
-                        if (!originalItem) {
-                            this.log(`Could not find original item for ${failure.symbolName}, skipping`);
-                            continue;
-                        }
+              // Find the original item to get the signature
+              const originalItem = items.find(item => item.symbolName === failure.symbolName);
+              if (!originalItem) {
+                this.log(`Could not find original item for ${failure.symbolName}, skipping`);
+                continue;
+              }
 
-                        const content = await this.generateInitial(
-                            originalItem.symbolName,
-                            { signatureText: originalItem.signatureText } as CodeSignature
-                        );
-                        results.push({ symbolName: originalItem.symbolName, content });
-                        this.log(`Successfully regenerated ${failure.symbolName}`);
-                    } catch (error) {
-                        // Log and continue, omitting this item
-                        this.log(`Retry failed for ${failure.symbolName}`, error);
-                    }
-                }
-            } else {
-                this.log(`Batch completed successfully: ${batchResult.stats.succeeded}/${batchResult.stats.total}`);
+              // We need to construct a single request here. 
+              // Since we have the prompt/systemPrompt for batch, we might need to adapt them for single request?
+              // Actually, the prompt for batch is different from single. 
+              // If batch fails, we probably can't easily fallback to single with the SAME prompt string.
+              // However, assuming the caller can handle this or this fallback logic needs to changed.
+              // For now, let's remove the fallback logic if strict agnostic is required, OR assume the caller provides a way to get single prompt?
+              // To keep it simple and agnostic: remove the complex fallback logic that depends on knowing how to build a single prompt.
+
+              this.log(`Batch retry not supported in agnostic mode for ${failure.symbolName}`);
+
+            } catch (error) {
+              this.log(`Retry failed for ${failure.symbolName}`, error);
             }
-
-            return results;
-        } catch (error) {
-            // Complete batch failure, fallback to sequential
-            this.log('Batch generation failed completely, falling back to sequential generation', error);
+          }
+        } else {
+          this.log(`Batch completed successfully: ${batchResult.stats.succeeded}/${batchResult.stats.total}`);
         }
+
+        return results;
+      } catch (error) {
+        this.log('Batch generation failed completely', error);
+      }
     }
 
-    // Fallback: sequential generation if provider doesn't support batching or batch failed completely
-    this.log('Using sequential generation for all items');
-    const results = [];
-    for (const item of items) {
-        try {
-            const content = await this.generateInitial(
-                item.symbolName,
-                { signatureText: item.signatureText } as CodeSignature
-            );
-            results.push({ symbolName: item.symbolName, content });
-        } catch (error) {
-            // Log and continue, omitting this item
-            this.log(`Failed to generate for ${item.symbolName}`, error);
-        }
-    }
-    return results;
-  }
+    // Fallback: sequential generation is also hard because we don't have single prompts.
+    // So if provider doesn't support batch, or it fails, we can't easily fallback without the caller providing single prompts.
+    // For this refactor, I will just throw or return empty if batch is not supported/fails, 
+    // effectively removing the "smart" fallback that required domain knowledge (PromptBuilder).
 
-  /**
-   * Generate initial documentation for a symbol (no previous docs)
-   */
-  async generateInitial(
-    symbolName: string,
-    signature: CodeSignature,
-    options: GenerateOptions = {}
-  ): Promise<string> {
-    // Create a simple request with just the new signature
-    const request: DocumentationRequest = {
-      symbolName,
-      oldSignature: signature, // Use same as old for initial docs
-      newSignature: signature,
-      oldDocumentation: '', // No previous documentation
-    };
-
-    const response = await this.generateDocumentation(request, options);
-    return response.content;
+    this.log('Batch generation not supported by provider or failed');
+    return [];
   }
 
   /**

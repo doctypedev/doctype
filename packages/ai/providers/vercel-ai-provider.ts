@@ -4,7 +4,6 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createMistral } from '@ai-sdk/mistral';
-import { PromptBuilder } from '../prompt-builder';
 import { BatchDocumentationStructureSchema, DocumentationStructureSchema, type DocumentationStructure } from '../structured-schema';
 import { buildMarkdownFromStructure } from '../markdown-builder';
 import { z } from 'zod';
@@ -56,13 +55,9 @@ export class VercelAIProvider implements IAIProvider {
   async generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse> {
     const model = this.getModel();
 
-    // Use structured prompt
-    const prompt = PromptBuilder.buildStructuredSinglePrompt(
-      request.symbolName,
-      request.newSignature.signatureText,
-      request.oldDocumentation
-    );
-    const systemPrompt = PromptBuilder.buildStructuredSystemPrompt();
+    // Use structured prompt from request
+    const prompt = request.prompt;
+    const systemPrompt = request.systemPrompt;
 
     try {
       const options: any = {
@@ -107,7 +102,7 @@ export class VercelAIProvider implements IAIProvider {
 
       // Map common error codes if possible
       if (err.name === 'APICallError' && err.statusCode === 429) {
-          code = 'RATE_LIMIT';
+        code = 'RATE_LIMIT';
       }
 
       throw new AIProviderError(
@@ -120,11 +115,11 @@ export class VercelAIProvider implements IAIProvider {
   }
 
   async generateBatchDocumentation(
-    items: Array<{ symbolName: string; signatureText: string }>
+    items: Array<{ symbolName: string; signatureText: string }>,
+    prompt: string,
+    systemPrompt: string
   ): Promise<BatchDocumentationResult> {
     const model = this.getModel();
-    const prompt = PromptBuilder.buildStructuredBatchPrompt(items);
-    const systemPrompt = PromptBuilder.buildStructuredSystemPrompt();
 
     try {
       const options: any = {
@@ -138,8 +133,8 @@ export class VercelAIProvider implements IAIProvider {
       if (this.modelConfig.maxTokens) {
         options.maxTokens = this.modelConfig.maxTokens * items.length;
       } else {
-         // Default generous limit for batches if not specified
-         options.maxTokens = 4096;
+        // Default generous limit for batches if not specified
+        options.maxTokens = 4096;
       }
 
       if (this.modelConfig.temperature !== undefined) {
@@ -174,23 +169,23 @@ export class VercelAIProvider implements IAIProvider {
         },
       };
     } catch (error) {
-        const err = error as any;
-        // Complete batch failure (network, API error, etc.)
-        console.warn('[VercelAIProvider] Batch generation failed completely:', err.message);
+      const err = error as any;
+      // Complete batch failure (network, API error, etc.)
+      console.warn('[VercelAIProvider] Batch generation failed completely:', err.message);
 
-        // Return empty result with all items marked as failures
-        return {
-          success: [],
-          failures: items.map(item => ({
-            symbolName: item.symbolName,
-            errors: [`Batch generation error: ${err.message}`],
-          })),
-          stats: {
-            total: items.length,
-            succeeded: 0,
-            failed: items.length,
-          },
-        };
+      // Return empty result with all items marked as failures
+      return {
+        success: [],
+        failures: items.map(item => ({
+          symbolName: item.symbolName,
+          errors: [`Batch generation error: ${err.message}`],
+        })),
+        stats: {
+          total: items.length,
+          succeeded: 0,
+          failed: items.length,
+        },
+      };
     }
   }
 
@@ -210,6 +205,36 @@ export class VercelAIProvider implements IAIProvider {
         console.error('Connection validation failed:', error);
       }
       return false;
+    }
+  }
+
+  /**
+   * Generate plain text from a prompt (useful for non-documentation tasks)
+   */
+  async generateText(
+    prompt: string,
+    options: { temperature?: number; maxTokens?: number } = {}
+  ): Promise<string> {
+    const model = this.getModel();
+
+    try {
+      const genOptions: any = {
+        model,
+        prompt,
+        temperature: options.temperature ?? this.modelConfig.temperature,
+        maxTokens: options.maxTokens ?? this.modelConfig.maxTokens ?? 1000,
+      };
+
+      const result = await generateText(genOptions);
+      return result.text;
+    } catch (error) {
+      const err = error as any;
+      throw new AIProviderError(
+        'GENERATION_FAILED',
+        err.message || 'Text generation failed',
+        this.provider,
+        error
+      );
     }
   }
 }

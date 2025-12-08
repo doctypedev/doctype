@@ -10,15 +10,17 @@ import { SymbolType } from '@doctypedev/core';
 vi.mock('../../ai', () => {
   return {
     AIAgent: class {
-      constructor(_config: any) {}
-      generateInitial(): Promise<string> { return Promise.resolve('AI Generated Content'); }
+      constructor(_config: any) { }
+      generateDocumentation(): Promise<any> { return Promise.resolve({ content: 'AI Generated Content' }); }
       generateBatch(): Promise<any[]> { return Promise.resolve([]); }
+      validateConnection(): Promise<boolean> { return Promise.resolve(true); }
+      getProvider(): string { return 'mock'; }
     }
   };
 });
 
 // Mock @clack/prompts - use vi.hoisted to ensure variables are available during hoisting
-const { 
+const {
   mockIntro,
   mockOutro,
   mockCancel,
@@ -396,7 +398,7 @@ describe('determineOutputFile', () => {
     // src/auth/login.ts -> docs/src/auth/login.md
     const result = determineOutputFile('mirror', docsFolder, 'src/auth/login.ts', SymbolType.Function);
     expect(result).toBe(join(docsFolder, 'src/auth/login.md'));
-    
+
     // Windows style path input should still work with join
     const result2 = determineOutputFile('mirror', docsFolder, 'src/utils.ts', SymbolType.Class);
     expect(result2).toBe(join(docsFolder, 'src/utils.md'));
@@ -432,7 +434,7 @@ describe('determineOutputFile', () => {
     // Type Alias -> types.md
     expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.TypeAlias))
       .toBe(join(docsFolder, 'types.md'));
-      
+
     // Enum -> types.md
     expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Enum))
       .toBe(join(docsFolder, 'types.md'));

@@ -7,8 +7,10 @@
  * - init: Initialize Doctype configuration for your project
  * - check: Verify documentation is in sync with code
  * - fix: Update documentation when drift is detected (with AI-powered generation)
+ * - generate: Generate documentation content using AI
+ * - changeset: Generate changesets from code changes using AI
  *
- * Now with AI-powered documentation generation using OpenAI or Gemini APIs
+ * Now with AI-powered documentation generation using OpenAI, Gemini, Anthropic, or Mistral APIs
  */
 
 // Load environment variables from .env file
@@ -20,7 +22,8 @@ import { checkCommand } from './check';
 import { fixCommand } from './fix';
 import { generateCommand } from './generate';
 import { initCommand } from './init';
-import { CheckOptions, FixOptions, GenerateOptions, InitOptions } from './types';
+import { changesetCommand } from './changeset';
+import { CheckOptions, FixOptions, GenerateOptions, InitOptions, ChangesetOptions } from './types';
 
 // Parse command line arguments
 yargs(hideBin(process.argv))
@@ -225,6 +228,90 @@ yargs(hideBin(process.argv))
     }
   )
 
+  // Changeset command
+  .command(
+    'changeset',
+    'Generate a changeset file from code changes using AI',
+    (yargs) => {
+      return yargs
+        .option('base-branch', {
+          alias: 'b',
+          type: 'string',
+          description: 'Base branch to compare against',
+          default: 'main',
+        })
+        .option('staged-only', {
+          alias: 's',
+          type: 'boolean',
+          description: 'Only analyze staged changes',
+          default: false,
+        })
+        .option('package-name', {
+          alias: 'p',
+          type: 'string',
+          description: 'Package name for the changeset (auto-detected from package.json if not specified)',
+        })
+        .option('output-dir', {
+          alias: 'o',
+          type: 'string',
+          description: 'Output directory for changeset',
+          default: '.changeset',
+        })
+        .option('skip-ai', {
+          type: 'boolean',
+          description: 'Skip AI analysis and use defaults',
+          default: false,
+        })
+        .option('version-type', {
+          alias: 't',
+          type: 'string',
+          description: 'Manually specify version type',
+          choices: ['major', 'minor', 'patch'],
+        })
+        .option('description', {
+          alias: 'd',
+          type: 'string',
+          description: 'Manually specify description',
+        })
+        .option('verbose', {
+          type: 'boolean',
+          description: 'Enable verbose logging',
+          default: false,
+        })
+        .option('interactive', {
+          alias: 'i',
+          type: 'boolean',
+          description: 'Force interactive package selection',
+          default: false,
+        })
+        .option('force-fetch', {
+          type: 'boolean',
+          description: 'Fetch latest changes from remote before analyzing',
+          default: false
+        });
+    },
+    async (argv) => {
+      const options: ChangesetOptions = {
+        baseBranch: argv['base-branch'] as string,
+        stagedOnly: argv['staged-only'] as boolean,
+        packageName: argv['package-name'] as string,
+        outputDir: argv['output-dir'] as string,
+        noAI: argv['skip-ai'] as boolean,
+        versionType: argv['version-type'] as 'major' | 'minor' | 'patch' | undefined,
+        description: argv.description as string | undefined,
+        verbose: argv.verbose as boolean,
+        interactive: argv.interactive as boolean,
+      };
+
+      const result = await changesetCommand(options);
+
+      // Exit with error code if changeset generation failed
+      if (!result.success) {
+        process.exit(1);
+      }
+    }
+  )
+
   // Help and examples
   .example('$0 init', 'Initialize Doctype for your project')
   .example('$0 generate', 'Generate documentation using AI')
@@ -235,8 +322,13 @@ yargs(hideBin(process.argv))
   .example('$0 fix --auto-commit', 'Fix and commit changes automatically')
   .example('$0 fix --no-ai', 'Fix using placeholder content (no AI)')
   .example('$0 fix --verbose', 'Fix with detailed AI generation logs')
+  .example('$0 changeset', 'Generate changeset from current changes')
+  .example('$0 changeset --base-branch develop', 'Compare against develop branch')
+  .example('$0 changeset --staged-only', 'Only analyze staged changes')
+  .example('$0 changeset --skip-ai', 'Generate changeset without AI analysis')
+  .example('$0 changeset -t minor -d "Add new feature"', 'Manually specify version and description')
 
-  .demandCommand(1, 'You must provide a command (init, check, or fix)')
+  .demandCommand(1, 'You must provide a command (init, check, fix, generate, or changeset)')
   .strict()
   .recommendCommands()
   .showHelpOnFail(true)
