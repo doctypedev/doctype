@@ -132,59 +132,59 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     logger.info(`Checked ${entries.length} entries, no drift detected`);
   } else {
     if (drifts.length > 0) {
-        logger.error(`Documentation drift detected in ${drifts.length} ${drifts.length === 1 ? 'entry' : 'entries'}`);
-        logger.newline();
+      logger.error(`Documentation drift detected in ${drifts.length} ${drifts.length === 1 ? 'entry' : 'entries'}`);
+      logger.newline();
 
-        for (const drift of drifts) {
+      for (const drift of drifts) {
         logger.log(`  ${Logger.symbol(drift.symbolName)} in ${Logger.path(drift.codeFilePath)}`);
         logger.log(`    Doc: ${Logger.path(drift.docFilePath)} (anchor: ${drift.id})`);
         logger.log(`    Old hash: ${Logger.hash(drift.oldHash)}`);
         logger.log(`    New hash: ${Logger.hash(drift.newHash)}`);
         if (options.verbose && drift.newSignature) {
-            logger.log(`    New signature: ${drift.newSignature}`);
+          logger.log(`    New signature: ${drift.newSignature}`);
         }
         logger.newline();
-        }
+      }
     }
 
     if (missingDetails.length > 0) {
-        logger.error(`Missing symbols detected in ${missingDetails.length} ${missingDetails.length === 1 ? 'entry' : 'entries'}`);
-        logger.newline();
+      logger.error(`Missing symbols detected in ${missingDetails.length} ${missingDetails.length === 1 ? 'entry' : 'entries'}`);
+      logger.newline();
 
-        for (const m of missingDetails) {
-            logger.log(`  ${Logger.symbol(m.symbolName)} in ${Logger.path(m.codeFilePath)}`);
-            logger.log(`    Doc: ${Logger.path(m.docFilePath)} (anchor: ${m.id})`);
-            logger.log(`    Reason: ${m.reason === 'file_not_found' ? 'Code file not found' : 'Symbol not found in file'}`);
-            if (m.reason === 'symbol_not_found') {
-                logger.log(`    Tip: Did you rename the function? Update the map or the code.`);
-            }
-            logger.newline();
+      for (const m of missingDetails) {
+        logger.log(`  ${Logger.symbol(m.symbolName)} in ${Logger.path(m.codeFilePath)}`);
+        logger.log(`    Doc: ${Logger.path(m.docFilePath)} (anchor: ${m.id})`);
+        logger.log(`    Reason: ${m.reason === 'file_not_found' ? 'Code file not found' : 'Symbol not found in file'}`);
+        if (m.reason === 'symbol_not_found') {
+          logger.log(`    Tip: Did you rename the function? Update the map or the code.`);
         }
+        logger.newline();
+      }
     }
 
     if (untrackedSymbols.length > 0) {
-        logger.warn(`Found ${untrackedSymbols.length} untracked ${untrackedSymbols.length === 1 ? 'symbol' : 'symbols'} (not documented)`);
-        logger.newline();
-        
-        // Only show top 10 if verbose is false to avoid spamming
-        const showCount = options.verbose ? untrackedSymbols.length : Math.min(untrackedSymbols.length, 10);
-        
-        for (let i = 0; i < showCount; i++) {
-            const symbol = untrackedSymbols[i];
-            logger.log(`  ${Logger.symbol(symbol.symbolName)} in ${Logger.path(symbol.filePath)}`);
-        }
-        
-        if (!options.verbose && untrackedSymbols.length > 10) {
-            logger.log(`  ...and ${untrackedSymbols.length - 10} more. Use --verbose to see all.`);
-        }
-        
-        logger.newline();
-        logger.info('Run `doctype init` or manually add these to doctype-map.json to track them.');
-        logger.newline();
+      logger.warn(`Found ${untrackedSymbols.length} untracked ${untrackedSymbols.length === 1 ? 'symbol' : 'symbols'} (not documented)`);
+      logger.newline();
+
+      // Only show top 10 if verbose is false to avoid spamming
+      const showCount = options.verbose ? untrackedSymbols.length : Math.min(untrackedSymbols.length, 10);
+
+      for (let i = 0; i < showCount; i++) {
+        const symbol = untrackedSymbols[i];
+        logger.log(`  ${Logger.symbol(symbol.symbolName)} in ${Logger.path(symbol.filePath)}`);
+      }
+
+      if (!options.verbose && untrackedSymbols.length > 10) {
+        logger.log(`  ...and ${untrackedSymbols.length - 10} more. Use --verbose to see all.`);
+      }
+
+      logger.newline();
+      logger.info('Run `npx doctype fix` to automatically document these symbols.');
+      logger.newline();
     }
 
     if (drifts.length > 0) {
-        logger.info('Run `npx doctype fix` to update the documentation');
+      logger.info('Run `npx doctype fix` to update the documentation');
     }
   }
 

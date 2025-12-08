@@ -8,7 +8,7 @@
 import { DoctypeMapManager } from '../../../content';
 import { CodeSignature, DoctypeMapEntry, AstAnalyzer, discoverFiles } from '@doctypedev/core';
 import { Logger } from '../utils/logger';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve, relative, sep } from 'path';
 
 /**
@@ -69,6 +69,38 @@ export interface DriftDetectionOptions {
 }
 
 /**
+ * Verify if a symbol is truly exported by checking source content
+ * This is a workaround for AST analyzers that might be too aggressive (marking locals as exported)
+ */
+function verifyExported(content: string, symbolName: string): boolean {
+  // 1. Direct export: export const/let/var/function/class/interface/type/enum name
+  const directExport = new RegExp(
+    `export\\s+(?:declare\\s+)?(?:async\\s+)?(?:const|let|var|function|class|interface|type|enum)\\s+${symbolName}\\b`
+  );
+  if (directExport.test(content)) return true;
+
+  // 2. Named export list: export { name } or export { other as name }
+  // We check if the symbol name appears in an export block
+  const exportBlocks = content.match(/export\s*\{[^}]+\}/g) || [];
+  for (const block of exportBlocks) {
+    if (new RegExp(`\\b${symbolName}\\b`).test(block)) return true;
+  }
+
+  // 3. Default export: export default name
+  // Note: Oxc might report "default" as symbol name, or the actual name
+  if (symbolName === 'default') {
+    return /export\s+default\b/.test(content);
+  }
+
+  // Check for "export default class/function Name"
+  if (new RegExp(`export\\s+default\\s+(?:class|function)\\s+${symbolName}\\b`).test(content)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Detect drift across all entries in the doctype map
  *
  * This function centralizes the drift detection logic used by both
@@ -93,6 +125,30 @@ export function detectDrift(
   // Set of tracked symbols: "filePath#symbolName"
   const tracked = new Set<string>();
 
+  // Use a local cache for file analysis to avoid re-parsing the same file multiple times
+  const analysisCache = new Map<string, CodeSignature[]>();
+  const contentCache = new Map<string, string>();
+
+  const getAnalysis = (filePath: string): CodeSignature[] => {
+    if (!analysisCache.has(filePath)) {
+      // Analyze the file and cache the result
+      const signatures = analyzer.analyzeFile(filePath);
+      analysisCache.set(filePath, signatures);
+    }
+    return analysisCache.get(filePath)!;
+  };
+
+  const getContent = (filePath: string): string => {
+    if (!contentCache.has(filePath)) {
+      if (existsSync(filePath)) {
+        contentCache.set(filePath, readFileSync(filePath, 'utf-8'));
+      } else {
+        contentCache.set(filePath, '');
+      }
+    }
+    return contentCache.get(filePath)!;
+  };
+
   for (const entry of entries) {
     // Resolve code file path relative to base path
     const codeFilePath = resolve(basePath, entry.codeRef.filePath);
@@ -115,8 +171,8 @@ export function detectDrift(
         continue;
       }
 
-      // Analyze the code file
-      const signatures = analyzer.analyzeFile(codeFilePath);
+      // Analyze the code file using cache
+      const signatures = getAnalysis(codeFilePath);
       const currentSignature = signatures.find((sig: CodeSignature) => sig.symbolName === entry.codeRef.symbolName);
 
       if (!currentSignature) {
@@ -176,35 +232,45 @@ export function detectDrift(
     logger?.debug(`Scanning for untracked symbols in ${absProjectRoot}`);
 
     try {
-        const discoveryResult = discoverFiles(absProjectRoot, {
-            respectGitignore: true,
-            includeHidden: false,
-            maxDepth: undefined,
-        });
+      const discoveryResult = discoverFiles(absProjectRoot, {
+        respectGitignore: true,
+        includeHidden: false,
+        maxDepth: undefined,
+      });
 
-        for (const file of discoveryResult.sourceFiles) {
-            try {
-                const signatures = analyzer.analyzeFile(file);
-                const relativePath = relative(basePath, file).split(sep).join('/');
+      for (const file of discoveryResult.sourceFiles) {
+        try {
+          // Use cached analysis
+          const signatures = getAnalysis(file);
+          const relativePath = relative(basePath, file).split(sep).join('/');
 
-                for (const sig of signatures) {
-                    if (sig.isExported) {
-                        const key = `${relativePath}#${sig.symbolName}`;
-                        if (!tracked.has(key)) {
-                            untracked.push({
-                                symbolName: sig.symbolName,
-                                filePath: relativePath,
-                                signature: sig
-                            });
-                        }
-                    }
-                }
-            } catch (e) {
-                // Ignore analysis errors for discovery
+          for (const sig of signatures) {
+            if (sig.isExported) {
+              // START WORKAROUND
+              // Verify if it is strictly exported using regex on content
+              const content = getContent(file);
+              if (!verifyExported(content, sig.symbolName)) {
+                // logger?.debug(`Skipping ${sig.symbolName} in ${file} (marked exported but failed verification)`);
+                continue;
+              }
+              // END WORKAROUND
+
+              const key = `${relativePath}#${sig.symbolName}`;
+              if (!tracked.has(key)) {
+                untracked.push({
+                  symbolName: sig.symbolName,
+                  filePath: relativePath,
+                  signature: sig
+                });
+              }
             }
+          }
+        } catch (e) {
+          // Ignore analysis errors for discovery
         }
+      }
     } catch (e) {
-        logger?.warn(`Failed to discover untracked files: ${e instanceof Error ? e.message : String(e)}`);
+      logger?.warn(`Failed to discover untracked files: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 

@@ -76,7 +76,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
   // Load the map
   const mapManager = new DoctypeMapManager(mapPath);
-  
+
   // Resolve the root directory for source code
   const codeRoot = config
     ? resolve(config.baseDir || process.cwd(), config.projectRoot)
@@ -98,19 +98,26 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
     for (const m of missing) {
       try {
-        // 1. Remove from map
-        if (mapManager.removeEntry(m.entry.id)) {
-          // 2. Remove from markdown
-          const docFilePath = resolve(config?.baseDir || process.cwd(), m.entry.docRef.filePath);
-          if (existsSync(docFilePath) && !options.dryRun) {
-            const result = injector.removeAnchor(docFilePath, m.entry.id, true);
-            if (result.success) {
-              logger.debug(`Removed anchor for ${m.entry.codeRef.symbolName} from ${m.entry.docRef.filePath}`);
-            } else {
-              logger.warn(`Could not remove anchor for ${m.entry.codeRef.symbolName}: ${result.error}`);
-            }
+        const docFilePath = resolve(config?.baseDir || process.cwd(), m.entry.docRef.filePath);
+        let anchorRemoved = true;
+
+        // 1. Try to remove from markdown first
+        if (existsSync(docFilePath) && !options.dryRun) {
+          const result = injector.removeAnchor(docFilePath, m.entry.id, true);
+          anchorRemoved = result.success;
+
+          if (result.success) {
+            logger.debug(`Removed anchor for ${m.entry.codeRef.symbolName} from ${m.entry.docRef.filePath}`);
+          } else {
+            logger.warn(`Could not remove anchor for ${m.entry.codeRef.symbolName}: ${result.error}`);
           }
-          prunedCount++;
+        }
+
+        // 2. Only remove from map if anchor was removed (or file didn't exist)
+        if (anchorRemoved) {
+          if (mapManager.removeEntry(m.entry.id)) {
+            prunedCount++;
+          }
         }
       } catch (error) {
         logger.error(`Failed to prune ${m.entry.codeRef.symbolName}: ${error instanceof Error ? error.message : String(error)}`);
@@ -129,39 +136,39 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   // Process untracked symbols
   if (untracked.length > 0) {
     logger.info(`Found ${untracked.length} untracked symbols. Adding them to tracking...`);
-    
+
     for (const symbol of untracked) {
-        // Determine output file
-        const targetDocFile = determineOutputFile(
-            config.outputStrategy || 'mirror',
-            config.docsFolder,
-            symbol.filePath,
-            symbol.signature.symbolType
-        );
+      // Determine output file
+      const targetDocFile = determineOutputFile(
+        config.outputStrategy || 'mirror',
+        config.docsFolder,
+        symbol.filePath,
+        symbol.signature.symbolType
+      );
 
-        // Create new entry
-        const newEntry = {
-            id: uuidv4(),
-            codeRef: {
-                filePath: symbol.filePath,
-                symbolName: symbol.symbolName
-            },
-            codeSignatureHash: symbol.signature.hash!, // Hash is computed by analyzer
-            codeSignatureText: symbol.signature.signatureText,
-            docRef: {
-                filePath: targetDocFile
-            },
-            lastUpdated: Date.now()
-        };
+      // Create new entry
+      const newEntry = {
+        id: uuidv4(),
+        codeRef: {
+          filePath: symbol.filePath,
+          symbolName: symbol.symbolName
+        },
+        codeSignatureHash: symbol.signature.hash!, // Hash is computed by analyzer
+        codeSignatureText: symbol.signature.signatureText,
+        docRef: {
+          filePath: targetDocFile
+        },
+        lastUpdated: Date.now()
+      };
 
-        // Add to drifts list to be processed (generated/injected)
-        detectedDrifts.push({
-            entry: newEntry,
-            currentSignature: symbol.signature,
-            currentHash: symbol.signature.hash!,
-            oldHash: '', // New entry
-            oldSignature: undefined
-        });
+      // Add to drifts list to be processed (generated/injected)
+      detectedDrifts.push({
+        entry: newEntry,
+        currentSignature: symbol.signature,
+        currentHash: symbol.signature.hash!,
+        oldHash: '', // New entry
+        oldSignature: undefined
+      });
     }
   }
 
