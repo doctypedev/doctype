@@ -1,0 +1,50 @@
+name: Doctype Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build crates/core explicitly to generate the necessary .node binary and types
+      - name: Build Rust Core
+        working-directory: crates/core
+        run: pnpm build
+
+      # Copy generated types to packages/core so it can build
+      - name: Prepare Core Native Types
+        run: cp crates/core/index.d.ts packages/core/native-types.d.ts
+
+      # Build the entire monorepo (includes packages/cli, packages/core, etc.)
+      - name: Build packages
+        run: pnpm build
+
+      # Run the locally built CLI against the repository
+      - name: Run Doctype Check
+        run: node packages/cli/dist/cli/src/index.js check
