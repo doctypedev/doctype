@@ -117,7 +117,7 @@ export class PackageSelector {
 
     // Prompt for selection
     const selected = await clack.multiselect({
-      message: 'Which packages should this changeset be for?',
+      message: 'Which packages should this changeset be for? (Press <space> to select, <enter> to submit)',
       options: choices,
       initialValues: changedPackages.length > 0 ? changedPackages.map(p => p.name) : [],
       required: true,
