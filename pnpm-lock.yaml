@@ -39,6 +39,12 @@ importers:
         specifier: ^3.0.0
         version: 3.7.4
 
+  crates/core/npm/darwin-arm64: {}
+
+  crates/core/npm/linux-x64-gnu: {}
+
+  crates/core/npm/win32-x64-msvc: {}
+
   packages/cli:
     dependencies:
       '@ai-sdk/anthropic':
