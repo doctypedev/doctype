@@ -18,6 +18,8 @@ import * as path from 'path';
 // Platform to package name mapping
 const PLATFORM_PACKAGES: Record<string, string> = {
   'darwin-arm64': '@doctypedev/core-darwin-arm64',
+  'linux-x64': '@doctypedev/core-linux-x64-gnu',
+  'win32-x64': '@doctypedev/core-win32-x64-msvc',
 };
 
 /**
