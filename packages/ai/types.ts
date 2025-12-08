@@ -59,6 +59,12 @@ export interface DocumentationRequest {
     /** Related symbols */
     relatedSymbols?: string[];
   };
+
+  /** The prompt to use for generation */
+  prompt: string;
+
+  /** The system prompt to use */
+  systemPrompt: string;
 }
 
 /**
@@ -152,7 +158,9 @@ export interface IAIProvider {
    * This prevents wasting tokens when only a few items fail validation
    */
   generateBatchDocumentation?(
-    items: Array<{ symbolName: string; signatureText: string }>
+    items: Array<{ symbolName: string; signatureText: string }>,
+    prompt: string,
+    systemPrompt: string
   ): Promise<BatchDocumentationResult>;
 
   /**

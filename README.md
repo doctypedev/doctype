@@ -130,6 +130,46 @@ const token = await login('user@example.com', 'securePassword123');
 
 ## Commands
 
+
+### `doctype changeset`
+
+Generate a changeset file from code changes using AI.
+
+```bash
+doctype changeset
+```
+
+**Options:**
+- `--base-branch` - Base branch to compare against (default: `main`)
+- `--staged-only` - Only analyze staged changes
+- `--skip-ai` - Skip AI analysis and use manual/interactive mode
+- `--package-name` - Manually allow specifying package name
+- `--verbose` - Show detailed output
+
+**What it does:**
+1. Detects code changes (git diff + AST analysis)
+2. Uses AI to analyze the semantic impact of changes
+3. Suggests version bump type (major/minor/patch) and description
+4. Generates a changeset file (compatible with `@changesets/cli`)
+   - Supports multi-package selection (linked changes)
+   - Filters AI context to selected packages for accuracy
+
+**Example:**
+```bash
+$ doctype changeset
+📦 Select Packages for Changeset
+? Which packages should this changeset be for? (Press <space> to select, <enter> to submit)
+✔ Selected: packages/cli, packages/core
+
+ℹ Analyzing code changes...
+✔ Found 3 symbol changes in 2 files
+ℹ Generating changeset...
+ℹ AI determined version type: minor
+✔ Generated changeset: .changeset/calm-eagles-listen.md
+```
+
+---
+
 ### `doctype init`
 
 Initialize doctype in your project with an interactive setup process.
@@ -219,8 +259,6 @@ doctype fix --auto-commit
 4. Injects content into your Markdown files
 5. Updates `doctype-map.json` with new hashes
 6. (Optional) Auto-commits with message: `🤖 Doctype Bot: Auto-fix documentation for login`
-
----
 
 ## CI/CD Integration
 

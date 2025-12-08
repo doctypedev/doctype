@@ -143,6 +143,48 @@ export interface GenerateOptions extends FixOptions {}
 export interface GenerateResult extends FixResult {}
 
 /**
+ * Options for the changeset command
+ */
+export interface ChangesetOptions {
+  /** Base branch to compare against */
+  baseBranch?: string;
+  /** Only analyze staged changes */
+  stagedOnly?: boolean;
+  /** Package name for the changeset */
+  packageName?: string;
+  /** Output directory for changeset */
+  outputDir?: string;
+  /** Skip AI analysis and use defaults */
+  noAI?: boolean;
+  /** Manually specify version type */
+  versionType?: 'major' | 'minor' | 'patch';
+  /** Manually specify description */
+  description?: string;
+  /** Verbose output */
+  verbose?: boolean;
+  /** Force interactive package selection */
+  interactive?: boolean;
+  /** Force fetch the base branch from origin before analyzing changes */
+  forceFetch?: boolean;
+}
+
+/**
+ * Result of a changeset operation
+ */
+export interface ChangesetResult {
+  /** Whether the changeset was generated successfully */
+  success: boolean;
+  /** Path to the generated changeset file */
+  filePath?: string;
+  /** Version type determined */
+  versionType?: 'major' | 'minor' | 'patch';
+  /** Generated description */
+  description?: string;
+  /** Error message if failed */
+  error?: string;
+}
+
+/**
  * Result of an init operation
  */
 export interface InitResult {

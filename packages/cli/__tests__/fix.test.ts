@@ -10,14 +10,12 @@ vi.mock('../../ai', () => {
   return {
     createAgentFromEnv: (): any => ({
       validateConnection: (): Promise<boolean> => Promise.resolve(true),
-      generateFromDrift: (): Promise<string> => Promise.resolve('**testFunc**\n\nGenerated documentation'),
-      generateInitial: (): Promise<string> => Promise.resolve('**testFunc**\n\nGenerated documentation'),
+      generateDocumentation: (): Promise<any> => Promise.resolve({ content: '**testFunc**\n\nGenerated documentation' }),
       getProvider: (): string => 'mock-provider',
     }),
     AIAgent: class {
       validateConnection(): Promise<boolean> { return Promise.resolve(true); }
-      generateFromDrift(): Promise<string> { return Promise.resolve('**testFunc**\n\nGenerated documentation'); }
-      generateInitial(): Promise<string> { return Promise.resolve('**testFunc**\n\nGenerated documentation'); }
+      generateDocumentation(): Promise<any> { return Promise.resolve({ content: '**testFunc**\n\nGenerated documentation' }); }
       getProvider(): string { return 'mock-provider'; }
     }
   };

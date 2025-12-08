@@ -16,7 +16,8 @@ import { extractAnchors, DoctypeAnchor } from '@doctypedev/core';
 import { Logger } from './logger';
 import { FixResult, FixOptions, FixDetail } from './types';
 import { DriftInfo } from './drift-detector';
-import { createAgentFromEnv, AIAgent } from '../ai';
+import { createAgentFromEnv, AIAgent, DocumentationRequest } from '../ai';
+import { PromptBuilder } from './prompts/document-prompt';
 import { GitHelper } from './git-helper';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -30,32 +31,32 @@ import { FileMutex } from './utils/mutex';
  * Helper function to limit concurrency
  */
 async function pMap<T, R>(
-    items: T[],
-    mapper: (item: T) => Promise<R>,
-    concurrency: number,
-    onProgress?: (completed: number, total: number) => void
+  items: T[],
+  mapper: (item: T) => Promise<R>,
+  concurrency: number,
+  onProgress?: (completed: number, total: number) => void
 ): Promise<R[]> {
-    const results: R[] = new Array(items.length);
-    let index = 0;
-    let completed = 0;
-    const total = items.length;
+  const results: R[] = new Array(items.length);
+  let index = 0;
+  let completed = 0;
+  const total = items.length;
 
-    const execThread = async (): Promise<void> => {
-        while (index < items.length) {
-            const curIndex = index++;
-            results[curIndex] = await mapper(items[curIndex]);
-            completed++;
-            if (onProgress) {
-                onProgress(completed, total);
-            }
-        }
-    };
-    const threads = [];
-    for (let i = 0; i < concurrency; i++) {
-        threads.push(execThread());
+  const execThread = async (): Promise<void> => {
+    while (index < items.length) {
+      const curIndex = index++;
+      results[curIndex] = await mapper(items[curIndex]);
+      completed++;
+      if (onProgress) {
+        onProgress(completed, total);
+      }
     }
-    await Promise.all(threads);
-    return results;
+  };
+  const threads = [];
+  for (let i = 0; i < concurrency; i++) {
+    threads.push(execThread());
+  }
+  await Promise.all(threads);
+  return results;
 }
 
 /**
@@ -114,139 +115,154 @@ export async function executeFixes(
   // Phase 1: Generation & Application (Parallel with Mutex)
   const s = spinner();
   s.start(`Processing ${drifts.length} items...`);
-  
+
   const processTask = async (drift: DriftInfo): Promise<FixDetail> => {
-      const { entry, currentSignature, oldSignature } = drift;
-      const docFilePath = resolve(projectBase, entry.docRef.filePath);
+    const { entry, currentSignature, oldSignature } = drift;
+    const docFilePath = resolve(projectBase, entry.docRef.filePath);
 
-      try {
-          let newContent: string;
+    try {
+      let newContent: string;
 
-          // 1. Generate Content (Slow, Parallel)
-          if (useAI && aiAgent) {
-              try {
-                  // Read context safely (read-only)
-                  let currentMarkdownContent = '';
-                  if (existsSync(docFilePath)) {
-                      const docContent = readFileSync(docFilePath, 'utf-8');
-                      const extractionResult = extractAnchors(docFilePath, docContent);
-                      const anchor = extractionResult.anchors.find((a: DoctypeAnchor) => a.id === entry.id);
-                      if (anchor) {
-                          currentMarkdownContent = anchor.content;
-                      }
-                  }
-
-                  newContent = await retry(async () => {
-                      if (oldSignature) {
-                          return await aiAgent!.generateFromDrift(
-                              entry.codeRef.symbolName,
-                              oldSignature,
-                              currentSignature,
-                              currentMarkdownContent,
-                              entry.codeRef.filePath
-                          );
-                      } else {
-                          return await aiAgent!.generateInitial(
-                              entry.codeRef.symbolName,
-                              currentSignature,
-                              {
-                                  includeExamples: true,
-                                  style: 'detailed',
-                              }
-                          );
-                      }
-                  }, {
-                      retries: 3,
-                      onRetry: (err, attempt) => {
-                          logger.debug(`Retry ${attempt}/3 for ${entry.codeRef.symbolName}: ${err.message}`);
-                      }
-                  });
-              } catch (aiError) {
-                  const errorMsg = aiError instanceof Error ? aiError.message : String(aiError);
-                  logger.error(`AI generation failed for ${entry.codeRef.symbolName} after retries: ${errorMsg}`);
-                  newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
-              }
-          } else {
-              newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
+      // 1. Generate Content (Slow, Parallel)
+      if (useAI && aiAgent) {
+        try {
+          // Read context safely (read-only)
+          let currentMarkdownContent = '';
+          if (existsSync(docFilePath)) {
+            const docContent = readFileSync(docFilePath, 'utf-8');
+            const extractionResult = extractAnchors(docFilePath, docContent);
+            const anchor = extractionResult.anchors.find((a: DoctypeAnchor) => a.id === entry.id);
+            if (anchor) {
+              currentMarkdownContent = anchor.content;
+            }
           }
 
-          // 2. Inject Content (Fast, Sequential per file via Mutex)
-          return await fileMutex.run(docFilePath, async () => {
-              try {
-                  const writeToFile = !options.dryRun;
-                  const result = injector.injectIntoFile(docFilePath, entry.id, newContent, writeToFile);
+          newContent = await retry(async () => {
+            if (oldSignature) {
+              const request: DocumentationRequest = {
+                symbolName: entry.codeRef.symbolName,
+                oldSignature,
+                newSignature: currentSignature,
+                oldDocumentation: currentMarkdownContent,
+                context: entry.codeRef.filePath ? { filePath: entry.codeRef.filePath } : undefined,
+                prompt: PromptBuilder.buildStructuredSinglePrompt(
+                  entry.codeRef.symbolName,
+                  currentSignature.signatureText,
+                  currentMarkdownContent
+                ),
+                systemPrompt: PromptBuilder.buildStructuredSystemPrompt()
+              };
+              const response = await aiAgent!.generateDocumentation(request);
+              return response.content;
+            } else {
 
-                  if (result.success) {
-                      if (!options.dryRun) {
-                          const newHash = currentSignature.hash!;
-                          mapManager.updateEntry(entry.id, {
-                                                        codeSignatureHash: newHash,
-                                                        codeSignatureText: currentSignature.signatureText,
-                                                    });
-                                                    
-                                                    // Save map immediately to keep it in sync with the file system
-                                                    // This prevents inconsistent state if the process is interrupted (Ctrl+C)
-                                                    mapManager.save();
-                                                }
-                                                    
-                                                // Using a simple counter isn't thread-safe for reading/writing if we depended on the value,
-                              
-                      // but for incrementing it's fine in JS event loop (single threaded execution of callbacks).
-                      successCount++;
-                      
-                      return {
-                          id: entry.id,
-                          symbolName: entry.codeRef.symbolName,
-                          codeFilePath: entry.codeRef.filePath,
-                          docFilePath: entry.docRef.filePath,
-                          success: true,
-                          newContent: newContent,
-                      };
-                  } else {
-                      failCount++;
-                      logger.error(`Failed to inject ${entry.codeRef.symbolName}: ${result.error}`);
-                      return {
-                          id: entry.id,
-                          symbolName: entry.codeRef.symbolName,
-                          codeFilePath: entry.codeRef.filePath,
-                          docFilePath: entry.docRef.filePath,
-                          success: false,
-                          error: result.error,
-                      };
-                  }
-              } catch (e) {
-                  failCount++;
-                  const msg = e instanceof Error ? e.message : String(e);
-                  logger.error(`Error writing ${entry.codeRef.symbolName}: ${msg}`);
-                  return {
-                      id: entry.id,
-                      symbolName: entry.codeRef.symbolName,
-                      codeFilePath: entry.codeRef.filePath,
-                      docFilePath: entry.docRef.filePath,
-                      success: false,
-                      error: msg,
-                  };
-              }
+              const request: DocumentationRequest = {
+                symbolName: entry.codeRef.symbolName,
+                oldSignature: currentSignature,
+                newSignature: currentSignature,
+                oldDocumentation: '',
+                prompt: PromptBuilder.buildStructuredSinglePrompt(
+                  entry.codeRef.symbolName,
+                  currentSignature.signatureText,
+                  ''
+                ),
+                systemPrompt: PromptBuilder.buildStructuredSystemPrompt()
+              };
+              const response = await aiAgent!.generateDocumentation(request);
+              return response.content;
+            }
+          }, {
+            retries: 3,
+            onRetry: (err, attempt) => {
+              logger.debug(`Retry ${attempt}/3 for ${entry.codeRef.symbolName}: ${err.message}`);
+            }
           });
+        } catch (aiError) {
+          const errorMsg = aiError instanceof Error ? aiError.message : String(aiError);
+          logger.error(`AI generation failed for ${entry.codeRef.symbolName} after retries: ${errorMsg}`);
+          newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
+        }
+      } else {
+        newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
+      }
 
-      } catch (error) {
-          failCount++;
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          return {
+      // 2. Inject Content (Fast, Sequential per file via Mutex)
+      return await fileMutex.run(docFilePath, async () => {
+        try {
+          const writeToFile = !options.dryRun;
+          const result = injector.injectIntoFile(docFilePath, entry.id, newContent, writeToFile);
+
+          if (result.success) {
+            if (!options.dryRun) {
+              const newHash = currentSignature.hash!;
+              mapManager.updateEntry(entry.id, {
+                codeSignatureHash: newHash,
+                codeSignatureText: currentSignature.signatureText,
+              });
+
+              // Save map immediately to keep it in sync with the file system
+              // This prevents inconsistent state if the process is interrupted (Ctrl+C)
+              mapManager.save();
+            }
+
+            // Using a simple counter isn't thread-safe for reading/writing if we depended on the value,
+
+            // but for incrementing it's fine in JS event loop (single threaded execution of callbacks).
+            successCount++;
+
+            return {
+              id: entry.id,
+              symbolName: entry.codeRef.symbolName,
+              codeFilePath: entry.codeRef.filePath,
+              docFilePath: entry.docRef.filePath,
+              success: true,
+              newContent: newContent,
+            };
+          } else {
+            failCount++;
+            logger.error(`Failed to inject ${entry.codeRef.symbolName}: ${result.error}`);
+            return {
               id: entry.id,
               symbolName: entry.codeRef.symbolName,
               codeFilePath: entry.codeRef.filePath,
               docFilePath: entry.docRef.filePath,
               success: false,
-              error: errorMsg,
+              error: result.error,
+            };
+          }
+        } catch (e) {
+          failCount++;
+          const msg = e instanceof Error ? e.message : String(e);
+          logger.error(`Error writing ${entry.codeRef.symbolName}: ${msg}`);
+          return {
+            id: entry.id,
+            symbolName: entry.codeRef.symbolName,
+            codeFilePath: entry.codeRef.filePath,
+            docFilePath: entry.docRef.filePath,
+            success: false,
+            error: msg,
           };
-      }
+        }
+      });
+
+    } catch (error) {
+      failCount++;
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      return {
+        id: entry.id,
+        symbolName: entry.codeRef.symbolName,
+        codeFilePath: entry.codeRef.filePath,
+        docFilePath: entry.docRef.filePath,
+        success: false,
+        error: errorMsg,
+      };
+    }
   };
 
   const fixes = await pMap(drifts, processTask, 5, (completed, total) => {
-      s.message(`Processing items... (${completed}/${total})`);
+    s.message(`Processing items... (${completed}/${total})`);
   });
-  
+
   s.stop(`Processed ${drifts.length} items`);
 
   // Save updated map (final consistency)
@@ -326,9 +342,9 @@ export async function executeFixes(
  */
 function generatePlaceholderContent(symbolName: string, signature: string): string {
   return `**${symbolName}** - Documentation needs generation\n\n` +
-         `Current signature:\n` +
-         `\`\`\`typescript\n` +
-         `${signature}\n` +
-         `\`\`\`\n\n` +
-         `*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*`;
+    `Current signature:\n` +
+    `\`\`\`typescript\n` +
+    `${signature}\n` +
+    `\`\`\`\n\n` +
+    `*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*`;
 }
