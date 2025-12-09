@@ -63,3 +63,118 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # NPM_TOKEN not needed for trusted publishing (OIDC)
+
+  release-native:
+    name: Release Native (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
+    needs: release
+    if: needs.release.outputs.published == 'true'
+    runs-on: ${{ matrix.settings.host }}
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            platform: darwin
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.settings.target }}
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Pull latest changes
+        run: git pull origin main
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Sync version to native packages
+        run: node crates/core/scripts/sync-version.js
+
+      - name: Build and Publish Native Package
+        env:
+          CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
+        run: |
+          # Build Rust binary
+          cd crates/core
+          pnpm install
+          pnpm run build
+          
+          # Copy binary to npm package location
+          NODE_BINARY_NAME="doctype-core.${{ matrix.settings.platform }}-${{ matrix.settings.arch }}.node"
+          NPM_PACKAGE_DIR="npm/${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          
+          # Ensure directory exists
+          mkdir -p "$NPM_PACKAGE_DIR"
+          
+          cp "$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
+          
+          # Publish with enhanced version checking
+          cd "$NPM_PACKAGE_DIR"
+          echo "📦 Publishing native package from $(pwd)"
+          
+          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          
+          # Extract local version with validation
+          LOCAL_VERSION=$(node -p "require('./package.json').version" 2>/dev/null)
+          if [ -z "$LOCAL_VERSION" ]; then
+            echo "Error: Failed to extract version from package.json"
+            exit 1
+          fi
+          echo "Package: $PACKAGE_NAME"
+          echo "Local Version: $LOCAL_VERSION"
+          
+          # Fetch latest published version with retry logic and timeout
+          LATEST_VERSION=""
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            echo "Fetching latest version from npm (attempt $RETRY_COUNT/$MAX_RETRIES)..."
+            LATEST_VERSION=$(timeout 10 npm view "$PACKAGE_NAME" dist-tags.latest 2>/dev/null || echo "")
+            if [ -n "$LATEST_VERSION" ]; then
+              break
+            fi
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Retrying in 2 seconds..."
+              sleep 2
+            fi
+          done
+          
+          # Compare versions and determine action
+          if [ -z "$LATEST_VERSION" ]; then
+            echo "Package not yet published on npm"
+            echo "Publishing $PACKAGE_NAME@$LOCAL_VERSION..."
+            npm publish --access public --provenance
+          elif [ "$LOCAL_VERSION" = "$LATEST_VERSION" ]; then
+            echo "Version $LOCAL_VERSION already published, skipping"
+          else
+            echo "Version comparison: Latest=$LATEST_VERSION, Local=$LOCAL_VERSION"
+            if npm semver "$LOCAL_VERSION" -r ">$LATEST_VERSION" &>/dev/null || \
+               node -e "require('semver').gt('$LOCAL_VERSION', '$LATEST_VERSION') && process.exit(0) || process.exit(1)" 2>/dev/null; then
+              echo "Publishing new version $LOCAL_VERSION (previous: $LATEST_VERSION)..."
+              npm publish --access public --provenance
+            else
+              echo "Local version $LOCAL_VERSION is not greater than latest $LATEST_VERSION, skipping"
+            fi
+          fi
