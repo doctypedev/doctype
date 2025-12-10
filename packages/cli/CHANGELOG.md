@@ -1,5 +1,18 @@
 # @doctypedev/doctype
 
+## 0.7.0
+
+### Minor Changes
+
+- 5c2f805: - Introduce new `doctype readme` command to generate a README.md based on project context
+  - Add project context analysis capabilities to improve documentation generation
+  - Enhance AI generation logic for README content based on recent code changes
+
+### Patch Changes
+
+- Updated dependencies [5c2f805]
+  - @doctypedev/core@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
