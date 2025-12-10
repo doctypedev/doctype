@@ -1,6 +1,6 @@
 # Analyzer
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -91,28 +91,28 @@ Auto-generated documentation via Doctype.
 
 ### ChangesetAnalyzer
 
-<!-- doctype:start id="b2d09fa2-fd83-4f66-8804-bd9aec10d12d" code_ref="packages/cli/src/changeset/analyzer.ts#ChangesetAnalyzer" -->
+<!-- sintesi:start id="b2d09fa2-fd83-4f66-8804-bd9aec10d12d" code_ref="packages/cli/src/changeset/analyzer.ts#ChangesetAnalyzer" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="b2d09fa2-fd83-4f66-8804-bd9aec10d12d" -->
+<!-- sintesi:end id="b2d09fa2-fd83-4f66-8804-bd9aec10d12d" -->
 
 
 ### AnalysisOptions
 
-<!-- doctype:start id="0e82f5ed-b0f6-4079-abb1-193663c3e45d" code_ref="packages/cli/src/changeset/analyzer.ts#AnalysisOptions" -->
+<!-- sintesi:start id="0e82f5ed-b0f6-4079-abb1-193663c3e45d" code_ref="packages/cli/src/changeset/analyzer.ts#AnalysisOptions" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="0e82f5ed-b0f6-4079-abb1-193663c3e45d" -->
+<!-- sintesi:end id="0e82f5ed-b0f6-4079-abb1-193663c3e45d" -->
 
 
 ### ChangesetAnalysis
 
-<!-- doctype:start id="426ebb42-b65b-4ef1-a543-431bf2b28d5c" code_ref="packages/cli/src/changeset/analyzer.ts#ChangesetAnalysis" -->
+<!-- sintesi:start id="426ebb42-b65b-4ef1-a543-431bf2b28d5c" code_ref="packages/cli/src/changeset/analyzer.ts#ChangesetAnalysis" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="426ebb42-b65b-4ef1-a543-431bf2b28d5c" -->
+<!-- sintesi:end id="426ebb42-b65b-4ef1-a543-431bf2b28d5c" -->
 
 
 
 ### SymbolChange
 
-<!-- doctype:start id="85899523-f998-4594-a87b-7d940b38c5f5" code_ref="packages/cli/src/changeset/analyzer.ts#SymbolChange" -->
+<!-- sintesi:start id="85899523-f998-4594-a87b-7d940b38c5f5" code_ref="packages/cli/src/changeset/analyzer.ts#SymbolChange" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="85899523-f998-4594-a87b-7d940b38c5f5" -->
+<!-- sintesi:end id="85899523-f998-4594-a87b-7d940b38c5f5" -->

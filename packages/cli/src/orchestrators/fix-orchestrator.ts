@@ -13,7 +13,7 @@
 import { DoctypeMapManager } from '../../../content/map-manager';
 import { ContentInjector } from '../../../content/content-injector';
 import { MarkdownAnchorInserter } from '../../../content/markdown-anchor-inserter';
-import { extractAnchors, DoctypeAnchor } from '@doctypedev/core';
+import { extractAnchors, DoctypeAnchor } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { FixResult, FixOptions, FixDetail } from '../types';
 import { DriftInfo } from '../services/drift-detector';
@@ -23,7 +23,7 @@ import { GitHelper } from '../utils/git-helper';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { getMapPath } from '../services/config-loader';
-import { DoctypeConfig } from '../types';
+import { SintesiConfig } from '../types';
 import { retry } from '../utils/retry';
 import { spinner } from '@clack/prompts';
 import { FileMutex } from '../utils/mutex';
@@ -66,7 +66,7 @@ async function pMap<T, R>(
  * @param drifts - List of drifts to fix
  * @param mapManager - Map manager instance
  * @param options - CLI options
- * @param config - Doctype configuration
+ * @param config - Sintesi configuration
  * @param logger - Logger instance
  * @param actionLabel - Label for the action (e.g. "Updated", "Generated")
  */
@@ -74,7 +74,7 @@ export async function executeFixes(
   drifts: DriftInfo[],
   mapManager: DoctypeMapManager,
   options: FixOptions,
-  config: DoctypeConfig | undefined,
+  config: SintesiConfig | undefined,
   logger: Logger,
   actionLabel: string = 'Updated'
 ): Promise<FixResult> {
@@ -307,7 +307,7 @@ export async function executeFixes(
 
   // Save updated map (final consistency)
   if (!options.dryRun && successCount > 0) {
-    logger.debug('Saving updated doctype-map.json');
+    logger.debug('Saving updated sintesi-map.json');
     mapManager.save();
   }
 
@@ -340,7 +340,7 @@ export async function executeFixes(
       }
     }
 
-    // Add doctype-map.json
+    // Add sintesi-map.json
     modifiedFiles.add(mapPath);
 
     // Get symbol names for commit message
@@ -386,5 +386,5 @@ function generatePlaceholderContent(symbolName: string, signature: string): stri
     '```typescript\n' +
     `${signature}\n` +
     '```\n\n' +
-    `*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*`;
+    `*This content is a placeholder. Run 'sintesi generate' with a valid AI API key to generate full documentation.*`;
 }

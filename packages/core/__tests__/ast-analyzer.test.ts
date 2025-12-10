@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ASTAnalyzer } from '../ast-analyzer';
-import { SymbolType } from '@doctypedev/core';
+import { SymbolType } from '@sintesi/core';
 import path from 'path';
 
 describe('ASTAnalyzer', () => {

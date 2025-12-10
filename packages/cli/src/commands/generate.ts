@@ -6,7 +6,7 @@
  */
 
 import { DoctypeMapManager } from '../../../content/map-manager';
-import { AstAnalyzer, extractAnchors, DoctypeAnchor, CodeSignature } from '@doctypedev/core';
+import { AstAnalyzer, extractAnchors, DoctypeAnchor, CodeSignature } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { GenerateResult, GenerateOptions } from '../types';
 import { detectDrift } from '../services/drift-detector';
@@ -74,7 +74,7 @@ export async function generateCommand(options: GenerateOptions): Promise<Generat
   const entries = mapManager.getEntries();
 
   if (entries.length === 0) {
-    logger.warn('No entries found in doctype-map.json');
+    logger.warn('No entries found in sintesi-map.json');
     return {
       totalFixes: 0,
       successfulFixes: 0,

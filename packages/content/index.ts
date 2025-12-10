@@ -4,7 +4,7 @@
  * This module handles:
  * - Markdown parsing and anchor extraction (powered by Rust core)
  * - Markdown anchor insertion (for init command)
- * - doctype-map.json management
+ * - sintesi-map.json management
  * - Content injection into markdown files
  */
 

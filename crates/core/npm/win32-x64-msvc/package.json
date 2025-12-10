@@ -1,20 +1,20 @@
 {
-    "name": "@doctypedev/core-win32-x64-msvc",
-    "version": "0.7.0",
-    "description": "Doctype native core for Windows x64 (MSVC)",
-    "main": "index.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/doctypedev/doctype.git"
-    },
-    "keywords": [
-        "doctype",
-        "ast",
-        "native",
-        "rust",
-        "windows"
-    ],
-    "author": "doctypedev",
+  "name": "@sintesi/core-win32-x64-msvc",
+  "version": "0.7.0",
+  "description": "Sintesi native core for Windows x64 MSVC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doctypedev/sintesi.git"
+  },
+  "keywords": [
+    "sintesi",
+    "ast",
+    "native",
+    "rust",
+    "windows"
+  ],
+  "author": "sintesi",
     "license": "MIT",
     "os": [
         "win32"

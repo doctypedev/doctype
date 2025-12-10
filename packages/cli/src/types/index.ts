@@ -107,7 +107,7 @@ export interface FixDetail {
  * CLI configuration options
  */
 export interface CLIConfig {
-  /** Path to doctype-map.json */
+  /** Path to sintesi-map.json */
   mapPath: string;
   /** Root directory of the project */
   projectRoot: string;
@@ -121,7 +121,7 @@ export interface CLIConfig {
  * Options for the check command
  */
 export interface CheckOptions {
-  /** Path to doctype-map.json */
+  /** Path to sintesi-map.json */
   map?: string;
   /** Verbose output */
   verbose?: boolean;
@@ -133,7 +133,7 @@ export interface CheckOptions {
  * Options for the fix command
  */
 export interface FixOptions {
-  /** Path to doctype-map.json */
+  /** Path to sintesi-map.json */
   map?: string;
   /** Verbose output */
   verbose?: boolean;
@@ -224,9 +224,9 @@ export interface InitResult {
 export type AIProvider = 'openai' | 'gemini' | 'anthropic' | 'mistral';
 
 /**
- * Doctype configuration file structure
+ * Sintesi configuration file structure
  */
-export interface DoctypeConfig {
+export interface SintesiConfig {
   /** Project name */
   projectName: string;
   /** Project root directory */

@@ -1,6 +1,6 @@
 # Map-manager
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -34,8 +34,8 @@ Auto-generated documentation via Doctype.
 
 
 
-### DoctypeMapManager
+### SintesiMapManager
 
-<!-- doctype:start id="cb1fa63d-2ace-4407-88cb-ade5b3629111" code_ref="packages/content/map-manager.ts#DoctypeMapManager" -->
+<!-- sintesi:start id="cb1fa63d-2ace-4407-88cb-ade5b3629111" code_ref="packages/content/map-manager.ts#SintesiMapManager" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="cb1fa63d-2ace-4407-88cb-ade5b3629111" -->
+<!-- sintesi:end id="cb1fa63d-2ace-4407-88cb-ade5b3629111" -->

@@ -1,6 +1,6 @@
 # Init
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -60,6 +60,6 @@ Auto-generated documentation via Doctype.
 
 ### initCommand
 
-<!-- doctype:start id="18942494-a9c7-447d-ac36-815736460b25" code_ref="packages/cli/src/commands/init.ts#initCommand" -->
+<!-- sintesi:start id="18942494-a9c7-447d-ac36-815736460b25" code_ref="packages/cli/src/commands/init.ts#initCommand" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="18942494-a9c7-447d-ac36-815736460b25" -->
+<!-- sintesi:end id="18942494-a9c7-447d-ac36-815736460b25" -->

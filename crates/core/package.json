@@ -1,29 +1,42 @@
 {
-  "name": "@doctypedev/core-native",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Rust-powered core types and AST analysis for Doctype",
+  "name": "@sintesi/core-native",
+  "version": "0.0.0",
   "main": "index.js",
-  "types": "index.d.ts",
-  "scripts": {
-    "build": "napi build --platform --release --pipe \"prettier -w\"",
-    "build:debug": "napi build --platform",
-    "artifacts": "napi artifacts",
-    "prepublishOnly": "napi prepublish -t npm"
-  },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0",
-    "prettier": "^3.0.0"
+    "ava": "^6.0.1"
   },
+  "ava": {
+    "timeout": "3m"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "ava",
+    "version": "napi version"
+  },
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b",
   "napi": {
-    "name": "doctype-core",
+    "name": "sintesi-core",
     "triples": {
-      "defaults": false,
+      "defaults": true,
       "additional": [
+        "x86_64-unknown-linux-musl",
+        "aarch64-unknown-linux-gnu",
+        "i686-pc-windows-msvc",
+        "armv7-unknown-linux-gnueabihf",
         "aarch64-apple-darwin",
-        "x86_64-unknown-linux-gnu",
-        "x86_64-pc-windows-msvc"
+        "aarch64-linux-android",
+        "x86_64-unknown-freebsd",
+        "aarch64-unknown-linux-musl",
+        "aarch64-pc-windows-msvc",
+        "armv7-linux-androideabi"
       ]
     }
+  },
+  "engines": {
+    "node": ">= 10"
   }
 }

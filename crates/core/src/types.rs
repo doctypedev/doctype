@@ -2,7 +2,7 @@ use napi_derive::napi;
 use serde::Serialize;
 
 /**
- * Core type definitions for Doctype
+ * Core type definitions for Sintesi
  */
 
 /**
@@ -75,15 +75,15 @@ pub struct DocRef {
 }
 
 /**
- * Complete mapping entry in doctype-map.json
+ * Complete mapping entry in sintesi-map.json
  *
  * Note: Content is not stored here to avoid duplication.
  * The markdown file is the single source of truth for content.
- * Use the anchor ID to locate content between doctype:start and doctype:end tags.
+ * Use the anchor ID to locate content between sintesi:start and sintesi:end tags.
  */
 #[napi(object)]
 #[derive(Debug, Serialize)]
-pub struct DoctypeMapEntry {
+pub struct SintesiMapEntry {
     /// Unique identifier for this anchor
     pub id: String,
     /// Reference to the code
@@ -99,13 +99,13 @@ pub struct DoctypeMapEntry {
 }
 
 /**
- * The complete doctype-map.json structure
+ * The complete sintesi-map.json structure
  */
 #[napi(object)]
 #[derive(Debug, Serialize)]
-pub struct DoctypeMap {
+pub struct SintesiMap {
     /// Schema version for future compatibility
     pub version: String,
     /// All tracked documentation anchors
-    pub entries: Vec<DoctypeMapEntry>,
+    pub entries: Vec<SintesiMapEntry>,
 }

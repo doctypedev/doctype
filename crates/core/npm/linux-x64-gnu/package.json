@@ -1,20 +1,20 @@
 {
-    "name": "@doctypedev/core-linux-x64-gnu",
-    "version": "0.7.0",
-    "description": "Doctype native core for Linux x64 (glibc)",
-    "main": "index.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/doctypedev/doctype.git"
-    },
-    "keywords": [
-        "doctype",
-        "ast",
-        "native",
-        "rust",
-        "linux"
-    ],
-    "author": "doctypedev",
+  "name": "@sintesi/core-linux-x64-gnu",
+  "version": "0.7.0",
+  "description": "Sintesi native core for Linux x64 GNU",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doctypedev/sintesi.git"
+  },
+  "keywords": [
+    "sintesi",
+    "ast",
+    "native",
+    "rust",
+    "linux"
+  ],
+  "author": "sintesi",
     "license": "MIT",
     "os": [
         "linux"

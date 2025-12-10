@@ -3,12 +3,12 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [[
-    "@doctypedev/doctype",
-    "@doctypedev/core"
+    "@sintesi/sintesi",
+    "@sintesi/core"
   ]],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@doctypedev/core-native"]
+  "ignore": ["@sintesi/core-native"]
 }

@@ -1,10 +1,10 @@
 # AI Module - Gen AI Agent
 
-The **AI Module** provides intelligent, context-aware documentation generation using Large Language Models (LLMs). This transforms Doctype from a simple drift detector into an AI-powered documentation assistant.
+The **AI Module** provides intelligent, context-aware documentation generation using Large Language Models (LLMs). This transforms Sintesi from a simple drift detector into an AI-powered documentation assistant.
 
 ## Purpose
 
-This module implements the **probabilistic logic layer** of Doctype:
+This module implements the **probabilistic logic layer** of Sintesi:
 
 - Generate high-quality documentation based on code signature changes
 - Support multiple AI providers (OpenAI, Gemini)
@@ -45,7 +45,7 @@ This module implements the **probabilistic logic layer** of Doctype:
 
 ### AIAgent (`ai-agent.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440008" code_ref="src/ai/ai-agent.ts#AIAgent" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440008" code_ref="src/ai/ai-agent.ts#AIAgent" -->
 Main orchestrator for AI-powered documentation generation.
 
 **Features:**
@@ -58,7 +58,7 @@ Main orchestrator for AI-powered documentation generation.
 **API:**
 
 ```typescript
-import { createAgentFromEnv, createOpenAIAgent } from 'doctype';
+import { createAgentFromEnv, createOpenAIAgent } from 'sintesi';
 
 // Create from environment variables
 const agent = createAgentFromEnv({
@@ -91,7 +91,7 @@ if (!isValid) {
   console.error('Cannot connect to AI provider');
 }
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440008" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440008" -->
 
 **Retry Logic:**
 
@@ -106,9 +106,9 @@ The agent automatically retries failed requests with exponential backoff:
 
 ### PromptBuilder (`prompt-builder.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440009" code_ref="src/ai/prompt-builder.ts#PromptBuilder" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440009" code_ref="src/ai/prompt-builder.ts#PromptBuilder" -->
 Generates optimized prompts for AI providers to produce high-quality documentation.
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440009" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440009" -->
 
 **Prompt Structure:**
 
@@ -129,7 +129,7 @@ User Prompt:
 **API:**
 
 ```typescript
-import { PromptBuilder } from 'doctype';
+import { PromptBuilder } from 'sintesi';
 
 // Build system prompt (same for all requests)
 const systemPrompt = PromptBuilder.buildSystemPrompt();
@@ -208,7 +208,7 @@ Generate updated documentation that:
 
 ### OpenAIProvider (`providers/openai-provider.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440010" code_ref="src/ai/providers/openai-provider.ts#OpenAIProvider" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440010" code_ref="src/ai/providers/openai-provider.ts#OpenAIProvider" -->
 OpenAI API integration for documentation generation using GPT models.
 
 **Features:**
@@ -217,7 +217,7 @@ OpenAI API integration for documentation generation using GPT models.
 - Usage statistics tracking (prompt tokens, completion tokens, total tokens)
 - Error handling with detailed messages
 - Timeout support
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440010" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440010" -->
 
 **Models Supported:**
 
@@ -230,7 +230,7 @@ OpenAI API integration for documentation generation using GPT models.
 **API:**
 
 ```typescript
-import { OpenAIProvider } from 'doctype';
+import { OpenAIProvider } from 'sintesi';
 
 const provider = new OpenAIProvider({
   provider: 'openai',
@@ -307,7 +307,7 @@ abstract class BaseProvider {
 **Implementing a New Provider:**
 
 ```typescript
-import { BaseProvider } from 'doctype/ai/providers';
+import { BaseProvider } from 'sintesi/ai/providers';
 
 class GeminiProvider extends BaseProvider {
   async generateDocumentation(request: DocumentationRequest) {
@@ -328,7 +328,7 @@ class GeminiProvider extends BaseProvider {
 ### Basic Usage
 
 ```typescript
-import { createOpenAIAgent } from 'doctype';
+import { createOpenAIAgent } from 'sintesi';
 
 // Create agent
 const agent = createOpenAIAgent(
@@ -351,7 +351,7 @@ console.log(newDocs);
 ### With Custom Options
 
 ```typescript
-import { createOpenAIAgent } from 'doctype';
+import { createOpenAIAgent } from 'sintesi';
 
 const agent = createOpenAIAgent(
   process.env.OPENAI_API_KEY,
@@ -367,7 +367,7 @@ const agent = createOpenAIAgent(
 ### From Environment Variables
 
 ```typescript
-import { createAgentFromEnv } from 'doctype';
+import { createAgentFromEnv } from 'sintesi';
 
 // Reads OPENAI_API_KEY or GEMINI_API_KEY automatically
 const agent = createAgentFromEnv({ modelId: 'gpt-4' });
@@ -376,7 +376,7 @@ const agent = createAgentFromEnv({ modelId: 'gpt-4' });
 ### Error Handling
 
 ```typescript
-import { createAgentFromEnv } from 'doctype';
+import { createAgentFromEnv } from 'sintesi';
 
 try {
   const agent = createAgentFromEnv();
@@ -462,23 +462,23 @@ Instead of calling the AI for every single change:
 ```bash
 # Don't do this (calls AI 10 times)
 git commit
-npx doctype fix --auto-commit
+npx sintesi fix --auto-commit
 git commit
-npx doctype fix --auto-commit
+npx sintesi fix --auto-commit
 # ... 8 more times
 
 # Do this (calls AI once for all changes)
 # Make all code changes
 # ...
 git commit
-npx doctype fix --auto-commit
+npx sintesi fix --auto-commit
 ```
 
 ### 4. Use `--no-ai` for Testing
 
 ```bash
 # During development/testing, use placeholder
-npx doctype fix --no-ai --dry-run
+npx sintesi fix --no-ai --dry-run
 ```
 
 ## Rate Limiting
@@ -572,7 +572,7 @@ The module automatically:
 ### Gemini Provider (Coming Soon)
 
 ```typescript
-import { createGeminiAgent } from 'doctype';
+import { createGeminiAgent } from 'sintesi';
 
 const agent = createGeminiAgent(
   process.env.GEMINI_API_KEY,
@@ -585,7 +585,7 @@ const agent = createGeminiAgent(
 Support for locally-hosted models:
 
 ```typescript
-import { createLocalAgent } from 'doctype';
+import { createLocalAgent } from 'sintesi';
 
 const agent = createLocalAgent('http://localhost:8080', 'llama-2');
 ```

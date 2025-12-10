@@ -1,20 +1,20 @@
 {
-  "name": "@doctypedev/core-darwin-arm64",
+  "name": "@sintesi/core-darwin-arm64",
   "version": "0.7.0",
-  "description": "Doctype native core for macOS ARM64",
+  "description": "Sintesi native core for macOS ARM64",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/doctypedev/doctype.git"
+    "url": "git+https://github.com/doctypedev/sintesi.git"
   },
   "keywords": [
-    "doctype",
+    "sintesi",
     "ast",
     "native",
     "rust",
     "macos"
   ],
-  "author": "doctypedev",
+  "author": "sintesi",
   "license": "MIT",
   "os": ["darwin"],
   "cpu": ["arm64"],

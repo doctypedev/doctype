@@ -1,6 +1,6 @@
 # Fix-orchestrator
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -156,6 +156,6 @@ Auto-generated documentation via Doctype.
 
 ### executeFixes
 
-<!-- doctype:start id="e5fc2f4d-02d7-44e6-8dff-119ea7037ead" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#executeFixes" -->
+<!-- sintesi:start id="e5fc2f4d-02d7-44e6-8dff-119ea7037ead" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#executeFixes" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="e5fc2f4d-02d7-44e6-8dff-119ea7037ead" -->
+<!-- sintesi:end id="e5fc2f4d-02d7-44e6-8dff-119ea7037ead" -->

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { checkCommand } from '../src/commands/check';
 import { DoctypeMapManager } from '../../content/map-manager';
-import { AstAnalyzer } from '@doctypedev/core';
+import { AstAnalyzer } from '@sintesi/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
@@ -15,7 +15,7 @@ describe('CLI: check command', () => {
   beforeEach(() => {
     originalCwd = process.cwd();
     testDir = join(originalCwd, 'test-cli');
-    testMapPath = join(testDir, 'doctype-map.json');
+    testMapPath = join(testDir, 'sintesi-map.json');
     testCodeFile = join(testDir, 'test.ts');
     testDocFile = join(testDir, 'test.md');
     // Create test directory
@@ -24,12 +24,12 @@ describe('CLI: check command', () => {
     }
 
     // Create doctype config file
-    const configPath = join(testDir, 'doctype.config.json');
+    const configPath = join(testDir, 'sintesi.config.json');
     const config = {
       projectName: 'test-project',
       projectRoot: testDir,
       docsFolder: 'docs',
-      mapFile: 'doctype-map.json',
+      mapFile: 'sintesi-map.json',
     };
     writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -78,7 +78,7 @@ Test documentation
     process.chdir(originalCwd);
 
     // Cleanup test files
-    const configPath = join(testDir, 'doctype.config.json');
+    const configPath = join(testDir, 'sintesi.config.json');
     if (existsSync(testCodeFile)) unlinkSync(testCodeFile);
     if (existsSync(testDocFile)) unlinkSync(testDocFile);
     if (existsSync(testMapPath)) unlinkSync(testMapPath);

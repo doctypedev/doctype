@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Doctype CLI - Main entry point
+ * Sintesi CLI - Main entry point
  *
  * Commands:
- * - init: Initialize Doctype configuration for your project
+ * - init: Initialize Sintesi configuration for your project
  * - check: Verify documentation is in sync with code
  * - fix: Update documentation when drift is detected (with AI-powered generation)
  * - generate: Generate documentation content using AI
@@ -28,7 +28,7 @@ import { CheckOptions, FixOptions, GenerateOptions, InitOptions, ChangesetOption
 
 // Parse command line arguments
 yargs(hideBin(process.argv))
-  .scriptName('doctype')
+  .scriptName('sintesi')
   .usage('$0 <command> [options]')
   .version('0.1.0')
   .alias('v', 'version')
@@ -37,7 +37,7 @@ yargs(hideBin(process.argv))
   // Init command
   .command(
     'init',
-    'Initialize Doctype configuration for your project',
+    'Initialize Sintesi configuration for your project',
     (yargs) => {
       return yargs.option('verbose', {
         type: 'boolean',
@@ -101,7 +101,7 @@ yargs(hideBin(process.argv))
         .option('map', {
           alias: 'm',
           type: 'string',
-          description: 'Path to doctype-map.json (overrides config)',
+          description: 'Path to sintesi-map.json (overrides config)',
         })
         .option('verbose', {
           type: 'boolean',
@@ -165,7 +165,7 @@ yargs(hideBin(process.argv))
         .option('map', {
           alias: 'm',
           type: 'string',
-          description: 'Path to doctype-map.json (overrides config)',
+          description: 'Path to sintesi-map.json (overrides config)',
         })
         .option('verbose', {
           type: 'boolean',
@@ -208,7 +208,7 @@ yargs(hideBin(process.argv))
         .option('map', {
           alias: 'm',
           type: 'string',
-          description: 'Path to doctype-map.json (overrides config)',
+          description: 'Path to sintesi-map.json (overrides config)',
         })
         .option('verbose', {
           type: 'boolean',
@@ -354,7 +354,7 @@ yargs(hideBin(process.argv))
   )
 
   // Help and examples
-  .example('$0 init', 'Initialize Doctype for your project')
+  .example('$0 init', 'Initialize Sintesi for your project')
   .example('$0 generate', 'Generate documentation using AI')
   .example('$0 check', 'Check for documentation drift')
   .example('$0 check --verbose', 'Check with detailed output')

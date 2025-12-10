@@ -10,19 +10,19 @@ use std::path::PathBuf;
 // Anchor Types
 // ============================================================================
 
-/// Represents a Doctype anchor found in a Markdown file
+/// Represents a Sintesi anchor found in a Markdown file
 ///
-/// Doctype anchors are defined using HTML comments that mark sections
+/// Sintesi anchors are defined using HTML comments that mark sections
 /// of documentation tied to specific code symbols.
 ///
 /// # Format
 /// ```markdown
-/// <!-- doctype:start id="uuid" code_ref="src/file.ts#SymbolName" -->
+/// <!-- sintesi:start id="uuid" code_ref="src/file.ts#SymbolName" -->
 /// Documentation content goes here...
-/// <!-- doctype:end id="uuid" -->
+/// <!-- sintesi:end id="uuid" -->
 /// ```
 #[derive(Debug, Clone)]
-pub struct DoctypeAnchor {
+pub struct SintesiAnchor {
     /// Unique identifier for this anchor (UUID)
     pub id: String,
 
@@ -46,12 +46,12 @@ pub struct DoctypeAnchor {
     pub content: String,
 }
 
-impl DoctypeAnchor {
+impl SintesiAnchor {
     /// Get the symbol name from the code_ref if present
     ///
     /// # Example
     /// ```rust,ignore
-    /// let anchor = DoctypeAnchor {
+    /// let anchor = SintesiAnchor {
     ///     code_ref: Some("src/auth.ts#login".to_string()),
     ///     // ... other fields
     /// };
@@ -67,7 +67,7 @@ impl DoctypeAnchor {
     ///
     /// # Example
     /// ```rust,ignore
-    /// let anchor = DoctypeAnchor {
+    /// let anchor = SintesiAnchor {
     ///     code_ref: Some("src/auth.ts#login".to_string()),
     ///     // ... other fields
     /// };
@@ -101,7 +101,7 @@ impl DoctypeAnchor {
 ///
 /// # Example
 /// ```rust,ignore
-/// use doctype_core::content::{AnchorMap, extract_anchors};
+/// use sintesi_core::content::{AnchorMap, extract_anchors};
 ///
 /// let content = std::fs::read_to_string("docs/api.md")?;
 /// let result = extract_anchors("docs/api.md", &content);
@@ -115,7 +115,7 @@ impl DoctypeAnchor {
 ///     );
 /// }
 /// ```
-pub type AnchorMap = HashMap<String, DoctypeAnchor>;
+pub type AnchorMap = HashMap<String, SintesiAnchor>;
 
 // ============================================================================
 // Extraction Result Types
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn test_anchor_symbol_name() {
-        let anchor = DoctypeAnchor {
+        let anchor = SintesiAnchor {
             id: "test".to_string(),
             code_ref: Some("src/auth.ts#login".to_string()),
             file_path: PathBuf::from("test.md"),
@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn test_anchor_line_span() {
-        let anchor = DoctypeAnchor {
+        let anchor = SintesiAnchor {
             id: "test".to_string(),
             code_ref: None,
             file_path: PathBuf::from("test.md"),
@@ -216,7 +216,7 @@ mod tests {
 
     #[test]
     fn test_anchor_is_empty() {
-        let empty_anchor = DoctypeAnchor {
+        let empty_anchor = SintesiAnchor {
             id: "test".to_string(),
             code_ref: None,
             file_path: PathBuf::from("test.md"),
@@ -227,7 +227,7 @@ mod tests {
 
         assert!(empty_anchor.is_empty());
 
-        let non_empty = DoctypeAnchor {
+        let non_empty = SintesiAnchor {
             content: "Some content".to_string(),
             ..empty_anchor
         };

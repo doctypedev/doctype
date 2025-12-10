@@ -63,7 +63,7 @@ export interface DocRef {
   filePath: string;
 }
 /**
- * Complete mapping entry in doctype-map.json
+ * Complete mapping entry in sintesi-map.json
  *
  * Note: Content is not stored here to avoid duplication.
  * The markdown file is the single source of truth for content.
@@ -84,7 +84,7 @@ export interface DoctypeMapEntry {
   lastUpdated: number;
 }
 /**
- * The complete doctype-map.json structure
+ * The complete sintesi-map.json structure
  */
 export interface DoctypeMap {
   /** Schema version for future compatibility */
@@ -131,7 +131,7 @@ export interface FileDiscoveryOptions {
  *
  * # Example (Node.js)
  * ```javascript
- * const { discoverFiles } = require('@doctypedev/core');
+ * const { discoverFiles } = require('@sintesi/core');
  *
  * const result = discoverFiles('./src', {
  *   respectGitignore: true,
@@ -184,7 +184,7 @@ export interface ExtractionResult {
  *
  * # Example (Node.js)
  * ```javascript
- * const { extractAnchors } = require('@doctypedev/core');
+ * const { extractAnchors } = require('@sintesi/core');
  *
  * const content = fs.readFileSync('docs/api.md', 'utf-8');
  * const result = extractAnchors('docs/api.md', content);
@@ -220,7 +220,7 @@ export declare function extractAnchors(
  *
  * # Example (Node.js)
  * ```javascript
- * const { validateMarkdownAnchors } = require('@doctypedev/core');
+ * const { validateMarkdownAnchors } = require('@sintesi/core');
  *
  * const content = fs.readFileSync('docs/api.md', 'utf-8');
  * const errors = validateMarkdownAnchors(content);
@@ -248,7 +248,7 @@ export declare function validateMarkdownAnchors(content: string): Array<string>;
  *
  * # Example (Node.js)
  * ```javascript
- * const { parseCodeRef } = require('@doctypedev/core');
+ * const { parseCodeRef } = require('@sintesi/core');
  *
  * const { filePath, symbolName } = parseCodeRef('src/auth.ts#login');
  * console.log('File:', filePath);    // "src/auth.ts"

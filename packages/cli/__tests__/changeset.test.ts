@@ -13,8 +13,8 @@ vi.mock('child_process', async (importOriginal) => {
   };
 });
 
-// Mock @doctypedev/core to avoid native binding issues
-vi.mock('@doctypedev/core', () => {
+// Mock @sintesi/core to avoid native binding issues
+vi.mock('@sintesi/core', () => {
   return {
     ASTAnalyzer: vi.fn().mockImplementation(() => ({
       analyzeFile: vi.fn().mockResolvedValue([]),

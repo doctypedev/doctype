@@ -13,11 +13,11 @@ switch (platform) {
             case 'x64':
                 localFileExisted = existsSync(join(__dirname, 'doctype-core.win32-x64-msvc.node'))
                 try {
-                    if (localFileExisted) {
-                        nativeBinding = require('./doctype-core.win32-x64-msvc.node')
-                    } else {
-                        nativeBinding = require('@doctypedev/core-win32-x64-msvc')
-                    }
+    if (fs.existsSync(join(__dirname, 'doctype-core.win32-x64-msvc.node'))) {
+      nativeBinding = require('./doctype-core.win32-x64-msvc.node')
+    } else {
+      nativeBinding = require('@sintesi/core-win32-x64-msvc')
+    }
                 } catch (e) {
                     loadError = e
                 }

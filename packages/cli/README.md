@@ -1,10 +1,10 @@
 # CLI Module - Command Line Interface
 
-The **CLI Module** provides the command-line interface for Doctype, enabling developers to check for documentation drift and automatically fix it.
+The **CLI Module** provides the command-line interface for Sintesi, enabling developers to check for documentation drift and automatically fix it.
 
 ## Purpose
 
-This module implements the **user interface layer** of Doctype:
+This module implements the **user interface layer** of Sintesi:
 
 - Parse command-line arguments and options
 - Orchestrate interactions between core, content, and AI modules
@@ -13,21 +13,21 @@ This module implements the **user interface layer** of Doctype:
 
 ## Commands
 
-### `npx doctype check`
+### `npx sintesi check`
 
 Verifies that documentation is in sync with code by detecting signature drift.
 
 **Usage:**
 
 ```bash
-npx doctype check [options]
+npx sintesi check [options]
 ```
 
 **Options:**
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--map <path>` | Path to doctype-map.json | `./doctype-map.json` |
+| `--map <path>` | Path to sintesi-map.json | `./sintesi-map.json` |
 | `--verbose` | Enable detailed output | `false` |
 | `--strict` | Exit with error code on drift | `true` |
 
@@ -35,16 +35,16 @@ npx doctype check [options]
 
 ```bash
 # Basic check
-npx doctype check
+npx sintesi check
 
 # Check with custom map location
-npx doctype check --map ./docs/doctype-map.json
+npx sintesi check --map ./docs/sintesi-map.json
 
 # Check with verbose output
-npx doctype check --verbose
+npx sintesi check --verbose
 
 # Check without failing on drift (for CI warnings)
-npx doctype check --no-strict
+npx sintesi check --no-strict
 ```
 
 **Exit Codes:**
@@ -55,7 +55,7 @@ npx doctype check --no-strict
 **Output:**
 
 ```
-🔍 Doctype Check - Drift Detection
+🔍 Sintesi Check - Drift Detection
 
 ℹ Checking 15 documentation entries...
 
@@ -68,7 +68,7 @@ npx doctype check --no-strict
 **With Drift:**
 
 ```
-🔍 Doctype Check - Drift Detection
+🔍 Sintesi Check - Drift Detection
 
 ℹ Checking 15 documentation entries...
 
@@ -85,25 +85,25 @@ npx doctype check --no-strict
 
 ────────────────────────────────────────────────────────────
 ✗ Found 2 entries with drift
-ℹ Run 'npx doctype fix' to update documentation
+ℹ Run 'npx sintesi fix' to update documentation
 ────────────────────────────────────────────────────────────
 ```
 
-### `npx doctype fix`
+### `npx sintesi fix`
 
 Updates documentation when drift is detected, using AI or placeholder content.
 
 **Usage:**
 
 ```bash
-npx doctype fix [options]
+npx sintesi fix [options]
 ```
 
 **Options:**
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--map <path>` | Path to doctype-map.json | `./doctype-map.json` |
+| `--map <path>` | Path to sintesi-map.json | `./sintesi-map.json` |
 | `--dry-run` | Preview changes without writing | `false` |
 | `--auto-commit` | Auto-commit changes to git | `false` |
 | `--no-ai` | Use placeholder instead of AI | `false` |
@@ -113,25 +113,25 @@ npx doctype fix [options]
 
 ```bash
 # Fix with AI-generated content (requires OPENAI_API_KEY)
-npx doctype fix
+npx sintesi fix
 
 # Preview changes without writing files
-npx doctype fix --dry-run
+npx sintesi fix --dry-run
 
 # Fix and automatically commit changes
-npx doctype fix --auto-commit
+npx sintesi fix --auto-commit
 
 # Fix without AI (use placeholder content)
-npx doctype fix --no-ai
+npx sintesi fix --no-ai
 
 # Fix with verbose output
-npx doctype fix --verbose
+npx sintesi fix --verbose
 ```
 
 **Output:**
 
 ```
-🔧 Doctype Fix - Update Documentation
+🔧 Sintesi Fix - Update Documentation
 
 ℹ Analyzing 15 documentation entries...
 
@@ -154,32 +154,32 @@ processData - src/utils/process.ts
 ℹ Updated files:
   - docs/auth.md
   - docs/utils.md
-  - doctype-map.json
+  - sintesi-map.json
 ────────────────────────────────────────────────────────────
 ```
 
 **With Auto-Commit:**
 
 ```
-🔧 Doctype Fix - Update Documentation
+🔧 Sintesi Fix - Update Documentation
 
 [... fix output ...]
 
 ────────────────────────────────────────────────────────────
 🔄 Auto-committing changes...
 ✓ Staged 3 files
-✓ Created commit: 🤖 Doctype Bot: Auto-fix documentation for login, processData
+✓ Created commit: 🤖 Sintesi Bot: Auto-fix documentation for login, processData
 ────────────────────────────────────────────────────────────
 ```
 
-### `npx doctype init`
+### `npx sintesi init`
 
-Initializes Doctype by scanning the codebase and creating documentation anchors based on the selected strategy (Mirror, Module, or Type).
+Initializes Sintesi by scanning the codebase and creating documentation anchors based on the selected strategy (Mirror, Module, or Type).
 
 **Usage:**
 
 ```bash
-npx doctype init [options]
+npx sintesi init [options]
 ```
 
 **Options:**
@@ -187,20 +187,20 @@ npx doctype init [options]
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--docs <path>` | Documentation directory to scan | `./docs` |
-| `--map <path>` | Output path for doctype-map.json | `./doctype-map.json` |
+| `--map <path>` | Output path for sintesi-map.json | `./sintesi-map.json` |
 | `--verbose` | Enable detailed output | `false` |
 
 **Examples:**
 
 ```bash
 # Initialize with default settings
-npx doctype init
+npx sintesi init
 
 # Initialize with custom docs directory
-npx doctype init --docs ./documentation
+npx sintesi init --docs ./documentation
 
 # Initialize with custom map location
-npx doctype init --map ./custom-map.json
+npx sintesi init --map ./custom-map.json
 ```
 
 **Output:**
@@ -217,7 +217,7 @@ Scanning codebase and creating documentation anchors...
 Project Name: My Project
 Project Root: .
 Docs Folder:  ./docs
-Map File:     doctype-map.json
+Map File:     sintesi-map.json
 
 🎯 Status
 ✓ Configuration saved
@@ -226,14 +226,14 @@ Map File:     doctype-map.json
 
 Next steps:
 • Review and edit generated documentation files
-• Run "doctype check" to verify documentation is in sync
+• Run "sintesi check" to verify documentation is in sync
 ```
 
 ## Modules
 
 ### Logger (`logger.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440006" code_ref="src/cli/logger.ts#Logger" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440006" code_ref="src/cli/logger.ts#Logger" -->
 Professional CLI output with colored formatting and log levels.
 
 **Features:**
@@ -246,7 +246,7 @@ Professional CLI output with colored formatting and log levels.
 **API:**
 
 ```typescript
-import { Logger } from 'doctype/cli';
+import { Logger } from 'sintesi/cli';
 
 const logger = new Logger(verbose);
 
@@ -264,11 +264,11 @@ logger.formatPath('src/auth/login.ts');    // Cyan
 logger.formatSymbol('login');               // Yellow
 logger.formatHash('abc123...');             // Gray
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440006" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440006" -->
 
 ### GitHelper (`git-helper.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440007" code_ref="src/cli/git-helper.ts#GitHelper" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440007" code_ref="src/cli/git-helper.ts#GitHelper" -->
 Git operations for auto-commit functionality.
 
 **Features:**
@@ -280,7 +280,7 @@ Git operations for auto-commit functionality.
 **API:**
 
 ```typescript
-import { GitHelper } from 'doctype/cli';
+import { GitHelper } from 'sintesi/cli';
 
 const git = new GitHelper(logger);
 
@@ -289,7 +289,7 @@ const isRepo = git.isGitRepository();
 
 // Auto-commit documentation changes
 const result = git.autoCommit(
-  ['docs/api.md', 'docs/auth.md', 'doctype-map.json'], // Files to commit
+  ['docs/api.md', 'docs/auth.md', 'sintesi-map.json'], // Files to commit
   ['login', 'logout'],                                 // Symbol names
   false                                                 // Don't push to remote
 );
@@ -298,19 +298,19 @@ if (result.success) {
   console.log(`Created commit: ${result.commitMessage}`);
 }
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440007" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440007" -->
 
 **Commit Message Format:**
 
 ```bash
 # Single symbol
-🤖 Doctype Bot: Auto-fix documentation for login
+🤖 Sintesi Bot: Auto-fix documentation for login
 
 # Multiple symbols (≤3)
-🤖 Doctype Bot: Auto-fix documentation for login, logout
+🤖 Sintesi Bot: Auto-fix documentation for login, logout
 
 # Many symbols (>3)
-🤖 Doctype Bot: Auto-fix documentation for 5 symbols
+🤖 Sintesi Bot: Auto-fix documentation for 5 symbols
 ```
 
 ### Check Command (`check.ts`)
@@ -319,7 +319,7 @@ Drift detection implementation.
 
 **Process:**
 
-1. Load `doctype-map.json`
+1. Load `sintesi-map.json`
 2. For each entry:
    - Analyze current code file (AST)
    - Find matching symbol
@@ -332,10 +332,10 @@ Drift detection implementation.
 **API:**
 
 ```typescript
-import { runCheckCommand } from 'doctype/cli';
+import { runCheckCommand } from 'sintesi/cli';
 
 const result = await runCheckCommand({
-  mapPath: './doctype-map.json',
+  mapPath: './sintesi-map.json',
   verbose: true,
   strict: true
 });
@@ -350,7 +350,7 @@ Documentation updating implementation.
 
 **Process:**
 
-1. Load `doctype-map.json`
+1. Load `sintesi-map.json`
 2. Detect all drifted entries (same as check command)
 3. For each drift:
    - Generate new content:
@@ -365,10 +365,10 @@ Documentation updating implementation.
 **API:**
 
 ```typescript
-import { runFixCommand } from 'doctype/cli';
+import { runFixCommand } from 'sintesi/cli';
 
 const result = await runFixCommand({
-  mapPath: './doctype-map.json',
+  mapPath: './sintesi-map.json',
   dryRun: false,
   autoCommit: true,
   useAI: true,
@@ -394,7 +394,7 @@ import { hideBin } from 'yargs/helpers';
 yargs(hideBin(process.argv))
   .command('check', 'Verify documentation is in sync', checkOptions, checkHandler)
   .command('fix', 'Update documentation when drift detected', fixOptions, fixHandler)
-  .command('init', 'Initialize doctype-map.json', initOptions, initHandler)
+  .command('init', 'Initialize sintesi-map.json', initOptions, initHandler)
   .demandCommand(1, 'You must provide a command')
   .help()
   .alias('help', 'h')
@@ -408,8 +408,8 @@ yargs(hideBin(process.argv))
 ### With Core Module (AST & Drift Detection)
 
 ```typescript
-import { ASTAnalyzer, SignatureHasher } from 'doctype/core';
-import { Logger } from 'doctype/cli';
+import { ASTAnalyzer, SignatureHasher } from 'sintesi/core';
+import { Logger } from 'sintesi/cli';
 
 const logger = new Logger(verbose);
 const analyzer = new ASTAnalyzer();
@@ -433,11 +433,11 @@ for (const entry of entries) {
 ### With Content Module
 
 ```typescript
-import { DoctypeMapManager, ContentInjector } from 'doctype/content';
-import { Logger } from 'doctype/cli';
+import { SintesiMapManager, ContentInjector } from 'sintesi/content';
+import { Logger } from 'sintesi/cli';
 
 const logger = new Logger(verbose);
-const mapManager = new DoctypeMapManager(mapPath);
+const mapManager = new SintesiMapManager(mapPath);
 const injector = new ContentInjector();
 
 // Inject new content
@@ -456,8 +456,8 @@ if (result.success) {
 ### With AI Module
 
 ```typescript
-import { createAgentFromEnv } from 'doctype/ai';
-import { Logger } from 'doctype/cli';
+import { createAgentFromEnv } from 'sintesi/ai';
+import { Logger } from 'sintesi/cli';
 
 const logger = new Logger(verbose);
 
@@ -522,8 +522,8 @@ The CLI provides clear error messages for common scenarios:
 
 ```bash
 # Missing map file
-✗ Error: Map file not found at ./doctype-map.json
-ℹ Run 'npx doctype init' to create it
+✗ Error: Map file not found at ./sintesi-map.json
+ℹ Run 'npx sintesi init' to create it
 
 # Missing code file
 ✗ Error: Code file not found: src/missing.ts

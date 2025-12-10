@@ -1,8 +1,8 @@
 {
-  "name": "doctype-monorepo-root",
+  "name": "sintesi-monorepo-root",
   "version": "0.0.0",
   "private": true,
-  "description": "Root package for the Doctype monorepo",
+  "description": "Root package for the Sintesi monorepo",
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",

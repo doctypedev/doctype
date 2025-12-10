@@ -1,6 +1,6 @@
 # Version-detector
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -87,21 +87,21 @@ Auto-generated documentation via Doctype.
 
 ### VersionTypeDetector
 
-<!-- doctype:start id="9f2da380-d1ba-4faf-b798-6466f9e18acf" code_ref="packages/cli/src/changeset/version-detector.ts#VersionTypeDetector" -->
+<!-- sintesi:start id="9f2da380-d1ba-4faf-b798-6466f9e18acf" code_ref="packages/cli/src/changeset/version-detector.ts#VersionTypeDetector" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="9f2da380-d1ba-4faf-b798-6466f9e18acf" -->
+<!-- sintesi:end id="9f2da380-d1ba-4faf-b798-6466f9e18acf" -->
 
 
 ### VersionDetectionResult
 
-<!-- doctype:start id="70ce6e23-4d35-411e-b796-1be477d04680" code_ref="packages/cli/src/changeset/version-detector.ts#VersionDetectionResult" -->
+<!-- sintesi:start id="70ce6e23-4d35-411e-b796-1be477d04680" code_ref="packages/cli/src/changeset/version-detector.ts#VersionDetectionResult" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="70ce6e23-4d35-411e-b796-1be477d04680" -->
+<!-- sintesi:end id="70ce6e23-4d35-411e-b796-1be477d04680" -->
 
 
 
 ### VersionType
 
-<!-- doctype:start id="6580c6ef-9409-4408-971e-94b00d916bf5" code_ref="packages/cli/src/changeset/version-detector.ts#VersionType" -->
+<!-- sintesi:start id="6580c6ef-9409-4408-971e-94b00d916bf5" code_ref="packages/cli/src/changeset/version-detector.ts#VersionType" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="6580c6ef-9409-4408-971e-94b00d916bf5" -->
+<!-- sintesi:end id="6580c6ef-9409-4408-971e-94b00d916bf5" -->

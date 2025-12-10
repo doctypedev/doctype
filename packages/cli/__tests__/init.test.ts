@@ -3,8 +3,8 @@ import { initCommand } from '../src/commands/init';
 import { determineOutputFile } from '../src/orchestrators/init-orchestrator';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
-import { DoctypeConfig } from '../src/types';
-import { SymbolType } from '@doctypedev/core';
+import { SintesiConfig } from '../src/types';
+import { SymbolType } from '@sintesi/core';
 
 // Mock the AI module to avoid dependency issues
 vi.mock('../../ai', () => {
@@ -65,7 +65,7 @@ vi.mock('@clack/prompts', () => ({
 describe('CLI: init command', () => {
   const originalCwd = process.cwd();
   const testDir = resolve(originalCwd, 'test-cli-init');
-  const configPath = join(testDir, 'doctype.config.json');
+  const configPath = join(testDir, 'sintesi.config.json');
   const envPath = join(testDir, '.env');
   const gitignorePath = join(testDir, '.gitignore');
   let originalProcessCwd: typeof process.cwd;
@@ -102,7 +102,7 @@ describe('CLI: init command', () => {
       .mockResolvedValueOnce(responses.projectName || 'test-cli-init')
       .mockResolvedValueOnce(responses.projectRoot || '.')
       .mockResolvedValueOnce(responses.docsFolder || './docs')
-      .mockResolvedValueOnce(responses.mapFile || 'doctype-map.json');
+      .mockResolvedValueOnce(responses.mapFile || 'sintesi-map.json');
 
     // Mock select prompt for outputStrategy
     mockSelect.mockResolvedValueOnce(responses.outputStrategy || 'mirror');
@@ -160,17 +160,17 @@ describe('CLI: init command', () => {
     const result = await initCommand({ verbose: false });
 
     expect(result.success).toBe(true);
-    expect(result.configPath).toBe(join(process.cwd(), 'doctype.config.json'));
+    expect(result.configPath).toBe(join(process.cwd(), 'sintesi.config.json'));
     expect(existsSync(configPath)).toBe(true);
 
     // Verify config content
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     expect(config.projectName).toBe('test-cli-init');
     expect(config.projectRoot).toBe('.');
     expect(config.docsFolder).toBe('./docs');
-    expect(config.mapFile).toBe('doctype-map.json');
+    expect(config.mapFile).toBe('sintesi-map.json');
   });
 
   it('should create config file with custom values', async () => {
@@ -188,7 +188,7 @@ describe('CLI: init command', () => {
 
     // Verify config content
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     expect(config.projectName).toBe('My Custom Project');
     expect(config.projectRoot).toBe('./src');
@@ -198,11 +198,11 @@ describe('CLI: init command', () => {
 
   it('should handle existing config file with overwrite confirmation', async () => {
     // Create existing config
-    const existingConfig: DoctypeConfig = {
+    const existingConfig: SintesiConfig = {
       projectName: 'Existing Project',
       projectRoot: '.',
       docsFolder: './docs',
-      mapFile: 'doctype-map.json',
+      mapFile: 'sintesi-map.json',
     };
     writeFileSync(
       configPath,
@@ -220,18 +220,18 @@ describe('CLI: init command', () => {
 
     // Verify config was overwritten
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     expect(config.projectName).toBe('test-cli-init');
   });
 
   it('should cancel initialization when user declines to overwrite', async () => {
     // Create existing config
-    const existingConfig: DoctypeConfig = {
+    const existingConfig: SintesiConfig = {
       projectName: 'Existing Project',
       projectRoot: '.',
       docsFolder: './docs',
-      mapFile: 'doctype-map.json',
+      mapFile: 'sintesi-map.json',
     };
     writeFileSync(
       configPath,
@@ -250,7 +250,7 @@ describe('CLI: init command', () => {
 
     // Verify config was not modified
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     expect(config.projectName).toBe('Existing Project');
   });
@@ -296,11 +296,11 @@ describe('CLI: init command', () => {
 
   it('should handle mixed case responses for overwrite confirmation', async () => {
     // Create existing config
-    const existingConfig: DoctypeConfig = {
+    const existingConfig: SintesiConfig = {
       projectName: 'Existing Project',
       projectRoot: '.',
       docsFolder: './docs',
-      mapFile: 'doctype-map.json',
+      mapFile: 'sintesi-map.json',
     };
     writeFileSync(
       configPath,
@@ -331,7 +331,7 @@ describe('CLI: init command', () => {
     expect(result.success).toBe(true);
 
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     // Values should be used as provided (trimming happens in UI layer)
     expect(config.projectName).toContain('My Project');
@@ -349,7 +349,7 @@ describe('CLI: init command', () => {
     expect(result.success).toBe(true);
 
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     // Should use the test directory name
     expect(config.projectName).toBe('test-cli-init');
@@ -377,7 +377,7 @@ describe('CLI: init command', () => {
     await initCommand({ verbose: false });
 
     const configContent = readFileSync(configPath, 'utf-8');
-    const config: DoctypeConfig = JSON.parse(configContent);
+    const config: SintesiConfig = JSON.parse(configContent);
 
     // Verify all required fields are present
     expect(config).toHaveProperty('projectName');

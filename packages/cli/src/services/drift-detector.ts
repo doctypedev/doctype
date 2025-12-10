@@ -6,7 +6,7 @@
  */
 
 import { DoctypeMapManager } from '../../../content';
-import { CodeSignature, DoctypeMapEntry, AstAnalyzer, discoverFiles } from '@doctypedev/core';
+import { CodeSignature, DoctypeMapEntry, AstAnalyzer, discoverFiles } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, relative, sep } from 'path';

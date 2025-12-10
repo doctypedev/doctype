@@ -1,6 +1,6 @@
 # Init-orchestrator
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -151,9 +151,9 @@ Auto-generated documentation via Doctype.
 
 ### scanAndCreateAnchors
 
-<!-- doctype:start id="356f599a-54bc-47b3-944e-667f1dcb1357" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#scanAndCreateAnchors" -->
+<!-- sintesi:start id="356f599a-54bc-47b3-944e-667f1dcb1357" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#scanAndCreateAnchors" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="356f599a-54bc-47b3-944e-667f1dcb1357" -->
+<!-- sintesi:end id="356f599a-54bc-47b3-944e-667f1dcb1357" -->
 
 
 ### dir
@@ -174,35 +174,35 @@ TODO: Add documentation for this symbol
 
 ### determineOutputFile
 
-<!-- doctype:start id="07241ccc-4f16-4c0c-bd92-aa8de1290fbe" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#determineOutputFile" -->
+<!-- sintesi:start id="07241ccc-4f16-4c0c-bd92-aa8de1290fbe" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#determineOutputFile" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="07241ccc-4f16-4c0c-bd92-aa8de1290fbe" -->
+<!-- sintesi:end id="07241ccc-4f16-4c0c-bd92-aa8de1290fbe" -->
 
 
 ### ProgressCallback
 
-<!-- doctype:start id="c4bf4bf7-a2ae-4297-8356-534eb9718231" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#ProgressCallback" -->
+<!-- sintesi:start id="c4bf4bf7-a2ae-4297-8356-534eb9718231" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#ProgressCallback" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="c4bf4bf7-a2ae-4297-8356-534eb9718231" -->
+<!-- sintesi:end id="c4bf4bf7-a2ae-4297-8356-534eb9718231" -->
 
 
 ### ScanResult
 
-<!-- doctype:start id="4e1dae6b-7a6c-41ae-9656-0a9d50ac444a" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#ScanResult" -->
+<!-- sintesi:start id="4e1dae6b-7a6c-41ae-9656-0a9d50ac444a" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#ScanResult" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="4e1dae6b-7a6c-41ae-9656-0a9d50ac444a" -->
+<!-- sintesi:end id="4e1dae6b-7a6c-41ae-9656-0a9d50ac444a" -->
 
 
 ### InitConfig
 
-<!-- doctype:start id="ad09131d-678d-46bb-850a-345b5e421226" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#InitConfig" -->
+<!-- sintesi:start id="ad09131d-678d-46bb-850a-345b5e421226" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#InitConfig" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="ad09131d-678d-46bb-850a-345b5e421226" -->
+<!-- sintesi:end id="ad09131d-678d-46bb-850a-345b5e421226" -->
 
 
 
 ### OutputStrategy
 
-<!-- doctype:start id="08d36672-620b-426a-b28c-de79df4f81c4" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#OutputStrategy" -->
+<!-- sintesi:start id="08d36672-620b-426a-b28c-de79df4f81c4" code_ref="packages/cli/src/orchestrators/init-orchestrator.ts#OutputStrategy" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="08d36672-620b-426a-b28c-de79df4f81c4" -->
+<!-- sintesi:end id="08d36672-620b-426a-b28c-de79df4f81c4" -->

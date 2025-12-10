@@ -1,6 +1,6 @@
 # Vercel-ai-provider
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -64,6 +64,6 @@ Auto-generated documentation via Doctype.
 
 ### VercelAIProvider
 
-<!-- doctype:start id="8542b591-6775-4a6a-9942-76c7f3349be9" code_ref="packages/ai/providers/vercel-ai-provider.ts#VercelAIProvider" -->
+<!-- sintesi:start id="8542b591-6775-4a6a-9942-76c7f3349be9" code_ref="packages/ai/providers/vercel-ai-provider.ts#VercelAIProvider" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="8542b591-6775-4a6a-9942-76c7f3349be9" -->
+<!-- sintesi:end id="8542b591-6775-4a6a-9942-76c7f3349be9" -->

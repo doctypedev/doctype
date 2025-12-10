@@ -5,7 +5,7 @@
  */
 
 import { DoctypeMapManager } from '../../../content/map-manager';
-import { AstAnalyzer } from '@doctypedev/core';
+import { AstAnalyzer } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { CheckResult, CheckOptions, DriftDetail } from '../types';
 import { detectDrift } from '../services/drift-detector';
@@ -74,7 +74,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   const entries = mapManager.getEntries();
 
   if (entries.length === 0) {
-    logger.warn('No entries found in doctype-map.json');
+    logger.warn('No entries found in sintesi-map.json');
     logger.info('Add documentation anchors to your Markdown files to track them');
     return {
       totalEntries: 0,

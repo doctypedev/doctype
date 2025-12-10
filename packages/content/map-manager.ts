@@ -4,7 +4,7 @@ import { mkdirSync } from 'fs';
 import { DoctypeMap, DoctypeMapEntry } from '../core/native-loader';
 
 /**
- * Manages the doctype-map.json file
+ * Manages the sintesi-map.json file
  *
  * This is the single source of truth for all documentation anchors
  * and their associated code signatures
@@ -13,13 +13,13 @@ export class DoctypeMapManager {
   private mapFilePath: string;
   private map: DoctypeMap;
 
-  constructor(mapFilePath: string = './doctype-map.json') {
+  constructor(mapFilePath: string = './sintesi-map.json') {
     this.mapFilePath = mapFilePath;
     this.map = this.load();
   }
 
   /**
-   * Load the doctype-map.json file from disk
+   * Load the sintesi-map.json file from disk
    * If file doesn't exist, creates a new empty map
    * @returns The loaded DoctypeMap
    */
@@ -37,12 +37,12 @@ export class DoctypeMapManager {
 
       // Validate structure
       if (!map.version || !Array.isArray(map.entries)) {
-        throw new Error('Invalid doctype-map.json structure');
+        throw new Error('Invalid sintesi-map.json structure');
       }
 
       return map;
     } catch (error) {
-      throw new Error(`Failed to load doctype-map.json: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to load sintesi-map.json: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -61,7 +61,7 @@ export class DoctypeMapManager {
       const content = JSON.stringify(this.map, null, 2);
       writeFileSync(this.mapFilePath, content, 'utf-8');
     } catch (error) {
-      throw new Error(`Failed to save doctype-map.json: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to save sintesi-map.json: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -111,7 +111,7 @@ export class DoctypeMapManager {
   public addEntry(entry: DoctypeMapEntry): void {
     // Check for duplicate ID
     if (this.getEntryById(entry.id)) {
-      throw new Error(`Entry with id="${entry.id}" already exists in doctype-map.json`);
+      throw new Error(`Entry with id="${entry.id}" already exists in sintesi-map.json`);
     }
 
     this.map.entries.push(entry);
@@ -127,7 +127,7 @@ export class DoctypeMapManager {
     const index = this.map.entries.findIndex((entry) => entry.id === id);
 
     if (index === -1) {
-      throw new Error(`Entry with id="${id}" not found in doctype-map.json`);
+      throw new Error(`Entry with id="${id}" not found in sintesi-map.json`);
     }
 
     // Merge updates with existing entry
@@ -164,7 +164,7 @@ export class DoctypeMapManager {
     const entry = this.getEntryById(id);
 
     if (!entry) {
-      throw new Error(`Entry with id="${id}" not found in doctype-map.json`);
+      throw new Error(`Entry with id="${id}" not found in sintesi-map.json`);
     }
 
     return entry.codeSignatureHash !== currentHash;

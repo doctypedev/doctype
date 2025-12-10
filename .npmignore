@@ -72,8 +72,8 @@ crates/
 .tmp/
 
 # Example and test data
-doctype-map.json
-doctype.config.json
+sintesi-map.json
+sintesi.config.json
 examples/
 fixtures/
 

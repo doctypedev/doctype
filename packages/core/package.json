@@ -1,7 +1,7 @@
 {
-  "name": "@doctypedev/core",
+  "name": "@sintesi/core",
   "version": "0.7.0",
-  "description": "Core analysis and logic for Doctype",
+  "description": "Core analysis and logic for Sintesi",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -17,9 +17,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/doctypedev/doctype.git"
+    "url": "git+https://github.com/doctypedev/sintesi.git"
   },
-  "author": "doctypedev",
+  "author": "sintesi",
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json && cp native-types.d.ts dist/"
@@ -28,9 +28,9 @@
     "ts-morph": "^21.0.1"
   },
   "optionalDependencies": {
-    "@doctypedev/core-darwin-arm64": "0.7.0",
-    "@doctypedev/core-linux-x64-gnu": "0.7.0",
-    "@doctypedev/core-win32-x64-msvc": "0.7.0"
+    "@sintesi/core-darwin-arm64": "0.7.0",
+    "@sintesi/core-linux-x64-gnu": "0.7.0",
+    "@sintesi/core-win32-x64-msvc": "0.7.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { DoctypeMapManager } from '../map-manager';
-import { DoctypeMapEntry } from '@doctypedev/core';
+import { DoctypeMapEntry } from '@sintesi/core';
 import { existsSync, unlinkSync } from 'fs';
 
 describe('DoctypeMapManager', () => {
-  const testMapPath = './test-doctype-map.json';
+  const testMapPath = './test-sintesi-map.json';
   let manager: DoctypeMapManager;
 
   beforeEach(() => {

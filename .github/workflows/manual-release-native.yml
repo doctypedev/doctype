@@ -85,7 +85,7 @@ jobs:
           
           # Copy binary to npm package location
           # Copy binary to npm package location
-          NODE_BINARY_NAME="doctype-core.${{ matrix.settings.npm_dir }}.node"
+          NODE_BINARY_NAME="sintesi-core.${{ matrix.settings.npm_dir }}.node"
           NPM_PACKAGE_DIR="npm/${{ matrix.settings.npm_dir }}"
           
           # Ensure directory exists
@@ -98,7 +98,7 @@ jobs:
           echo "📦 Publishing native package from $(pwd)"
           
           # Check if version exists
-          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.npm_dir }}"
+          PACKAGE_NAME="@sintesi/core-${{ matrix.settings.npm_dir }}"
           VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
 

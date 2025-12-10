@@ -1,6 +1,6 @@
-# Doctype Architecture
+# Sintesi Architecture
 
-This document provides a comprehensive overview of Doctype's architecture, explaining how the Rust core and TypeScript layers work together to deliver deterministic documentation drift detection and AI-powered automatic fixes.
+This document provides a comprehensive overview of Sintesi's architecture, explaining how the Rust core and TypeScript layers work together to deliver deterministic documentation drift detection and AI-powered automatic fixes.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This document provides a comprehensive overview of Doctype's architecture, expla
 
 ## System Overview
 
-Doctype uses a **hybrid architecture** combining Rust (for performance-critical, deterministic operations) and TypeScript (for orchestration, AI integration, and user interaction).
+Sintesi uses a **hybrid architecture** combining Rust (for performance-critical, deterministic operations) and TypeScript (for orchestration, AI integration, and user interaction).
 
 ### Architecture Principles
 
@@ -23,7 +23,7 @@ Doctype uses a **hybrid architecture** combining Rust (for performance-critical,
    - **Probabilistic** (TypeScript): AI-powered documentation generation → Output varies
 
 2. **Single Source of Truth**
-   - `doctype-map.json`: Authoritative record of all documentation anchors and code signature hashes
+   - `sintesi-map.json`: Authoritative record of all documentation anchors and code signature hashes
    - Markdown files: Actual documentation content
 
 3. **Fail-Safe Design**
@@ -128,18 +128,18 @@ DiscoveryResult {
 pub fn extract_anchors(file_path: &str, content: &str) -> ExtractionResult;
 ```
 
-**Purpose:** Extracts doctype anchor tags from Markdown
+**Purpose:** Extracts sintesi anchor tags from Markdown
 
 **Anchor Format:**
 ```html
-<!-- doctype:start id="uuid" code_ref="src/auth.ts#login" -->
+<!-- sintesi:start id="uuid" code_ref="src/auth.ts#login" -->
 Documentation content here
-<!-- doctype:end id="uuid" -->
+<!-- sintesi:end id="uuid" -->
 ```
 
 **Output:**
 ```rust
-DoctypeAnchor {
+SintesiAnchor {
     id: "550e8400-...",
     code_ref: Some("src/auth.ts#login"),
     file_path: "docs/api.md",
@@ -179,7 +179,7 @@ import {
   discoverFiles,
   extractAnchors,
   SymbolType,
-} from '@doctypedev/core';
+} from '@sintesi/core';
 ```
 
 **Platform Support:**
@@ -188,7 +188,7 @@ import {
 - Windows (x64)
 
 **Distribution:**
-- Separate npm packages per platform: `@doctypedev/core-darwin-arm64`, etc.
+- Separate npm packages per platform: `@sintesi/core-darwin-arm64`, etc.
 - Platform-specific binary loaded at runtime
 
 ---
@@ -298,20 +298,20 @@ ${doc.usageExample}
 
 ## Complete System Flows
 
-### INIT Flow (`npx doctype init`)
+### INIT Flow (`npx sintesi init`)
 
-**Purpose:** Initialize Doctype, scan codebase, and scaffold documentation files.
+**Purpose:** Initialize Sintesi, scan codebase, and scaffold documentation files.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User runs: npx doctype init                              │
+│ 1. User runs: npx sintesi init                              │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 2. TypeScript: InitOrchestrator                             │
 │    - Interactive prompts (docs folder, map name, etc.)      │
-│    - Saves doctype.config.json                              │
+│    - Saves sintesi.config.json                              │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
@@ -337,16 +337,16 @@ ${doc.usageExample}
 │ 5. TypeScript: MarkdownAnchorInserter                       │
 │    ├─ Creates docs/ files with strategy (mirror/module/type)│
 │    ├─ Inserts anchor tags:                                  │
-│    │   <!-- doctype:start id="uuid" code_ref="..." -->      │
+│    │   <!-- sintesi:start id="uuid" code_ref="..." -->      │
 │    │   TODO: Add documentation for this symbol              │
-│    │   <!-- doctype:end id="uuid" -->                       │
+│    │   <!-- sintesi:end id="uuid" -->                       │
 │    └─ One anchor per exported symbol                        │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 6. TypeScript: DoctypeMapManager                            │
-│    ├─ Creates doctype-map.json                              │
+│ 6. TypeScript: SintesiMapManager                            │
+│    ├─ Creates sintesi-map.json                              │
 │    └─ For each anchor saves real hash (for drift tracking): │
 │        {                                                     │
 │          id: "uuid",                                         │
@@ -358,13 +358,13 @@ ${doc.usageExample}
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### GENERATE Flow (`npx doctype generate`)
+### GENERATE Flow (`npx sintesi generate`)
 
 **Purpose:** Generate initial documentation content using AI by finding TODO placeholders.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User runs: npx doctype generate                          │
+│ 1. User runs: npx sintesi generate                          │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
@@ -406,18 +406,18 @@ ${doc.usageExample}
 
 ---
 
-### CHECK Flow (`npx doctype check`)
+### CHECK Flow (`npx sintesi check`)
 
 **Purpose:** Verify documentation is in sync with code (for CI)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User runs: npx doctype check (typically in CI)           │
+│ 1. User runs: npx sintesi check (typically in CI)           │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. TypeScript: Load doctype-map.json                        │
+│ 2. TypeScript: Load sintesi-map.json                        │
 │    - Read all entries to verify                             │
 │    - For each entry:                                        │
 │      SAVED_HASH = entry.codeSignatureHash                   │
@@ -449,7 +449,7 @@ ${doc.usageExample}
 ---
 
 
-### FIX Flow (`npx doctype fix`)
+### FIX Flow (`npx sintesi fix`)
 
 **Purpose:** Automatically fix drift and update documentation.
 
@@ -457,7 +457,7 @@ ${doc.usageExample}
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User runs: npx doctype fix [--auto-commit]               │
+│ 1. User runs: npx sintesi fix [--auto-commit]               │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ▼
@@ -478,8 +478,8 @@ ${doc.usageExample}
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 4. TypeScript: Git operations (if --auto-commit)            │
-│    ├─ git add docs/ doctype-map.json                        │
-│    ├─ git commit -m "🤖 Doctype: Auto-fix..."              │
+│    ├─ git add docs/ sintesi-map.json                        │
+│    ├─ git commit -m "🤖 Sintesi: Auto-fix..."              │
 │    └─ git push (if configured)                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -580,7 +580,7 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
 
 ## Data Model
 
-### doctype-map.json Structure
+### sintesi-map.json Structure
 
 **Design Principles:**
 - Minimal metadata only (no content duplication)
@@ -680,7 +680,7 @@ Template → "**Purpose:** Login user\n\n**Usage:**\n```typescript\nlogin();\n``
 
 ## Conclusion
 
-Doctype's hybrid architecture leverages the strengths of both Rust and TypeScript:
+Sintesi's hybrid architecture leverages the strengths of both Rust and TypeScript:
 
 - **Rust**: Fast, deterministic, safe for core operations
 - **TypeScript**: Flexible, rich ecosystem, great DX for orchestration

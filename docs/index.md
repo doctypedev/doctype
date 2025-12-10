@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "Doctype"
+  name: "Sintesi"
   text: "Autonomous Documentation Platform"
   tagline: "Self-maintaining documentation system using AST analysis and GenAI"
   actions:
@@ -11,7 +11,7 @@ hero:
       link: /markdown-examples
     - theme: alt
       text: View on GitHub
-      link: https://github.com/alessiopelliccione/doctype
+      link: https://github.com/alessiopelliccione/sintesi
 
 features:
   - icon: 🔍

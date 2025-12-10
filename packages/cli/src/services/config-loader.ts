@@ -1,33 +1,33 @@
 /**
- * Config Loader - Loads and validates doctype.config.json
+ * Config Loader - Loads and validates sintesi.config.json
  *
- * This utility ensures that all doctype commands (except init) have access to
+ * This utility ensures that all sintesi commands (except init) have access to
  * the project configuration file.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { DoctypeConfig } from '../types';
+import { SintesiConfig } from '../types';
 
 /**
- * Error thrown when doctype.config.json is not found
+ * Error thrown when sintesi.config.json is not found
  */
 export class ConfigNotFoundError extends Error {
   constructor(configPath: string) {
     super(
       `Configuration file not found: ${configPath}\n\n` +
-      `Run 'npx doctype init' to initialize your project configuration.`
+      `Run 'npx sintesi init' to initialize your project configuration.`
     );
     this.name = 'ConfigNotFoundError';
   }
 }
 
 /**
- * Error thrown when doctype.config.json is invalid
+ * Error thrown when sintesi.config.json is invalid
  */
 export class InvalidConfigError extends Error {
   constructor(reason: string) {
-    super(`Invalid doctype.config.json: ${reason}`);
+    super(`Invalid sintesi.config.json: ${reason}`);
     this.name = 'InvalidConfigError';
   }
 }
@@ -54,26 +54,26 @@ function findConfigPath(startDir: string, configName: string): string | null {
 }
 
 /**
- * Load and validate the doctype configuration file
+ * Load and validate the sintesi configuration file
  *
- * @param configPath - Path to doctype.config.json (default: ./doctype.config.json)
+ * @param configPath - Path to sintesi.config.json (default: ./sintesi.config.json)
  * @returns Validated configuration object
  * @throws ConfigNotFoundError if file doesn't exist
  * @throws InvalidConfigError if file is malformed or missing required fields
  */
 export function loadConfig(
-  configPath: string = './doctype.config.json'
-): DoctypeConfig {
+  configPath: string = './sintesi.config.json'
+): SintesiConfig {
   let resolvedPath: string;
 
   // If using the default path or just the filename, search up the directory tree
-  if (configPath === './doctype.config.json' || configPath === 'doctype.config.json') {
-    const found = findConfigPath(process.cwd(), 'doctype.config.json');
+  if (configPath === './sintesi.config.json' || configPath === 'sintesi.config.json') {
+    const found = findConfigPath(process.cwd(), 'sintesi.config.json');
     if (found) {
       resolvedPath = found;
     } else {
       // Fallback to CWD for error reporting
-      resolvedPath = path.resolve(process.cwd(), 'doctype.config.json');
+      resolvedPath = path.resolve(process.cwd(), 'sintesi.config.json');
     }
   } else {
     // If a specific path is provided (e.g. ../config.json), resolve it directly
@@ -99,7 +99,7 @@ export function loadConfig(
   }
 
   // Validate required fields
-  const requiredFields: (keyof DoctypeConfig)[] = [
+  const requiredFields: (keyof SintesiConfig)[] = [
     'projectName',
     'projectRoot',
     'docsFolder',
@@ -126,13 +126,13 @@ export function loadConfig(
 }
 
 /**
- * Check if doctype.config.json exists in the current directory
+ * Check if sintesi.config.json exists in the current directory
  *
- * @param configPath - Path to check (default: ./doctype.config.json)
+ * @param configPath - Path to check (default: ./sintesi.config.json)
  * @returns true if the file exists, false otherwise
  */
 export function configExists(
-  configPath: string = './doctype.config.json'
+  configPath: string = './sintesi.config.json'
 ): boolean {
   const resolvedPath = path.resolve(process.cwd(), configPath);
   return fs.existsSync(resolvedPath);
@@ -141,10 +141,10 @@ export function configExists(
 /**
  * Get the absolute path to the map file based on config
  *
- * @param config - Doctype configuration
+ * @param config - Sintesi configuration
  * @returns Absolute path to the map file
  */
-export function getMapPath(config: DoctypeConfig): string {
+export function getMapPath(config: SintesiConfig): string {
   // Map file path is relative to the config file location (project root)
   const base = config.baseDir || process.cwd();
   return path.resolve(base, config.mapFile);
@@ -153,10 +153,10 @@ export function getMapPath(config: DoctypeConfig): string {
 /**
  * Get the absolute path to the docs folder based on config
  *
- * @param config - Doctype configuration
+ * @param config - Sintesi configuration
  * @returns Absolute path to the docs folder
  */
-export function getDocsPath(config: DoctypeConfig): string {
+export function getDocsPath(config: SintesiConfig): string {
   const base = config.baseDir || process.cwd();
   return path.resolve(base, config.docsFolder);
 }

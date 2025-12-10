@@ -1,36 +1,36 @@
 # Content Module - Content & Mapping
 
-The **Content Module** handles Markdown parsing, documentation anchor tracking, and content injection. It manages the `doctype-map.json` file, which is the single source of truth for all documentation mappings.
+The **Content Module** handles Markdown parsing, documentation anchor tracking, and content injection. It manages the `sintesi-map.json` file, which is the single source of truth for all documentation mappings.
 
 ## Purpose
 
-This module implements the **data management layer** of Doctype:
+This module implements the **data management layer** of Sintesi:
 
 - Parse Markdown files to extract documentation anchors
 - Manage relationships between code signatures and documentation
-- Track drift status using the `doctype-map.json` file
+- Track drift status using the `sintesi-map.json` file
 - Inject updated documentation into Markdown files safely
 
 ## Modules
 
 ### MarkdownParser (`markdown-parser.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440003" code_ref="src/content/markdown-parser.ts#MarkdownParser" -->
-Parses Markdown files to extract doctype anchors defined using HTML comments.
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440003" code_ref="src/content/markdown-parser.ts#MarkdownParser" -->
+Parses Markdown files to extract sintesi anchors defined using HTML comments.
 
 **Anchor Format:**
 
 ```markdown
-<!-- doctype:start id="uuid" code_ref="src/file.ts#symbolName" -->
-Documentation content managed by Doctype.
+<!-- sintesi:start id="uuid" code_ref="src/file.ts#symbolName" -->
+Documentation content managed by Sintesi.
 This will be automatically updated when code changes.
-<!-- doctype:end id="uuid" -->
+<!-- sintesi:end id="uuid" -->
 ```
 
 **API:**
 
 ```typescript
-import { MarkdownParser } from 'doctype';
+import { MarkdownParser } from 'sintesi';
 
 const parser = new MarkdownParser();
 
@@ -46,7 +46,7 @@ const errors = parser.validate(markdownContent);
 // Parse code_ref into components
 const { filePath, symbolName } = parser.parseCodeRef('src/utils.ts#helper');
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440003" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440003" -->
 
 **Extracted Anchor Format:**
 
@@ -64,16 +64,16 @@ const { filePath, symbolName } = parser.parseCodeRef('src/utils.ts#helper');
 
 The parser detects:
 - Duplicate anchor IDs
-- Unclosed anchors (missing `doctype:end`)
-- Orphaned end tags (missing `doctype:start`)
+- Unclosed anchors (missing `sintesi:end`)
+- Orphaned end tags (missing `sintesi:start`)
 - Invalid code references (missing `#symbol`)
 - Malformed anchor syntax
 
-### DoctypeMapManager (`map-manager.ts`)
+### SintesiMapManager (`map-manager.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440004" code_ref="src/content/map-manager.ts#DoctypeMapManager" -->
-Manages the `doctype-map.json` file - the single source of truth for documentation mappings.
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440004" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440004" code_ref="src/content/map-manager.ts#SintesiMapManager" -->
+Manages the `sintesi-map.json` file - the single source of truth for documentation mappings.
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440004" -->
 
 **Data Model:**
 
@@ -103,9 +103,9 @@ Manages the `doctype-map.json` file - the single source of truth for documentati
 **API:**
 
 ```typescript
-import { DoctypeMapManager } from 'doctype';
+import { SintesiMapManager } from 'sintesi';
 
-const manager = new DoctypeMapManager('./doctype-map.json');
+const manager = new SintesiMapManager('./sintesi-map.json');
 
 // Add entry
 manager.addEntry({
@@ -149,13 +149,13 @@ manager.save();
 
 ### ContentInjector (`content-injector.ts`)
 
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440005" code_ref="src/content/content-injector.ts#ContentInjector" -->
+<!-- sintesi:start id="550e8400-e29b-41d4-a716-446655440005" code_ref="src/content/content-injector.ts#ContentInjector" -->
 Injects AI-generated or placeholder content into Markdown files within anchor boundaries.
 
 **API:**
 
 ```typescript
-import { ContentInjector } from 'doctype';
+import { ContentInjector } from 'sintesi';
 
 const injector = new ContentInjector();
 
@@ -184,7 +184,7 @@ console.log(preview.linesChanged); // Number of lines that will change
 // Validate anchor exists and is well-formed
 const errors = injector.validateAnchor(content, 'anchor-uuid');
 ```
-<!-- doctype:end id="550e8400-e29b-41d4-a716-446655440005" -->
+<!-- sintesi:end id="550e8400-e29b-41d4-a716-446655440005" -->
 
 **Key Features:**
 - Safe content replacement (preserves anchor comments)
@@ -199,7 +199,7 @@ const errors = injector.validateAnchor(content, 'anchor-uuid');
 1. Read Markdown file
 2. Locate anchor by ID
 3. Validate anchor structure
-4. Replace content between `doctype:start` and `doctype:end`
+4. Replace content between `sintesi:start` and `sintesi:end`
 5. Preserve anchor comments (don't modify them)
 6. Write updated content back to file
 
@@ -209,16 +209,16 @@ const errors = injector.validateAnchor(content, 'anchor-uuid');
 ```markdown
 # API Documentation
 
-<!-- doctype:start id="uuid" code_ref="src/auth.ts#login" -->
+<!-- sintesi:start id="uuid" code_ref="src/auth.ts#login" -->
 Old documentation here.
-<!-- doctype:end id="uuid" -->
+<!-- sintesi:end id="uuid" -->
 ```
 
 **After injection with new content:**
 ```markdown
 # API Documentation
 
-<!-- doctype:start id="uuid" code_ref="src/auth.ts#login" -->
+<!-- sintesi:start id="uuid" code_ref="src/auth.ts#login" -->
 Authenticates a user with email and password.
 
 **Parameters:**
@@ -227,12 +227,12 @@ Authenticates a user with email and password.
 
 **Returns:**
 - `Promise<string>`: JWT authentication token
-<!-- doctype:end id="uuid" -->
+<!-- sintesi:end id="uuid" -->
 ```
 
-## The doctype-map.json File
+## The sintesi-map.json File
 
-The `doctype-map.json` file is the **single source of truth** for Doctype. It tracks:
+The `sintesi-map.json` file is the **single source of truth** for Sintesi. It tracks:
 
 ### What It Contains
 
@@ -252,7 +252,7 @@ The `doctype-map.json` file is the **single source of truth** for Doctype. It tr
 
 1. **Drift Detection**: The `codeSignatureHash` is compared against the current code signature hash to detect changes.
 
-2. **Documentation Location**: The `docRef` fields tell Doctype exactly where to inject updated content.
+2. **Documentation Location**: The `docRef` fields tell Sintesi exactly where to inject updated content.
 
 3. **Context for AI**: The `originalMarkdownContent` provides context to the AI for generating better updates.
 
@@ -262,13 +262,13 @@ The `doctype-map.json` file is the **single source of truth** for Doctype. It tr
 
 The map file is updated in these scenarios:
 
-- **Initial scan**: When `npx doctype init` discovers new anchors
-- **After fix**: When `npx doctype fix` updates documentation
+- **Initial scan**: When `npx sintesi init` discovers new anchors
+- **After fix**: When `npx sintesi fix` updates documentation
 - **Manual edits**: When you manually add/edit anchor tags (detected on next check)
 
 ### Version Control
 
-**✅ DO commit `doctype-map.json` to version control**
+**✅ DO commit `sintesi-map.json` to version control**
 
 This file should be committed because:
 - It's the source of truth for all teams
@@ -281,16 +281,16 @@ This file should be committed because:
 Here's how the content module integrates with other modules:
 
 ```typescript
-import { MarkdownParser, DoctypeMapManager, ContentInjector } from 'doctype/content';
-import { ASTAnalyzer, SignatureHasher } from 'doctype/core';
-import { AIAgent } from 'doctype/ai';
+import { MarkdownParser, SintesiMapManager, ContentInjector } from 'sintesi/content';
+import { ASTAnalyzer, SignatureHasher } from 'sintesi/core';
+import { AIAgent } from 'sintesi/ai';
 
 // 1. Parse markdown files to find anchors
 const parser = new MarkdownParser();
 const anchors = parser.parseFile('docs/api.md');
 
 // 2. Initialize map manager
-const mapManager = new DoctypeMapManager();
+const mapManager = new SintesiMapManager();
 
 // 3. Analyze code and create entries
 const analyzer = new ASTAnalyzer();
@@ -396,7 +396,7 @@ npm test src/content
 The map file is loaded once and kept in memory:
 
 ```typescript
-const manager = new DoctypeMapManager(); // Loads from disk once
+const manager = new SintesiMapManager(); // Loads from disk once
 manager.getEntryById('id1');             // Memory lookup
 manager.getEntryById('id2');             // Memory lookup
 manager.save();                          // Write to disk once

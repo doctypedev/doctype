@@ -1,11 +1,11 @@
 [package]
-name = "doctype-core"
+name = "sintesi-core"
 version = "0.1.0"
 edition = "2021"
-authors = ["doctypedev"]
-description = "Core Rust implementation for Doctype - AST analysis and signature hashing"
+authors = ["sintesi"]
+description = "Core Rust implementation for Sintesi - AST analysis and signature hashing"
 license = "MIT"
-repository = "https://github.com/doctypedev/doctype"
+repository = "https://github.com/doctypedev/sintesi"
 
 [lib]
 crate-type = ["cdylib"]

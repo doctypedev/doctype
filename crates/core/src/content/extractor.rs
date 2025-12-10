@@ -67,8 +67,8 @@ impl MarkdownExtractor {
             if let Event::Html(html) = event {
                 let html_str = html.as_ref();
 
-                // Check if this is a doctype:start comment
-                if let Some((id, code_ref)) = parse_doctype_start(html_str) {
+                // Check if this is a sintesi:start comment
+                if let Some((id, code_ref)) = parse_sintesi_start(html_str) {
                     let line_num = byte_offset_to_line(&line_map, range.start);
 
                     // Validation: Check for duplicate IDs

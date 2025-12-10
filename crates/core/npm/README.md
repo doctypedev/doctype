@@ -1,6 +1,6 @@
 # Native Packages
 
-This directory contains platform-specific npm packages for the Doctype Rust core.
+This directory contains platform-specific npm packages for the Sintesi Rust core.
 
 ## Structure
 
@@ -14,20 +14,20 @@ Each subdirectory represents a platform-specific package:
 Native packages follow this naming convention:
 
 ```
-@doctypedev/doctype-{platform}-{arch}
+@sintesi/sintesi-{platform}-{arch}
 ```
 
 Examples:
-- `@doctypedev/doctype-darwin-arm64`
-- `@doctypedev/doctype-linux-x64`
-- `@doctypedev/doctype-win32-x64`
+- `@sintesi/sintesi-darwin-arm64`
+- `@sintesi/sintesi-linux-x64`
+- `@sintesi/sintesi-win32-x64`
 
 ## How It Works
 
 1. **Build**: The Rust library is compiled for each platform during CI/CD
 2. **Package**: The compiled binary is copied to the corresponding npm package
 3. **Publish**: Each platform package is published independently to npm
-4. **Install**: The main `@doctypedev/doctype` package can optionally depend on these
+4. **Install**: The main `@sintesi/sintesi` package can optionally depend on these
 
 ## Version Synchronization
 
@@ -44,7 +44,7 @@ darwin-arm64/
 ├── package.json
 ├── index.js                               # Loader script
 ├── README.md
-└── doctype-core.darwin-arm64.node        # Native binary (generated)
+└── sintesi-core.darwin-arm64.node        # Native binary (generated)
 ```
 
 The `.node` file is a compiled C dynamic library that Node.js can load directly.

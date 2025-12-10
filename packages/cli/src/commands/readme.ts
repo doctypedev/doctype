@@ -6,7 +6,7 @@
 
 import { Logger } from '../utils/logger';
 import { createAgentFromEnv } from '../../../ai';
-import { getProjectContext, ProjectContext } from '@doctypedev/core';
+import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { spinner } from '@clack/prompts';

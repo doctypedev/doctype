@@ -5,17 +5,17 @@
  * - Scanning codebases for TypeScript files
  * - Extracting symbols and generating signatures
  * - Creating documentation anchors
- * - Managing the doctype-map.json
+ * - Managing the sintesi-map.json
  *
  * This is pure business logic with no CLI dependencies.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AstAnalyzer, SymbolType, discoverFiles } from '@doctypedev/core';
+import { AstAnalyzer, SymbolType, discoverFiles } from '@sintesi/core';
 import { DoctypeMapManager } from '../../../content/map-manager';
 import { MarkdownAnchorInserter } from '../../../content/markdown-anchor-inserter';
-import type { DoctypeMapEntry, SymbolTypeValue, CodeSignature } from '@doctypedev/core';
+import type { DoctypeMapEntry, SymbolTypeValue, CodeSignature } from '@sintesi/core';
 
 /**
  * Output strategy for documentation files
@@ -123,7 +123,7 @@ function generateMarkdownTitle(docPath: string): string {
  * 2. Analyzes each file for exported symbols
  * 3. Generates signature hashes
  * 4. Creates documentation anchors in markdown files
- * 5. Updates the doctype-map.json
+ * 5. Updates the sintesi-map.json
  *
  * @param config - Configuration for the scan
  * @param onProgress - Optional callback for progress updates

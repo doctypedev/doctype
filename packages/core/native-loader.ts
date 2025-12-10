@@ -1,15 +1,15 @@
 /**
- * Native module loader for @doctypedev/core
+ * Native module loader for @sintesi/core
  *
  * This module loads the correct platform-specific NAPI binary.
  * Binaries are published as separate packages for each supported platform.
  *
  * Supported platforms:
- * - @doctypedev/core-darwin-arm64 (macOS Apple Silicon)
- * - @doctypedev/core-darwin-x64 (macOS Intel)
- * - @doctypedev/core-linux-x64 (Linux x64)
- * - @doctypedev/core-linux-arm64 (Linux ARM64)
- * - @doctypedev/core-win32-x64 (Windows x64)
+ * - @sintesi/core-darwin-arm64 (macOS Apple Silicon)
+ * - @sintesi/core-darwin-x64 (macOS Intel)
+ * - @sintesi/core-linux-x64 (Linux x64)
+ * - @sintesi/core-linux-arm64 (Linux ARM64)
+ * - @sintesi/core-win32-x64 (Windows x64)
  */
 
 import * as os from 'os';
@@ -17,9 +17,9 @@ import * as path from 'path';
 
 // Platform to package name mapping
 const PLATFORM_PACKAGES: Record<string, string> = {
-  'darwin-arm64': '@doctypedev/core-darwin-arm64',
-  'linux-x64': '@doctypedev/core-linux-x64-gnu',
-  'win32-x64': '@doctypedev/core-win32-x64-msvc',
+  'darwin-arm64': '@sintesi/core-darwin-arm64',
+  'linux-x64': '@sintesi/core-linux-x64-gnu',
+  'win32-x64': '@sintesi/core-win32-x64-msvc',
 };
 
 /**
@@ -36,7 +36,7 @@ function getPlatformPackageName(): string {
     throw new Error(
       `Unsupported platform: ${platform}-${arch}\n` +
       `Supported platforms: ${supported}\n` +
-      `Please file an issue at: https://github.com/doctypedev/doctype/issues`
+      `Please file an issue at: https://github.com/doctypedev/sintesi/issues`
     );
   }
 

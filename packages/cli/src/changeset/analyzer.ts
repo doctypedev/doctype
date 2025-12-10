@@ -3,7 +3,7 @@
  */
 
 import { execSync } from 'child_process';
-import { ASTAnalyzer as RustASTAnalyzer, CodeSignature } from '@doctypedev/core';
+import { ASTAnalyzer as RustASTAnalyzer, CodeSignature } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 
 // Use Rust AST Analyzer type

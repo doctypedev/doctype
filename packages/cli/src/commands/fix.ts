@@ -9,7 +9,7 @@
 
 import { DoctypeMapManager } from '../../../content/map-manager';
 import { ContentInjector } from '../../../content/content-injector';
-import { AstAnalyzer } from '@doctypedev/core';
+import { AstAnalyzer } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { FixResult, FixOptions } from '../types';
 import { detectDrift } from '../services/drift-detector';

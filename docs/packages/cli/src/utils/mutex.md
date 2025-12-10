@@ -1,6 +1,6 @@
 # Mutex
 
-Auto-generated documentation via Doctype.
+Auto-generated documentation via Sintesi.
 
 
 ## API Reference
@@ -20,6 +20,6 @@ Auto-generated documentation via Doctype.
 
 ### FileMutex
 
-<!-- doctype:start id="ecd73d92-cc71-4a2c-bbed-b7da5eceeba4" code_ref="packages/cli/src/utils/mutex.ts#FileMutex" -->
+<!-- sintesi:start id="ecd73d92-cc71-4a2c-bbed-b7da5eceeba4" code_ref="packages/cli/src/utils/mutex.ts#FileMutex" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="ecd73d92-cc71-4a2c-bbed-b7da5eceeba4" -->
+<!-- sintesi:end id="ecd73d92-cc71-4a2c-bbed-b7da5eceeba4" -->

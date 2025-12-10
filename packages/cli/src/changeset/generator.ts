@@ -34,7 +34,7 @@ export interface ChangesetResult {
  * Options for changeset generation
  */
 export interface GenerateOptions {
-  /** Package names (default: [@doctypedev/doctype]) */
+  /** Package names (default: [@sintesi/doctype]) */
   packageNames?: string[];
   /** Output directory (default: .changeset) */
   outputDir?: string;

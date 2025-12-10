@@ -31,7 +31,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./doctype-core.darwin-arm64.node')
           } else {
-            nativeBinding = require('@doctypedev/core-darwin-arm64')
+            nativeBinding = require('@sintesi/core-darwin-arm64')
           }
         } catch (e) {
           loadError = e

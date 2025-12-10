@@ -1,7 +1,7 @@
 /**
  * Init Command - Interactive setup for Doctype configuration
  *
- * Creates a doctype.config.json file with user-provided settings:
+ * Creates a sintesi.config.json file with user-provided settings:
  * - Project name
  * - Project root directory
  * - Documentation folder
@@ -11,13 +11,13 @@
  * - Scans all TypeScript files in the project root
  * - Extracts exported symbols (functions, classes, interfaces, etc.)
  * - Creates documentation anchors in api.md
- * - Generates doctype-map.json with code signatures and hash tracking
+ * - Generates sintesi-map.json with code signatures and hash tracking
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as p from '@clack/prompts';
-import { InitOptions, InitResult, DoctypeConfig } from '../types';
+import { InitOptions, InitResult, SintesiConfig } from '../types';
 import { scanAndCreateAnchors, OutputStrategy } from '../orchestrators/init-orchestrator';
 
 /**
@@ -28,13 +28,13 @@ export async function initCommand(
 ): Promise<InitResult> {
   try {
     // Display intro
-    p.intro('🚀 DOCTYPE INITIALIZATION');
+    p.intro('🚀 SINTESI INITIALIZATION');
 
     // Check if config already exists
-    const configPath = path.join(process.cwd(), 'doctype.config.json');
+    const configPath = path.join(process.cwd(), 'sintesi.config.json');
     if (fs.existsSync(configPath)) {
       const overwrite = await p.confirm({
-        message: '⚠️  doctype.config.json already exists. Do you want to overwrite it?',
+        message: '⚠️  sintesi.config.json already exists. Do you want to overwrite it?',
         initialValue: false,
       });
 
@@ -86,8 +86,8 @@ export async function initCommand(
     // Prompt 4: Map file name
     const mapFile = await p.text({
       message: 'What should the map file be called?',
-      placeholder: 'doctype-map.json',
-      defaultValue: 'doctype-map.json',
+      placeholder: 'sintesi-map.json',
+      defaultValue: 'sintesi-map.json',
     });
 
     if (p.isCancel(mapFile)) {
@@ -112,7 +112,7 @@ export async function initCommand(
     }
 
     // Create configuration object
-    const config: DoctypeConfig = {
+    const config: SintesiConfig = {
       projectName: projectName as string,
       projectRoot: projectRoot as string,
       docsFolder: docsFolder as string,
@@ -194,13 +194,13 @@ export async function initCommand(
         '✓ Map file initialized',
         '',
         'Next steps:',
-        '• Run "doctype generate" to generate documentation content using AI',
-        '• Run "doctype check" to verify documentation is in sync',
+        '• Run "sintesi generate" to generate documentation content using AI',
+        '• Run "sintesi check" to verify documentation is in sync',
       ].join('\n'),
       '🎯 Status'
     );
 
-    p.outro('🎉 Doctype has been successfully initialized!');
+    p.outro('🎉 Sintesi has been successfully initialized!');
 
     return {
       success: true,

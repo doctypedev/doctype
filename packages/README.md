@@ -1,16 +1,16 @@
-# Doctype Source Code
+# Sintesi Source Code
 
-This directory contains the core implementation of Doctype, organized into four independent modules that work together to provide automatic documentation synchronization.
+This directory contains the core implementation of Sintesi, organized into four independent modules that work together to provide automatic documentation synchronization.
 
 ## Architecture Overview
 
-Doctype is built with a layered architecture combining **deterministic** and **probabilistic** logic:
+Sintesi is built with a layered architecture combining **deterministic** and **probabilistic** logic:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    CLI Module                           │
 │              Entry point & Commands                     │
-│         (npx doctype check | fix | init)                │
+│         (npx sintesi check | fix | init)                │
 └────────────────────┬────────────────────────────────────┘
                      │
         ┌────────────┴────────────┐
@@ -55,7 +55,7 @@ Doctype is built with a layered architecture combining **deterministic** and **p
 **Data management layer** for documentation tracking and content manipulation.
 
 - **MarkdownParser**: Extracts documentation anchors from Markdown files
-- **DoctypeMapManager**: Manages `doctype-map.json` (single source of truth)
+- **SintesiMapManager**: Manages `sintesi-map.json` (single source of truth)
 - **ContentInjector**: Updates Markdown files with new documentation
 
 **Key Responsibilities:**
@@ -69,7 +69,7 @@ Doctype is built with a layered architecture combining **deterministic** and **p
 
 - **check**: Verify documentation is in sync (`exit code 0 = synced, 1 = drift`)
 - **fix**: Update documentation when drift is detected
-- **init**: Initialize doctype-map.json for a project
+- **init**: Initialize sintesi-map.json for a project
 - **Logger**: Professional CLI output with colors and formatting
 - **GitHelper**: Auto-commit functionality with standardized messages
 
@@ -97,9 +97,9 @@ Doctype is built with a layered architecture combining **deterministic** and **p
 ### Check Command Flow
 
 ```
-User runs: npx doctype check
+User runs: npx sintesi check
 
-1. CLI loads doctype-map.json (Content Module)
+1. CLI loads sintesi-map.json (Content Module)
 2. For each entry:
    a. AST Analyzer extracts current signature (Core Module)
    b. Signature Hasher generates current hash (Core Module)
@@ -111,7 +111,7 @@ User runs: npx doctype check
 ### Fix Command Flow
 
 ```
-User runs: npx doctype fix
+User runs: npx sintesi fix
 
 1. Detect drift (same as check command)
 2. For each drifted entry:
@@ -119,7 +119,7 @@ User runs: npx doctype fix
    b. Generate documentation via AI (AI Module)
       OR use placeholder if --no-ai flag
    c. Inject content into Markdown (Content Module)
-   d. Update hash in doctype-map.json (Content Module)
+   d. Update hash in sintesi-map.json (Content Module)
 3. Save updated map (Content Module)
 4. Auto-commit if --auto-commit flag (CLI Module)
 5. Report results (CLI Module)
@@ -145,7 +145,7 @@ This ensures drift detection is always reliable, while documentation quality imp
 
 ### 3. **Single Source of Truth**
 
-The `doctype-map.json` file is the authoritative record for:
+The `sintesi-map.json` file is the authoritative record for:
 - All documentation anchors in the repository
 - Current code signature hashes
 - Relationships between code and documentation

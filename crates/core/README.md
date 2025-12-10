@@ -1,6 +1,6 @@
-# Doctype Core (Rust)
+# Sintesi Core (Rust)
 
-High-performance Rust implementation of Doctype's core functionality using **napi-rs**.
+High-performance Rust implementation of Sintesi's core functionality using **napi-rs**.
 
 ## Overview
 
@@ -34,10 +34,10 @@ node example.js
 
 **Expected output:**
 ```
-🦀 Doctype Rust Core - Example
+🦀 Sintesi Rust Core - Example
 
 1. Hello World:
-   Hello from Doctype Rust Core! 🦀
+   Hello from Sintesi Rust Core! 🦀
 
 2. Version:
    0.1.0
@@ -54,10 +54,10 @@ node example.js
 ### Functions
 
 ```javascript
-const { helloWorld, getVersion, AstAnalyzer } = require('@doctypedev/doctype-darwin-arm64');
+const { helloWorld, getVersion, AstAnalyzer } = require('@sintesi/sintesi-darwin-arm64');
 
 // Simple hello world
-helloWorld() // => "Hello from Doctype Rust Core! 🦀"
+helloWorld() // => "Hello from Sintesi Rust Core! 🦀"
 
 // Get version
 getVersion() // => "0.1.0"
@@ -120,7 +120,7 @@ npm run build
 
 3. **Use in JavaScript**:
 ```javascript
-const { myFunction } = require('@doctypedev/doctype-darwin-arm64');
+const { myFunction } = require('@sintesi/sintesi-darwin-arm64');
 myFunction('hello') // => "Processed: hello"
 ```
 

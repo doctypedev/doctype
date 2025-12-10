@@ -1,10 +1,10 @@
-# @doctypedev/core
+# @sintesi/core
 
 ## 0.7.0
 
 ### Minor Changes
 
-- 5c2f805: - Introduce new `doctype readme` command to generate a README.md based on project context
+- 5c2f805: - Introduce new `sintesi readme` command to generate a README.md based on project context
   - Add project context analysis capabilities to improve documentation generation
   - Enhance AI generation logic for README content based on recent code changes
 
@@ -31,7 +31,7 @@
 ### Patch Changes
 
 - ff5a3db: Update optional dependencies for new native core release
-- 246079e: Remove redundant fields from doctype-map.json to make it more robust and maintainable
+- 246079e: Remove redundant fields from sintesi-map.json to make it more robust and maintainable
 
   - Remove `originalMarkdownContent` - Content is now read from markdown files at runtime
   - Remove `startLine` and `endLine` from DocRef - Use ID-based anchor lookup instead
@@ -67,7 +67,7 @@
 
 ### Minor Changes
 
-- 3794e03: Rewrited doctype core using Rust to improve performance
+- 3794e03: Rewrited sintesi core using Rust to improve performance
 - b596675: Implement signature-hasher in Rust code instead of Typescript to improve performances
 
 ## 0.3.33
@@ -104,7 +104,7 @@
   - Use pulldown-cmark for proper Markdown AST parsing (best practice, avoids regex fragility)
   - Automatically ignores HTML comments in code blocks (impossible with regex)
   - Add `extractAnchors`, `validateMarkdownAnchors`, and `parseCodeRef` functions via NAPI bindings
-  - Remove `@doctypedev/core-native` workspace dependency (not needed)
+  - Remove `@sintesi/core-native` workspace dependency (not needed)
   - Add type definitions for markdown extraction to native-types.d.ts
   - Remove old packages/content/markdown-parser.ts file
   - Maintain 0-indexed line numbers for TypeScript compatibility

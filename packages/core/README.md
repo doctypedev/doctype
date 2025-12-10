@@ -1,10 +1,10 @@
 # Core Module - AST & Drift Detection
 
-The **Core Module** provides high-performance, deterministic code analysis and drift detection using Rust-powered AST parsing. This is the foundation of Doctype's ability to detect when code changes.
+The **Core Module** provides high-performance, deterministic code analysis and drift detection using Rust-powered AST parsing. This is the foundation of Sintesi's ability to detect when code changes.
 
 ## Purpose
 
-This module implements the **deterministic logic** layer of Doctype:
+This module implements the **deterministic logic** layer of Sintesi:
 
 - Analyze TypeScript/JavaScript source files to extract function/class signatures
 - Generate cryptographic hashes (SHA256) of code signatures
@@ -46,7 +46,7 @@ Analyzes TypeScript/JavaScript files using the high-performance Oxc parser to ex
 **API:**
 
 ```typescript
-import { AstAnalyzer } from '@doctypedev/core';
+import { AstAnalyzer } from '@sintesi/core';
 
 const analyzer = new AstAnalyzer();
 
@@ -76,7 +76,7 @@ Fast file discovery with `.gitignore` support, powered by Rust.
 **API:**
 
 ```typescript
-import { discoverFiles } from '@doctypedev/core';
+import { discoverFiles } from '@sintesi/core';
 
 const result = discoverFiles('/project/root', {
   respectGitignore: true,
@@ -169,8 +169,8 @@ Drift detection is a **two-step process**:
 ### Step 1: Initial Signature Capture
 
 ```typescript
-import { AstAnalyzer } from '@doctypedev/core';
-import { DoctypeMapManager } from '@doctypedev/cli';
+import { AstAnalyzer } from '@sintesi/core';
+import { SintesiMapManager } from '@sintesi/cli';
 
 const analyzer = new AstAnalyzer();
 
@@ -181,7 +181,7 @@ const signature = signatures.find(s => s.symbolName === 'login');
 // Hash is already computed by Rust
 const hash = signature.hash!;
 
-// Save to doctype-map.json
+// Save to sintesi-map.json
 mapManager.addEntry({
   id: 'uuid',
   codeRef: { filePath: 'src/auth/login.ts', symbolName: 'login' },
@@ -216,11 +216,11 @@ if (currentHash !== savedHash) {
 ## Integration Example
 
 ```typescript
-import { AstAnalyzer } from '@doctypedev/core';
-import { DoctypeMapManager } from '@doctypedev/cli';
+import { AstAnalyzer } from '@sintesi/core';
+import { SintesiMapManager } from '@sintesi/cli';
 
 const analyzer = new AstAnalyzer();
-const mapManager = new DoctypeMapManager('doctype-map.json');
+const mapManager = new SintesiMapManager('sintesi-map.json');
 
 // Analyze code
 const signatures = analyzer.analyzeFile('src/utils.ts');
@@ -278,7 +278,7 @@ Native binaries are automatically selected based on your platform. No compilatio
 The module handles errors gracefully:
 
 ```typescript
-import { AstAnalyzer } from '@doctypedev/core';
+import { AstAnalyzer } from '@sintesi/core';
 
 const analyzer = new AstAnalyzer();
 

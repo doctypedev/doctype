@@ -28,7 +28,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './packages'),
-      '@doctypedev/core': path.resolve(__dirname, './packages/core/index.ts'),
+      '@sintesi/core': path.resolve(__dirname, './packages/core/index.ts'),
     },
   },
 });
