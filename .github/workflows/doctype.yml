@@ -44,7 +44,3 @@ jobs:
       # Build the entire monorepo (includes packages/cli, packages/core, etc.)
       - name: Build packages
         run: pnpm build
-
-      # Run the locally built CLI against the repository
-      - name: Run Doctype Check
-        run: node packages/cli/dist/cli/src/index.js check

@@ -54,6 +54,7 @@ You'll be presented with a menu to:
 - **Fix** outdated documentation
 - **Generate** new content
 - **Create Changesets**
+- **Readme** - Generate a README file based on your project structure
 
 ### 3. Or Use Individual Commands
 
@@ -77,6 +78,11 @@ doctype check
 **Fix Drift (Update Docs):**
 ```bash
 doctype fix
+```
+
+**Generate a README file:**
+```bash
+doctype readme
 ```
 
 ---
@@ -167,7 +173,6 @@ const token = await login('user@example.com', 'securePassword123');
 
 ## Commands
 
-
 ### `doctype changeset`
 
 Generate a changeset file from code changes using AI.
@@ -206,7 +211,6 @@ $ doctype changeset
 ```
 
 ---
-
 
 ### `doctype init`
 
@@ -311,6 +315,20 @@ doctype fix --auto-commit
 6. (Optional) Prunes dead entries if `--prune` is used.
 7. (Optional) Auto-commits with message: `🤖 Doctype Bot: Auto-fix documentation for login`
 
+### `doctype readme`
+
+Generate a README file based on your project structure.
+
+```bash
+doctype readme
+```
+
+**What it does:**
+1. Scans your project for relevant information.
+2. Creates a structured README file with sections for installation, usage, and commands.
+
+---
+
 ## CI/CD Integration
 
 > **🚧 In Progress**
@@ -323,7 +341,6 @@ doctype fix --auto-commit
 > ```
 
 ---
-
 
 ## How It Works
 

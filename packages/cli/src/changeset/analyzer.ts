@@ -282,7 +282,7 @@ export class ChangesetAnalyzer {
           changeType: 'added',
           newSignature: newSig,
         });
-      } else if (oldSig.signatureHash !== newSig.signatureHash) {
+      } else if (oldSig.hash !== newSig.hash) {
         // Symbol was modified
         changes.push({
           symbolName,

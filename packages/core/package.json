@@ -22,7 +22,7 @@
   "author": "doctypedev",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json && cp native-types.d.ts dist/"
   },
   "dependencies": {
     "ts-morph": "^21.0.1"

@@ -128,6 +128,24 @@ export class AIAgent {
   }
 
   /**
+   * Generate generic text using the AI provider
+   */
+  async generateText(
+    prompt: string,
+    options: { temperature?: number; maxTokens?: number } = {}
+  ): Promise<string> {
+    this.log('Generating text', { promptLength: prompt.length });
+
+    if (this.provider.generateText) {
+      return this.executeWithRetry(() =>
+        this.provider.generateText!(prompt, options)
+      );
+    }
+    
+    throw new Error(`Provider ${this.provider.provider} does not support text generation`);
+  }
+
+  /**
    * Validate the AI provider connection
    */
   async validateConnection(): Promise<boolean> {

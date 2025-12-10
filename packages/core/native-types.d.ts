@@ -260,6 +260,29 @@ export interface CodeRefParts {
   symbolName: string;
 }
 export declare function parseCodeRef(codeRef: string): CodeRefParts;
+export interface PackageJson {
+  name?: string;
+  version?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
+}
+export interface FileContext {
+  path: string;
+  extension?: string;
+  imports: Array<string>;
+  importedBy: Array<string>;
+}
+export interface ProjectContext {
+  files: Array<FileContext>;
+  packageJson?: PackageJson;
+}
+export declare function getProjectContext(rootPath: string): ProjectContext;
+export interface NapiFileInfo {
+  path: string;
+  extension?: string;
+}
+export declare function getProjectFiles(rootPath: string): Array<NapiFileInfo>;
 /** Simple hello world function to test the napi binding */
 export declare function helloWorld(): string;
 /** Get version information */

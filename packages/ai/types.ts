@@ -2,7 +2,7 @@
  * Type definitions for AI Agent module
  */
 
-import { CodeSignature } from '../core/native-loader';
+import { CodeSignature } from '@doctypedev/core';
 
 /**
  * Supported AI providers
@@ -167,6 +167,16 @@ export interface IAIProvider {
    * Validate API key and connection
    */
   validateConnection(): Promise<boolean>;
+
+  /**
+   * Generate generic text from a prompt
+   * @param prompt The user prompt
+   * @param options Optional configuration
+   */
+  generateText?(
+    prompt: string,
+    options?: { temperature?: number; maxTokens?: number }
+  ): Promise<string>;
 }
 
 /**

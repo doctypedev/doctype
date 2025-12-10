@@ -50,6 +50,11 @@ pub mod ast;
 /// Content management and markdown processing
 pub mod content;
 
+/// Filesystem crawler and project context
+pub mod crawler;
+pub mod graph;
+pub mod context;
+
 /// Gen AI agent for documentation generation
 pub mod genai;
 

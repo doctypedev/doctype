@@ -23,6 +23,7 @@ import { fixCommand } from './commands/fix';
 import { generateCommand } from './commands/generate';
 import { initCommand } from './commands/init';
 import { changesetCommand } from './commands/changeset';
+import { readmeCommand, ReadmeOptions } from './commands/readme';
 import { CheckOptions, FixOptions, GenerateOptions, InitOptions, ChangesetOptions } from './types';
 
 // Parse command line arguments
@@ -54,6 +55,40 @@ yargs(hideBin(process.argv))
       if (!result.success) {
         process.exit(1);
       }
+    }
+  )
+
+  // Readme command
+  .command(
+    'readme',
+    'Generate a README.md based on project context',
+    (yargs) => {
+      return yargs
+        .option('output', {
+          alias: 'o',
+          type: 'string',
+          description: 'Output file path (default: README.md)',
+        })
+        .option('force', {
+          alias: 'f',
+          type: 'boolean',
+          description: 'Overwrite existing file',
+          default: false,
+        })
+        .option('verbose', {
+          type: 'boolean',
+          description: 'Enable verbose logging',
+          default: false,
+        });
+    },
+    async (argv) => {
+      const options: ReadmeOptions = {
+        output: argv.output as string,
+        force: argv.force as boolean,
+        verbose: argv.verbose as boolean,
+      };
+
+      await readmeCommand(options);
     }
   )
 
@@ -333,6 +368,8 @@ yargs(hideBin(process.argv))
   .example('$0 changeset --staged-only', 'Only analyze staged changes')
   .example('$0 changeset --skip-ai', 'Generate changeset without AI analysis')
   .example('$0 changeset -t minor -d "Add new feature"', 'Manually specify version and description')
+  .example('$0 readme', 'Generate README.md for the current project')
+  .example('$0 readme --force', 'Force overwrite existing README.md')
 
   .command(
     '$0',

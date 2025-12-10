@@ -66,6 +66,20 @@ export class GitHelper {
   }
 
   /**
+   * Get diff of changes
+   * @param staged - Whether to get diff of staged changes
+   */
+  async getDiff(staged: boolean = false): Promise<string> {
+    try {
+      const args = staged ? '--staged' : '';
+      return execSync(`git diff ${args}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+    } catch (error) {
+      this.logger.debug(`Failed to get diff: ${error instanceof Error ? error.message : String(error)}`);
+      return '';
+    }
+  }
+
+  /**
    * Stage files for commit
    */
   addFiles(files: string[]): GitOperationResult {

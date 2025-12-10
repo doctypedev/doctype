@@ -21,6 +21,8 @@ export {
   extractAnchors,
   validateMarkdownAnchors,
   parseCodeRef,
+  // Project Context
+  getProjectContext,
 } from './native-loader';
 
 export type {
@@ -37,4 +39,8 @@ export type {
   DoctypeAnchor,
   ExtractionResult,
   CodeRefParts,
+  // Project Context types
+  ProjectContext,
+  FileContext,
+  PackageJson,
 } from './native-loader';

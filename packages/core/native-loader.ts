@@ -125,25 +125,35 @@ function loadNativeModule(): any {
 // Export the loaded module
 const nativeModule = loadNativeModule();
 
-// Re-export all exports from the native module
-export const {
-  SymbolType,
-  discoverFiles,
-  helloWorld,
-  getVersion,
-  AstAnalyzer,
-  // Markdown extraction
-  extractAnchors,
-  validateMarkdownAnchors,
-  parseCodeRef,
-} = nativeModule;
-
 // Re-export types
-// In development, types come from local native-types.d.ts
-// In production, they come from the platform-specific package (all have same types)
 import type * as CoreTypes from './native-types';
 
 export type CodeRef = CoreTypes.CodeRef;
+// ... (other types)
+
+// Export values with types
+const {
+  SymbolType: SymbolTypeVal,
+  discoverFiles: discoverFilesVal,
+  helloWorld: helloWorldVal,
+  getVersion: getVersionVal,
+  AstAnalyzer: AstAnalyzerVal,
+  extractAnchors: extractAnchorsVal,
+  validateMarkdownAnchors: validateMarkdownAnchorsVal,
+  parseCodeRef: parseCodeRefVal,
+  getProjectContext: getProjectContextVal,
+} = nativeModule;
+
+export const SymbolType = SymbolTypeVal;
+export const discoverFiles = discoverFilesVal as typeof CoreTypes.discoverFiles;
+export const helloWorld = helloWorldVal as typeof CoreTypes.helloWorld;
+export const getVersion = getVersionVal as typeof CoreTypes.getVersion;
+export const AstAnalyzer = AstAnalyzerVal as typeof CoreTypes.AstAnalyzer;
+export const extractAnchors = extractAnchorsVal as typeof CoreTypes.extractAnchors;
+export const validateMarkdownAnchors = validateMarkdownAnchorsVal as typeof CoreTypes.validateMarkdownAnchors;
+export const parseCodeRef = parseCodeRefVal as typeof CoreTypes.parseCodeRef;
+export const getProjectContext = getProjectContextVal as typeof CoreTypes.getProjectContext;
+
 export type CodeSignature = CoreTypes.CodeSignature;
 export type SignatureHash = CoreTypes.SignatureHash;
 export type DocRef = CoreTypes.DocRef;
@@ -156,6 +166,11 @@ export type FileDiscoveryOptions = CoreTypes.FileDiscoveryOptions;
 export type DoctypeAnchor = CoreTypes.DoctypeAnchor;
 export type ExtractionResult = CoreTypes.ExtractionResult;
 export type CodeRefParts = CoreTypes.CodeRefParts;
+
+// Project Context types
+export type ProjectContext = CoreTypes.ProjectContext;
+export type FileContext = CoreTypes.FileContext;
+export type PackageJson = CoreTypes.PackageJson;
 
 // Export SymbolType as a type (it's a const enum in the .d.ts)
 export type { SymbolType as SymbolTypeValue } from './native-types';

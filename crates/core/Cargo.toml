@@ -18,9 +18,11 @@ napi-derive = "2"
 # Core dependencies
 ignore = "0.4.25"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 sha2 = "0.10"
 pulldown-cmark = "0.12"
 regex = "1"
+petgraph = "0.6"
 
 # Oxc for TypeScript/JavaScript AST parsing
 oxc_parser = "0.39"
