@@ -1,13 +1,12 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SmartChecker } from '../src/services/smart-checker';
 import { Logger } from '../src/utils/logger';
-import { GitHelper } from '../src/utils/git-helper';
+import { ChangeAnalysisService } from '../src/services/analysis-service';
 import * as fs from 'fs';
 import * as path from 'path';
 
 // Mock dependencies
-vi.mock('../src/utils/git-helper');
+vi.mock('../src/services/analysis-service');
 vi.mock('../../ai', () => ({
     createAgentFromEnv: vi.fn(),
 }));
@@ -44,12 +43,16 @@ describe('SmartChecker', () => {
     it('should return no drift if there are no code changes', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
 
-        // Mock GitHelper to return empty diff
-        const mockGitHelper = {
-            getDiff: vi.fn().mockResolvedValue(''),
-            getChangedFiles: vi.fn().mockReturnValue([]),
+        // Mock AnalysisService to return empty diff
+        const mockAnalysisService = {
+            analyze: vi.fn().mockResolvedValue({
+                gitDiff: '',
+                changedFiles: [],
+                symbolChanges: [],
+                totalChanges: 0
+            })
         };
-        (GitHelper as any).mockImplementation(() => mockGitHelper);
+        (ChangeAnalysisService as any).mockImplementation(() => mockAnalysisService);
 
         // Re-instantiate to use the mock
         smartChecker = new SmartChecker(logger, '/mock/root');
@@ -63,12 +66,16 @@ describe('SmartChecker', () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readFileSync).mockReturnValue('# Readme');
 
-        // Mock GitHelper
-        const mockGitHelper = {
-            getDiff: vi.fn().mockResolvedValue('+export class NewFeature {}'),
-            getChangedFiles: vi.fn().mockReturnValue(['src/code.ts']),
+        // Mock AnalysisService
+        const mockAnalysisService = {
+            analyze: vi.fn().mockResolvedValue({
+                gitDiff: '+export class NewFeature {}',
+                changedFiles: ['src/code.ts'],
+                symbolChanges: [],
+                totalChanges: 1
+            })
         };
-        (GitHelper as any).mockImplementation(() => mockGitHelper);
+        (ChangeAnalysisService as any).mockImplementation(() => mockAnalysisService);
 
         // Mock AI Agent
         const mockAgent = {

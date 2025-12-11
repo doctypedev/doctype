@@ -120,13 +120,68 @@ export class GitHelper {
   }
 
   /**
+   * Get merge base between HEAD and a base branch
+   */
+  getMergeBase(base: string): string | null {
+    try {
+      return execSync(`git merge-base ${base} HEAD`, { encoding: 'utf-8', stdio: 'pipe' }).trim();
+    } catch {
+      this.logger.debug(`Could not find merge base with ${base}`);
+      return null;
+    }
+  }
+
+  /**
    * Get diff against a base branch
    */
   getDiffAgainstBase(base: string): string {
     try {
+      // First try to find a merge base to capture the divergence
+      const mergeBase = this.getMergeBase(base);
+
+      if (mergeBase) {
+        // Diff from merge-base to HEAD
+        // This is safe even if base is remote and we have local commits
+        return execSync(`git diff ${mergeBase}..HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+      }
+
+      // If no merge base (shallow clone?), try direct comparison
+      // The triple dot ... in 'git diff base...HEAD' actually implies using merge base unless it falls back
       return execSync(`git diff ${base}...HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
     } catch (error) {
       this.logger.debug(`Failed to get diff against base ${base}: ${error instanceof Error ? error.message : String(error)}`);
+      // Fallback: compare directly against whatever 'base' is resolvable to
+      try {
+        return execSync(`git diff ${base} HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+      } catch {
+        return '';
+      }
+    }
+  }
+
+  /**
+   * Get filtered diff (excluding locks)
+   */
+  getFilteredDiff(base: string, staged: boolean = false): string {
+    const excludes = [
+      "':(exclude)package-lock.json'",
+      "':(exclude)yarn.lock'",
+      "':(exclude)pnpm-lock.yaml'"
+    ].join(' ');
+
+    try {
+      if (staged) {
+        return execSync(`git diff --cached -- . ${excludes}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+      }
+
+      const mergeBase = this.getMergeBase(base);
+      if (mergeBase) {
+        return execSync(`git diff ${mergeBase}..HEAD -- . ${excludes}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+      }
+
+      return execSync(`git diff ${base}...HEAD -- . ${excludes}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+    } catch (error) {
+      this.logger.debug(`Failed to get filtered diff: ${error}`);
       return '';
     }
   }
@@ -164,6 +219,25 @@ export class GitHelper {
       const escapedMessage = message.replace(/"/g, '\\"');
       const output = execSync(`git commit -m "${escapedMessage}"`, { encoding: 'utf-8' });
 
+      return {
+        success: true,
+        output: output.trim(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  /**
+   * Fetch changes from remote
+   */
+  fetch(remote: string, branch: string): GitOperationResult {
+    try {
+      this.logger.debug(`Fetching ${remote} ${branch}`);
+      const output = execSync(`git fetch ${remote} ${branch}`, { encoding: 'utf-8' });
       return {
         success: true,
         output: output.trim(),

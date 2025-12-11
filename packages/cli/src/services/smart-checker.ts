@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 import { Logger } from '../utils/logger';
-import { GitHelper } from '../utils/git-helper';
 import { createAgentFromEnv } from '../../../ai';
+import { ChangeAnalysisService } from './analysis-service';
 
 export interface SmartCheckResult {
     hasDrift: boolean;
@@ -13,12 +13,12 @@ export interface SmartCheckResult {
 
 export class SmartChecker {
     private logger: Logger;
-    private gitHelper: GitHelper;
+    private analysisService: ChangeAnalysisService;
     private projectRoot: string;
 
     constructor(logger: Logger, projectRoot: string = process.cwd()) {
         this.logger = logger;
-        this.gitHelper = new GitHelper(logger);
+        this.analysisService = new ChangeAnalysisService(logger);
         this.projectRoot = projectRoot;
     }
 
@@ -109,42 +109,21 @@ export class SmartChecker {
             return { hasDrift: false }; // No README to check
         }
 
-        // 1. Get recent changes (Git Diff)
+        // 1. Get recent changes via shared service
         let gitDiff = '';
         let changedFiles: string[] = [];
 
         try {
-            // Get both staged and unstaged changes for comprehensive context
-            const staged = await this.gitHelper.getDiff(true);
-            const unstaged = await this.gitHelper.getDiff(false);
-            gitDiff = (staged + '\n' + unstaged).trim();
-            changedFiles = this.gitHelper.getChangedFiles();
+            const context = await this.analysisService.analyze({
+                baseBranch,
+                projectRoot: this.projectRoot,
+                fallbackToLastCommit: true,
+                includeSymbols: false, // We don't need semantic symbol analysis for this, just diffs + files
+                stagedOnly: false
+            });
 
-            if (!gitDiff) {
-                // If no uncommitted changes, check against the base branch (default: origin/main)
-                // This covers PRs with multiple commits
-                try {
-                    // Try to diff against base branch first
-                    const diffAgainstBase = this.gitHelper.getDiffAgainstBase(baseBranch);
-                    if (diffAgainstBase) {
-                        gitDiff = `Changes against ${baseBranch}:\n` + diffAgainstBase;
-                        changedFiles = this.gitHelper.getChangedFilesAgainstBase(baseBranch);
-                        this.logger.info(`Comparing current HEAD against base branch: ${baseBranch}`);
-                    } else {
-                        // Fallback to last commit if base comparison yields nothing (e.g. equal) or fails
-                        // This ensures we always check something if possible
-                        // CRITICAL: We need the PATCH (-p) not just stat, otherwise regex heuristics fail
-                        const lastCommit = execSync('git show HEAD -p -n 1', { encoding: 'utf-8', cwd: this.projectRoot });
-                        if (lastCommit) {
-                            gitDiff = "Last commit:\n" + lastCommit;
-                            // IMPORTANT: Get the files changed in the last commit for the pre-filter
-                            changedFiles = this.gitHelper.getChangedFiles('HEAD');
-                        }
-                    }
-                } catch (e) {
-                    this.logger.debug(`Failed to compare against base or last commit: ${e}`);
-                }
-            }
+            gitDiff = context.gitDiff;
+            changedFiles = context.changedFiles;
 
             if (!gitDiff) {
                 this.logger.debug('No code changes detected to analyze.');
@@ -161,7 +140,7 @@ export class SmartChecker {
                 gitDiff = gitDiff.substring(0, 8000) + '\n... (truncated)';
             }
         } catch (error) {
-            this.logger.warn(`Failed to get git diff: ${error}`);
+            this.logger.warn('Failed to get changes: ' + error);
             return { hasDrift: false };
         }
 
@@ -235,7 +214,7 @@ Only return the JSON.
             }
 
         } catch (error) {
-            this.logger.warn(`Smart check failed: ${error}`);
+            this.logger.warn('Smart check failed: ' + error);
         }
 
         return { hasDrift: false };

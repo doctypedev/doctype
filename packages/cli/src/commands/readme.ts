@@ -11,6 +11,7 @@ import { resolve } from 'path';
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { spinner } from '@clack/prompts';
 import { GitHelper } from '../utils/git-helper';
+import { ChangeAnalysisService } from '../services/analysis-service';
 import { execSync } from 'child_process';
 
 export interface ReadmeOptions {
@@ -31,23 +32,14 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
   // 0. Get Git Diff (Context about recent changes)
   try {
-    const gitHelper = new GitHelper(logger);
-    // Try to get diff from main/master or HEAD~1 if simpler
-    // We want broad context. Let's try to get staged + unstaged changes first
-    const staged = await gitHelper.getDiff(true);
-    const unstaged = await gitHelper.getDiff(false);
-    gitDiff = (staged + '\n' + unstaged).trim();
+    const analysisService = new ChangeAnalysisService(logger);
+    const analysis = await analysisService.analyze({
+      fallbackToLastCommit: true, // Auto handles checking HEAD if no changes
+      includeSymbols: false, // We just need diff for general context
+      stagedOnly: false
+    });
 
-    // If no active changes, check the last commit to understand recent context
-    if (!gitDiff) {
-      try {
-        // Get stats and message of last commit
-        const lastCommit = execSync('git show HEAD --stat -n 1', { encoding: 'utf-8' });
-        gitDiff = "No uncommitted changes. Last commit:\n" + lastCommit;
-      } catch (e) {
-        // Ignore if no commits yet
-      }
-    }
+    gitDiff = analysis.gitDiff;
 
     if (gitDiff.length > 5000) {
       gitDiff = gitDiff.substring(0, 5000) + '\n... (truncated)';
@@ -57,7 +49,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
       logger.info('Detected recent code changes, including in context.');
     }
   } catch (e) {
-    logger.debug('Could not fetch git diff, skipping.');
+    logger.debug('Could not fetch git diff, skipping: ' + e);
   }
 
   if (existsSync(outputPath)) {
