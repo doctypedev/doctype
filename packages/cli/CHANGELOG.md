@@ -1,5 +1,15 @@
 # @sintesi/sintesi
 
+## 0.9.0
+
+### Minor Changes
+
+- 8453ac1: Implement AI-driven smart check for README updates in the check command
+
+### Patch Changes
+
+- @sintesi/core@0.9.0
+
 ## 0.8.0
 
 ### Minor Changes
