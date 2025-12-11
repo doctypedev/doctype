@@ -148,7 +148,7 @@ export declare function discoverFiles(
   rootPath: string,
   options?: FileDiscoveryOptions | undefined | null,
 ): FileDiscoveryResult;
-/** NAPI-compatible sintesi anchor structure */
+/** NAPI-compatible Sintesi anchor structure */
 export interface SintesiAnchor {
   /** Unique anchor ID */
   id: string;
@@ -173,7 +173,7 @@ export interface ExtractionResult {
   errors: Array<string>;
 }
 /**
- * Extract sintesi anchors from markdown content
+ * Extract Sintesi anchors from markdown content
  *
  * # Arguments
  * * `file_path` - Path to the markdown file (for reference)
@@ -207,7 +207,7 @@ export declare function extractAnchors(
   content: string,
 ): ExtractionResult;
 /**
- * Validate markdown content for sintesi anchors
+ * Validate markdown content for Sintesi anchors
  *
  * This performs validation without extracting content, making it faster
  * for checking if markdown is valid.

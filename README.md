@@ -234,7 +234,7 @@ sintesi init
 <!-- sintesi:end id="uuid" -->
 ```
 
-You can then manually document each symbol, or use `sintesi generate` to auto-fill with AI.
+You can then manually document each symbol or use `sintesi generate` to auto-fill with AI.
 
 ### `sintesi generate`
 
