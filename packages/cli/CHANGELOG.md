@@ -1,5 +1,16 @@
 # @sintesi/sintesi
 
+## 0.10.0
+
+### Minor Changes
+
+- cfe8bfd: - Introduce a new CLI command for generating project documentation
+  - Implement AI integration for intelligent documentation generation based on project context
+
+### Patch Changes
+
+- @sintesi/core@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes
@@ -93,7 +104,6 @@
 
 - 0f57003: Implemented strict AI content sanitization to protect anchors and added resilient batch processing with partial success and smart retries.
 - 246079e: Remove redundant fields from sintesi-map.json to make it more robust and maintainable
-
   - Remove `originalMarkdownContent` - Content is now read from markdown files at runtime
   - Remove `startLine` and `endLine` from DocRef - Use ID-based anchor lookup instead
   - Update all TypeScript and Rust type definitions
@@ -103,7 +113,6 @@
   - Update CLAUDE.md documentation
 
   Benefits:
-
   - Single source of truth: Markdown files contain the actual content
   - No content duplication in map file
   - More resilient to manual markdown edits (no fragile line numbers)
@@ -186,7 +195,6 @@
 ### Patch Changes
 
 - 5043fe7: Replace TypeScript markdown parser with Rust NAPI implementation using pulldown-cmark
-
   - Migrate markdown extraction logic from TypeScript to Rust for improved performance
   - Use pulldown-cmark for proper Markdown AST parsing (best practice, avoids regex fragility)
   - Automatically ignores HTML comments in code blocks (impossible with regex)
