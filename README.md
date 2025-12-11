@@ -18,9 +18,9 @@ Sintesi automatically detects when your code changes and updates your documentat
 
 ## Why Sintesi?
 
-**The Problem:** You change a function signature. Your documentation becomes outdated. Your team wastes time debugging with wrong info. Sound familiar?
+**The Problem:** You change a function signature. Your documentation becomes outdated. Your team wastes time debugging with incorrect information. Sound familiar?
 
-**The Solution:** Sintesi detects code changes automatically and regenerates documentation using a Large Language Model. Your docs stay in sync, your team stays productive.
+**The Solution:** Sintesi detects code changes automatically and regenerates documentation using a Large Language Model. Your docs stay in sync, and your team remains productive.
 
 ### What Makes It Different
 
@@ -28,7 +28,7 @@ Sintesi automatically detects when your code changes and updates your documentat
 - ✅ **AI-Powered** - Uses OpenAI GPT-4 to write better docs than most humans.
 - ✅ **CI/CD Native** - Fails your build if docs are out of sync (no more "I forgot").
 - ✅ **Zero Config** - Drop in anchors, run one command, done.
-- ✅ **Git-Friendly** - Auto-commits with standardized messages, plays nice with your workflow.
+- ✅ **Git-Friendly** - Auto-commits with standardized messages, integrates seamlessly into your workflow.
 
 ---
 
@@ -88,6 +88,11 @@ sintesi readme
 **Smart Check for README Updates:**
 ```bash
 sintesi check --smart
+```
+
+**Create Changesets:**
+```bash
+sintesi changeset
 ```
 
 ---
