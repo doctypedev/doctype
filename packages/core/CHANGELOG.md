@@ -1,5 +1,14 @@
 # @sintesi/core
 
+## 0.8.0
+
+### Minor Changes
+
+- bbcf561: - Rename project from Doctype to Sintesi
+  - Update all references and configurations to reflect the new name
+  - Remove deprecated files and workflows related to Doctype
+  - Introduce new workflows for Sintesi CI/CD processes
+
 ## 0.7.0
 
 ### Minor Changes
