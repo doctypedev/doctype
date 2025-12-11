@@ -8,7 +8,7 @@ import { Logger } from '../utils/logger';
 import { createAgentFromEnv } from '../../../ai';
 import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve } from 'path';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { spinner } from '@clack/prompts';
 import { GitHelper } from '../utils/git-helper';
 import { execSync } from 'child_process';
@@ -40,13 +40,13 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
     // If no active changes, check the last commit to understand recent context
     if (!gitDiff) {
-       try {
-         // Get stats and message of last commit
-         const lastCommit = execSync('git show HEAD --stat -n 1', { encoding: 'utf-8' });
-         gitDiff = "No uncommitted changes. Last commit:\n" + lastCommit;
-       } catch (e) {
-         // Ignore if no commits yet
-       }
+      try {
+        // Get stats and message of last commit
+        const lastCommit = execSync('git show HEAD --stat -n 1', { encoding: 'utf-8' });
+        gitDiff = "No uncommitted changes. Last commit:\n" + lastCommit;
+      } catch (e) {
+        // Ignore if no commits yet
+      }
     }
 
     if (gitDiff.length > 5000) {
@@ -88,7 +88,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   // 2. Get Project Context
   const s = spinner();
   s.start('Analyzing project structure...');
-  
+
   let context: ProjectContext;
   try {
     context = getProjectContext(cwd);
@@ -99,29 +99,50 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     return;
   }
 
+  // 2.5 Check for Smart Context (from check --smart)
+  let smartSuggestion = '';
+  try {
+    const smartContextPath = resolve(cwd, '.sintesi/smart-context.json');
+    if (existsSync(smartContextPath)) {
+      const content = JSON.parse(readFileSync(smartContextPath, 'utf-8'));
+      if (content.suggestion) {
+        smartSuggestion = content.suggestion;
+        logger.info('💡 Using suggestion from strict check: ' + smartSuggestion);
+      }
+      // Clean up
+      unlinkSync(smartContextPath);
+    }
+  } catch (e) {
+    logger.debug('Failed to load smart context: ' + e);
+  }
+
   // 3. Prepare Prompt
   s.start(isUpdate ? 'Updating README...' : 'Generating README...');
-  
+
   // Format context for AI
   const fileSummary = context.files
-    .map(function(f) { return '- ' + f.path + ' (imports: ' + f.imports.length + ', imported by: ' + f.importedBy.length + ')'; })
+    .map(function (f) { return '- ' + f.path + ' (imports: ' + f.imports.length + ', imported by: ' + f.importedBy.length + ')'; })
     .join('\n');
-  
-  const packageJsonSummary = context.packageJson 
-    ? JSON.stringify(context.packageJson, null, 2) 
+
+  const packageJsonSummary = context.packageJson
+    ? JSON.stringify(context.packageJson, null, 2)
     : 'No package.json found';
 
   let prompt = '';
-  
+
   prompt += "You are an expert technical writer. Your task is to " + (isUpdate ? "update and improve the" : "write a comprehensive") + " README.md for a software project.\n\n";
   prompt += "Here is the context of the project:\n\n";
-  
+
   prompt += "## Package.json\n```json\n" + packageJsonSummary + "\n```\n\n";
-  
+
   prompt += "## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n" + (gitDiff || 'No recent uncommitted changes detected.') + "\n```\n\n";
-  
+
+  if (smartSuggestion) {
+    prompt += "## Specific Suggestion (IMPORTANT)\n" + "A previous analysis identified a specific issue to address:\n> " + smartSuggestion + "\n\nPlease ensure this suggestion is addressed in your update.\n\n";
+  }
+
   prompt += "## File Structure & Dependencies\n" + fileSummary + "\n\n";
-  
+
   let instructions = '';
 
   if (isUpdate) {
@@ -129,7 +150,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     instructions += "```markdown\n";
     instructions += existingContent;
     instructions += "\n```\n\n";
-    
+
     instructions += "## Instructions for UPDATE\n";
     instructions += "1. **LANGUAGE CONSISTENCY**: STRICTLY write in the same language as the 'Current README Content'. If it is Italian, write in Italian. Do not switch languages.\n";
     instructions += "2. Analyze the 'Current README Content' and compare it with the detected project structure, package.json, and **Recent Code Changes**.\n";
@@ -153,7 +174,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     instructions += "   - **Usage**: Detailed instructions on how to run/use the project.\n";
     instructions += "   - **Project Structure**\n";
   }
-  
+
   prompt += instructions;
 
   prompt += "\nGeneral Rules:\n";
@@ -178,15 +199,15 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     readmeContent = readmeContent.trim();
 
     s.stop('Generation complete');
-    
+
     if (isUpdate && !options.force) {
-        writeFileSync(outputPath, readmeContent);
-        logger.success('README updated at ' + Logger.path(outputPath));
+      writeFileSync(outputPath, readmeContent);
+      logger.success('README updated at ' + Logger.path(outputPath));
     } else {
-        writeFileSync(outputPath, readmeContent);
-        logger.success('README generated at ' + Logger.path(outputPath));
+      writeFileSync(outputPath, readmeContent);
+      logger.success('README generated at ' + Logger.path(outputPath));
     }
-    
+
   } catch (error) {
     s.stop('Generation failed');
     const msg = error instanceof Error ? error.message : String(error);

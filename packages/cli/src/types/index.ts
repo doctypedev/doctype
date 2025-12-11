@@ -127,6 +127,9 @@ export interface CheckOptions {
   verbose?: boolean;
   /** Exit with error code if drift detected */
   strict?: boolean;
+  /** Use AI to detect high-level drift (e.g. README updates) */
+  smart?: boolean;
+  base?: string;
 }
 
 /**

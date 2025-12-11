@@ -176,6 +176,15 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           description: 'Exit with error code if drift detected',
           default: true,
+        })
+        .option('smart', {
+          type: 'boolean',
+          description: 'Use AI to detect high-level drift (e.g. README updates)',
+          default: false,
+        })
+        .option('base', {
+          type: 'string',
+          description: 'Base branch for smart check comparison (default: origin/main)',
         });
     },
     async (argv) => {
@@ -183,6 +192,8 @@ yargs(hideBin(process.argv))
         map: argv.map as string,
         verbose: argv.verbose as boolean,
         strict: argv.strict as boolean,
+        smart: argv.smart as boolean,
+        base: argv.base as string,
       };
 
       const result = await checkCommand(options);
@@ -374,7 +385,7 @@ yargs(hideBin(process.argv))
   .command(
     '$0',
     'Open interactive menu',
-    () => {},
+    () => { },
     async () => {
       const { showMainMenu } = await import('./commands/menu');
       await showMainMenu();

@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -46,11 +48,23 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Run Sintesi README command
+      - name: Check for high-level drift
+        id: check_drift
+        continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
+          # Run smart check. If it fails (found drift), it returns exit code 1
+          # We use continue-on-error to handle the logic in the next step
+          node packages/cli/dist/cli/src/index.js check --smart --base ${{ github.event.before }} --verbose
+
+      - name: Run Sintesi README command
+        if: steps.check_drift.outcome == 'failure'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Only runs if check_drift failed (drift detected)
+          node packages/cli/dist/cli/src/index.js readme --output README.md --verbose --force
 
       - name: Check for changes to README.md
         id: git_status

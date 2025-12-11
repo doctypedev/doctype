@@ -80,6 +80,58 @@ export class GitHelper {
   }
 
   /**
+   * Get list of changed files
+   * @param revision Optional revision to check against (e.g. 'HEAD'). If omitted, checks working tree (staged + unstaged).
+   */
+  getChangedFiles(revision?: string): string[] {
+    try {
+      if (revision) {
+        // Get changed files in the specified revision (comparing against its parent)
+        // git show --name-only --pretty="" HEAD
+        const output = execSync(`git show --name-only --pretty="" ${revision}`, { encoding: 'utf-8' });
+        return output.trim().split('\n').filter(Boolean);
+      }
+
+      // Get staged changes
+      const staged = execSync('git diff --name-only --cached', { encoding: 'utf-8' }).trim().split('\n').filter(Boolean);
+      // Get unstaged changes
+      const unstaged = execSync('git diff --name-only', { encoding: 'utf-8' }).trim().split('\n').filter(Boolean);
+
+      // Combine and deduplicate
+      return Array.from(new Set([...staged, ...unstaged]));
+    } catch (error) {
+      this.logger.debug(`Failed to get changed files: ${error instanceof Error ? error.message : String(error)}`);
+      return [];
+    }
+  }
+
+  /**
+   * Get list of changed files against a base branch (e.g. origin/main)
+   * Uses "git diff base...HEAD" (triple dot)
+   */
+  getChangedFilesAgainstBase(base: string): string[] {
+    try {
+      const output = execSync(`git diff --name-only ${base}...HEAD`, { encoding: 'utf-8' });
+      return output.trim().split('\n').filter(Boolean);
+    } catch (error) {
+      this.logger.debug(`Failed to get changed files against base ${base}: ${error instanceof Error ? error.message : String(error)}`);
+      return [];
+    }
+  }
+
+  /**
+   * Get diff against a base branch
+   */
+  getDiffAgainstBase(base: string): string {
+    try {
+      return execSync(`git diff ${base}...HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+    } catch (error) {
+      this.logger.debug(`Failed to get diff against base ${base}: ${error instanceof Error ? error.message : String(error)}`);
+      return '';
+    }
+  }
+
+  /**
    * Stage files for commit
    */
   addFiles(files: string[]): GitOperationResult {

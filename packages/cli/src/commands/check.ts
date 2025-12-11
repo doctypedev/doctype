@@ -9,8 +9,9 @@ import { AstAnalyzer } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { CheckResult, CheckOptions, DriftDetail } from '../types';
 import { detectDrift } from '../services/drift-detector';
-import { existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { SmartChecker } from '../services/smart-checker';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { resolve, dirname, join } from 'path';
 import {
   loadConfig,
   getMapPath,
@@ -25,6 +26,8 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   const logger = new Logger(options.verbose);
 
   logger.header('🔍 Sintesi Check - Drift Detection');
+
+  let smartDriftDetected = false;
 
   // Load configuration file (required for all commands except init)
   let config;
@@ -56,52 +59,78 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
   // Validate map file exists
   if (!existsSync(mapPath)) {
-    logger.error(`Map file not found: ${Logger.path(mapPath)}`);
-    logger.info('Run this command from your project root, or specify --map path');
-    return {
-      totalEntries: 0,
-      driftedEntries: 0,
-      missingEntries: 0,
-      drifts: [],
-      missing: [],
-      success: false,
-      configError: `Map file not found: ${mapPath}`,
-    };
+    // If smart check is enabled, we can proceed without a map file for that specific check
+    if (options.smart) {
+      logger.warn(`Map file not found: ${Logger.path(mapPath)}`);
+      logger.info('Proceeding with high-level drift detection only.');
+    } else {
+      logger.error(`Map file not found: ${Logger.path(mapPath)}`);
+      logger.info('Run this command from your project root, or specify --map path');
+      return {
+        totalEntries: 0,
+        driftedEntries: 0,
+        missingEntries: 0,
+        drifts: [],
+        missing: [],
+        success: false,
+        configError: `Map file not found: ${mapPath}`,
+      };
+    }
   }
 
-  // Load the map
-  const mapManager = new SintesiMapManager(mapPath);
-  const entries = mapManager.getEntries();
+  // Load the map if it exists
+  let mapManager: SintesiMapManager | undefined;
+  let entries: import('@sintesi/core').SintesiMapEntry[] = [];
 
-  if (entries.length === 0) {
+  if (existsSync(mapPath)) {
+    mapManager = new SintesiMapManager(mapPath);
+    entries = mapManager.getEntries();
+  }
+
+  if (entries.length === 0 && existsSync(mapPath)) {
     logger.warn('No entries found in sintesi-map.json');
     logger.info('Add documentation anchors to your Markdown files to track them');
-    return {
-      totalEntries: 0,
-      driftedEntries: 0,
-      missingEntries: 0,
-      drifts: [],
-      missing: [],
-      success: true,
-    };
+
+    // Only return early if not doing smart check
+    if (!options.smart) {
+      return {
+        totalEntries: 0,
+        driftedEntries: 0,
+        missingEntries: 0,
+        drifts: [],
+        missing: [],
+        success: true,
+      };
+    }
   }
 
-  logger.info(`Checking ${entries.length} documentation entries...`);
-  logger.newline();
+  const detectedDrifts: import('../services/drift-detector').DriftInfo[] = [];
+  const missingSymbols: import('../services/drift-detector').MissingSymbolInfo[] = [];
+  const untrackedSymbols: import('../services/drift-detector').UntrackedSymbolInfo[] = [];
 
   // Resolve the root directory for source code
   const codeRoot = config
     ? resolve(config.baseDir || process.cwd(), config.projectRoot)
     : dirname(mapPath);
 
-  // Analyze current code and detect drift using centralized logic
-  const analyzer = new AstAnalyzer();
-  const { drifts: detectedDrifts, missing: missingSymbols, untracked: untrackedSymbols } = detectDrift(mapManager, analyzer, {
-    logger,
-    basePath: codeRoot,
-    discoverUntracked: true,
-    projectRoot: config ? config.projectRoot : undefined
-  });
+  // Only perform standard drift detection if map exists and has entries
+  if (mapManager && entries.length > 0) {
+    logger.info(`Checking ${entries.length} documentation entries...`);
+    logger.newline();
+
+    // Analyze current code and detect drift using centralized logic
+    const analyzer = new AstAnalyzer();
+    const driftResult = detectDrift(mapManager, analyzer, {
+      logger,
+      basePath: codeRoot,
+      discoverUntracked: true,
+      projectRoot: config ? config.projectRoot : undefined
+    });
+
+    detectedDrifts.push(...driftResult.drifts);
+    missingSymbols.push(...driftResult.missing);
+    untrackedSymbols.push(...driftResult.untracked);
+  }
 
   // Convert DriftInfo to DriftDetail format for API compatibility
   const drifts: DriftDetail[] = detectedDrifts.map((drift) => ({
@@ -188,6 +217,45 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     }
   }
 
+  // Smart Check (High-level drift detection)
+  if (options.smart) {
+    logger.newline();
+    const smartChecker = new SmartChecker(logger, codeRoot);
+    const smartResult = await smartChecker.checkReadme({ baseBranch: options.base });
+
+    if (smartResult.hasDrift) {
+      logger.warn('⚠️ High-level drift detected: README might be outdated');
+      if (smartResult.reason) logger.log(`  Reason: ${smartResult.reason}`);
+      if (smartResult.suggestion) logger.log(`  Suggestion: ${smartResult.suggestion}`);
+      logger.newline();
+
+      // If smart check fails, we mark the command as failed so CI can react
+      if (options.smart) {
+        // Save context for other commands (like readme) to consume
+        try {
+          const sintesiDir = resolve(process.cwd(), '.sintesi');
+          if (!existsSync(sintesiDir)) {
+            mkdirSync(sintesiDir, { recursive: true });
+          }
+          const contextPath = join(sintesiDir, 'smart-context.json');
+          writeFileSync(contextPath, JSON.stringify({
+            reason: smartResult.reason,
+            suggestion: smartResult.suggestion,
+            timestamp: Date.now()
+          }, null, 2));
+          logger.debug(`Saved smart check context to ${contextPath}`);
+        } catch (e) {
+          logger.debug(`Failed to save smart context: ${e}`);
+        }
+
+        // Mark as failed by updating a local flag, which we will use to set the final result
+        smartDriftDetected = true;
+      }
+    } else {
+      logger.success('README appears to be in sync with recent changes');
+    }
+  }
+
   logger.divider();
 
   const result: CheckResult = {
@@ -197,7 +265,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     untrackedEntries: untrackedSymbols.length,
     drifts,
     missing: missingDetails,
-    success: drifts.length === 0 && missingDetails.length === 0,
+    success: drifts.length === 0 && missingDetails.length === 0 && !smartDriftDetected,
   };
 
   return result;

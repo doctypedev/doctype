@@ -8,6 +8,11 @@ export default defineConfig({
     include: ['__tests__/**/*.{test,spec}.ts'],
     exclude: ['node_modules', 'dist'],
     pool: 'forks', // Use forks instead of threads to support process.chdir()
+    server: {
+      deps: {
+        inline: [/@ai-sdk.*/, /ai/, /@opentelemetry.*/],
+      },
+    },
   },
   resolve: {
     alias: {
