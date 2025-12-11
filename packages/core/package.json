@@ -27,11 +27,6 @@
   "dependencies": {
     "ts-morph": "^21.0.1"
   },
-  "optionalDependencies": {
-    "@sintesi/core-darwin-arm64": "0.7.0",
-    "@sintesi/core-linux-x64-gnu": "0.7.0",
-    "@sintesi/core-win32-x64-msvc": "0.7.0"
-  },
   "devDependencies": {
     "@types/node": "^20.10.6",
     "typescript": "^5.3.3"
