@@ -27,38 +27,7 @@ import { SintesiConfig } from '../types';
 import { retry } from '../utils/retry';
 import { spinner } from '@clack/prompts';
 import { FileMutex } from '../utils/mutex';
-
-/**
- * Helper function to limit concurrency
- */
-async function pMap<T, R>(
-  items: T[],
-  mapper: (item: T) => Promise<R>,
-  concurrency: number,
-  onProgress?: (completed: number, total: number) => void
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let index = 0;
-  let completed = 0;
-  const total = items.length;
-
-  const execThread = async (): Promise<void> => {
-    while (index < items.length) {
-      const curIndex = index++;
-      results[curIndex] = await mapper(items[curIndex]);
-      completed++;
-      if (onProgress) {
-        onProgress(completed, total);
-      }
-    }
-  };
-  const threads = [];
-  for (let i = 0; i < concurrency; i++) {
-    threads.push(execThread());
-  }
-  await Promise.all(threads);
-  return results;
-}
+import { pMap } from '../utils/concurrency';
 
 /**
  * Execute a list of fixes (or generations)

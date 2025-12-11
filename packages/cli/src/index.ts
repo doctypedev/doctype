@@ -24,6 +24,7 @@ import { generateCommand } from './commands/generate';
 import { initCommand } from './commands/init';
 import { changesetCommand } from './commands/changeset';
 import { readmeCommand, ReadmeOptions } from './commands/readme';
+import { documentationCommand, DocumentationOptions } from './commands/documentation';
 import { CheckOptions, FixOptions, GenerateOptions, InitOptions, ChangesetOptions } from './types';
 
 // Parse command line arguments
@@ -89,6 +90,33 @@ yargs(hideBin(process.argv))
       };
 
       await readmeCommand(options);
+    }
+  )
+
+  // Documentation command
+  .command(
+    'documentation',
+    'Generate comprehensive documentation site structure',
+    (yargs) => {
+      return yargs
+        .option('output-dir', {
+          alias: 'o',
+          type: 'string',
+          description: 'Output directory (default: docs)',
+        })
+        .option('verbose', {
+          type: 'boolean',
+          description: 'Enable verbose logging',
+          default: false,
+        });
+    },
+    async (argv) => {
+      const options: DocumentationOptions = {
+        outputDir: argv['output-dir'] as string,
+        verbose: argv.verbose as boolean,
+      };
+
+      await documentationCommand(options);
     }
   )
 
