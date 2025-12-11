@@ -85,6 +85,11 @@ sintesi fix
 sintesi readme
 ```
 
+**Smart Check for README Updates:**
+```bash
+sintesi check --smart
+```
+
 ---
 
 ### Initialization Details
