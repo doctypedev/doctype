@@ -151,6 +151,16 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+    optionalDependencies:
+      '@sintesi/core-darwin-arm64':
+        specifier: 0.7.0
+        version: 0.7.0
+      '@sintesi/core-linux-x64-gnu':
+        specifier: 0.7.0
+        version: 0.7.0
+      '@sintesi/core-win32-x64-msvc':
+        specifier: 0.7.0
+        version: 0.7.0
 
 packages:
 
@@ -947,6 +957,21 @@ packages:
   '@sindresorhus/merge-streams@2.3.0':
     resolution: {integrity: sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==}
     engines: {node: '>=18'}
+
+  '@sintesi/core-darwin-arm64@0.7.0':
+    resolution: {integrity: sha512-FUynTo98l8Jf3F8C5NE9jGgoERviE0mnuZ+6Qw1gttLpBw5lrwSqycb/KPqM0BxRTs6Zm/lT2aetlAR3duiSPQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@sintesi/core-linux-x64-gnu@0.7.0':
+    resolution: {integrity: sha512-P5ajKYm0LDTA6d7B77Sqy3rnVa4xTVRoh3DuXHXMiafxTXQQ1wGnVg3r7eBHQVzjWJvBb2+uBl0tIZbKkceSqA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@sintesi/core-win32-x64-msvc@0.7.0':
+    resolution: {integrity: sha512-DZ7OP08IaPb9tq3ku6zS5JnpVJSGhQwTZWe7ODyv5KGjpYjBbY4ziypWqsh4oZNCtN3rf1eIVnDzqWf8DRl/qw==}
+    cpu: [x64]
+    os: [win32]
 
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
@@ -3493,6 +3518,15 @@ snapshots:
   '@sinclair/typebox@0.27.8': {}
 
   '@sindresorhus/merge-streams@2.3.0': {}
+
+  '@sintesi/core-darwin-arm64@0.7.0':
+    optional: true
+
+  '@sintesi/core-linux-x64-gnu@0.7.0':
+    optional: true
+
+  '@sintesi/core-win32-x64-msvc@0.7.0':
+    optional: true
 
   '@standard-schema/spec@1.0.0': {}
 
