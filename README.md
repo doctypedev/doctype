@@ -62,9 +62,9 @@ Sintesi doesn't just read files; it understands your project architecture. It an
 ### 🎨 Site Mode
 Turn your repository into a full-fledged documentation website.
 `sintesi documentation --site` organizes your content into guides, references, and API docs, complete with:
-- **Automatic Sidebar** navigation
-- **Mermaid Diagrams** for flows
-- **Rich Frontmatter** for SEO and metadata
+- **Manual Sidebar Configuration** guidance for VitePress.
+- **Mermaid Diagrams** for flows.
+- **Rich Frontmatter** for SEO and metadata.
 
 ### 🛡️ Drift Protection
 Never merge undocumented code again.
