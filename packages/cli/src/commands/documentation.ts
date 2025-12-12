@@ -17,7 +17,6 @@ import { ReviewService } from '../services/review-service';
 export interface DocumentationOptions {
   outputDir?: string;
   verbose?: boolean;
-  site?: boolean;
 }
 
 interface DocPlan {
@@ -208,7 +207,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
       const impactAnalyzer = new ImpactAnalyzer(logger);
       // For docs, we treat 'site' mode as potentially force-like or needing structural updates, 
       // but for now let's apply the same logic. If semantic check fails, we skip.
-      const impactResult = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, options.site);
+      const impactResult = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, true);
 
       if (!impactResult.shouldProceed) return;
 
@@ -354,15 +353,14 @@ Then, propose a list of documentation files tailored SPECIFICALLY to that type.
 
 ${strategyInstructions}
 
-${options.site ? `
-## SITE MODE ENABLED (VitePress)
+## STRUCTURED DOCUMENTATION MODE
 - **Structure**: Group files into folders for a better sidebar (e.g., 'guide/installation.md', 'reference/commands.md').
 - **Index**: Ensure there is a 'index.md' or 'intro.md' as entry point.
 
 ## Existing Flat Documentation for Reorganization
 ${existingDocsList.map(p => `- ${p}`).join('\n')}
 
-**Instruction for SITE MODE:**
+**Instruction for MIGRATION:**
 When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installation.md') is conceptually similar or a direct migration of an existing flat file (e.g., 'installation.md'), include the 'originalPath' field in the JSON object like this:
 \`\`\`json
 {
@@ -373,7 +371,6 @@ When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installat
 }
 \`\`\`
 This indicates that the content for 'guide/installation.md' should be sourced from 'installation.md' (if it exists) and then updated.
-` : ''}
 
 ## Rules
 - **User-Centric**: Document *how to use it*.
@@ -417,7 +414,7 @@ Return ONLY a valid JSON array.
     // Check if the target file already exists OR if there's an originalPath to migrate from
     if (existsSync(fullPath)) {
       currentContent = readFileSync(fullPath, 'utf-8');
-    } else if (options.site && item.originalPath) {
+    } else if (item.originalPath) {
       const originalFullPath = join(outputDir, item.originalPath);
       if (existsSync(originalFullPath)) {
         currentContent = readFileSync(originalFullPath, 'utf-8');
@@ -464,12 +461,10 @@ IMPORTANT:
 - Return ONLY the Markdown content.
 - **NO HALLUCINATIONS**: Only document commands/flags/props you see in the "Source Code Context" or Git Diff.
 - **NO DEAD LINKS**: Do NOT link to files like 'CODE_OF_CONDUCT.md' or 'CONTRIBUTING.md' unless you are absolutely sure they exist in the file list. Use absolute paths (starting with '/') for internal documentation links (e.g., '/guide/installation.md').
-${options.site ? `
-- **VITEPRESS MODE**:
+- **SITE STRUCTURE MODE**:
   1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number, use a sensible default if not clear from context, e.g., 100 for general order, 10 for key items).
   2. **Mermaid**: If explaining a flow/process, use a \`\`\`mermaid\`\`\` block.
   3. **Components**: Use <Callout type="info"> text </Callout> for notes if appropriate.
-` : ''}
 `;
 
     try {
@@ -496,11 +491,7 @@ ${options.site ? `
     }
   }, 3);
 
-  // 5. PHASE 3: Post-processing (Site Generation)
-  if (options.site) {
-    logger.info('\n🏗️  Site Structure Guidance:');
-    logger.info('Since you are using --site, ensure your VitePress config is set up to read from the generated docs/ folder.');
-  }
+
 
   logger.success(`\nDocumentation successfully generated in ${outputDir}/
 `);
