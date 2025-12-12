@@ -282,6 +282,33 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     ? existingDocsList.join('\n')
     : 'No existing documentation found.';
 
+  /*
+   * STRATEGY SELECTION
+   * If we found existing docs, we switch to "Improvement Mode" rather than "Greenfield Mode".
+   */
+  const hasExistingDocs = existingDocsList.length > 0;
+
+  // Base instructions for the planner
+  let strategyInstructions = '';
+
+  if (hasExistingDocs) {
+    strategyInstructions = `
+### Strategy: IMPROVEMENT MODE (Existing Docs Detected)
+- **RESPECT EXISTING STRUCTURE**: The user has an existing documentation structure. Do NOT propose completely new filenames unless the current ones are insufficient.
+- **AVOID DUPLICATION**: If a file like 'setup.md' exists, do NOT propose 'installation.md'. Use the existing one.
+- **NO FORCED FILES**: Do NOT force standard files (like 'installation.md' or 'CLI.md') if they appear to be missing. The user may have deleted them intentionally. Only propose them if there is a CRITICAL gap.
+- **FOCUS**: Your primary goal is to identifying *missing* concepts or *outdated* files, not re-architecting the folder structure.
+`;
+  } else {
+    strategyInstructions = `
+### Strategy: GREENFIELD MODE (New Documentation)
+- **CLI Tool**: Suggest "commands.md", "installation.md".
+- **Web Application**: Suggest "getting-started.md", "architecture.md".
+- **Backend / API**: Suggest "endpoints.md", "authentication.md".
+- **Library / SDK**: Suggest "usage.md", "api-reference.md".
+`;
+  }
+
   const planPrompt = `
 You are an expert Product Manager and Technical Writer.
 Your goal is to design a documentation structure for the End User / Developer who uses this software.
@@ -301,11 +328,7 @@ ${existingDocsSummary}
 Analyze the project "DNA" to determine its TYPE.
 Then, propose a list of 3-6 documentation files tailored SPECIFICALLY to that type.
 
-### Strategy by Project Type (STRICTLY FOLLOW THIS):
-1. **CLI Tool**: MUST have "commands.md", "installation.md". AVOID "components.md".
-2. **Web Application**: MUST have "getting-started.md", "architecture.md". If Router found: "routing.md".
-3. **Backend / API**: MUST have "endpoints.md", "authentication.md".
-4. **Library / SDK**: MUST have "usage.md", "api-reference.md".
+${strategyInstructions}
 
 ${options.site ? `
 ## SITE MODE ENABLED (VitePress)
