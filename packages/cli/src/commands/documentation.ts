@@ -12,7 +12,7 @@ import { spinner } from '@clack/prompts';
 import { pMap } from '../utils/concurrency';
 import { GenerationContextService } from '../services/generation-context';
 import { ReviewService } from '../services/review-service';
-import { execSync } from 'child_process';
+
 
 export interface DocumentationOptions {
   outputDir?: string;
@@ -451,22 +451,8 @@ ${options.site ? `
 
   // 5. PHASE 3: Post-processing (Site Generation)
   if (options.site) {
-    logger.info('\n🏗️  Building Site Structure...');
-    try {
-      const scriptPath = resolve(cwd, 'docs/scripts/generateSidebar.ts');
-      if (existsSync(scriptPath)) {
-        // Try to run it via tsx or ts-node if available, otherwise suggest it
-        // Since we are in the CLI context, we can import the logic if we structured it as a library,
-        // but here we will try to execute it as a separate process or just log.
-        // Actually, we can just run it using npx tsx
-        logger.info('Running generateSidebar script...');
-        execSync(`npx tsx ${scriptPath}`, { stdio: 'inherit', cwd });
-      } else {
-        logger.warn('⚠️  Could not find docs/scripts/generateSidebar.ts to auto-generate sidebar.');
-      }
-    } catch (e) {
-      logger.error('Failed to generate sidebar: ' + e);
-    }
+    logger.info('\n🏗️  Site Structure Guidance:');
+    logger.info('Since you are using --site, ensure your VitePress config is set up to read from the generated docs/ folder.');
   }
 
   logger.success(`\nDocumentation successfully generated in ${outputDir}/
