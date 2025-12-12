@@ -1,5 +1,16 @@
 # @sintesi/sintesi
 
+## 0.12.0
+
+### Minor Changes
+
+- 144e564: - BREAKING: Removed init, fix, generate, and menu commands
+  - Refactored check command to use smart drift detection only
+
+### Patch Changes
+
+- @sintesi/core@0.12.0
+
 ## 0.11.0
 
 ### Minor Changes
