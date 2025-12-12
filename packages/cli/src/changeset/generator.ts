@@ -8,6 +8,7 @@ import { VersionTypeDetector } from './version-detector';
 import { ChangesetPrompt } from '../prompts/changeset-prompt';
 import fs from 'fs/promises';
 import path from 'path';
+import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Import new factory
 
 /**
  * Changeset version type
@@ -169,37 +170,33 @@ export class ChangesetGenerator {
   /**
    * Analyze changes with AI to determine version type and description
    */
-  private async analyzeWithAI(
-    analysis: ChangesetAnalysis,
-    verbose: boolean
-  ): Promise<ChangesetAIResponse> {
-    const { createAgentFromEnv } = await import('../../../ai/ai-agent');
-    const agent = createAgentFromEnv({ debug: verbose });
-
-    // Build prompt for AI
-    const prompt = ChangesetPrompt.buildAnalysisPrompt(analysis);
-
-    if (verbose) {
-      this.logger.debug('Sending analysis to AI...');
+      private async analyzeWithAI(
+      analysis: ChangesetAnalysis,
+      verbose: boolean
+    ): Promise<ChangesetAIResponse> {
+      const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: verbose });
+      const plannerAgent = aiAgents.planner;
+  
+      // Build prompt for AI
+      const prompt = ChangesetPrompt.buildAnalysisPrompt(analysis);
+  
+      if (verbose) {
+        this.logger.debug('Sending analysis to AI...');
+      }
+  
+      try {
+        // Use the planner agent's direct text generation capability
+        const response = await plannerAgent.generateText(prompt, {
+          temperature: 0.3, // Lower temperature for more deterministic results
+        });
+  
+        // Parse AI response
+        return this.parseAIResponse(response);
+      } catch (error) {
+        this.logger.error('Failed to get AI response:', error);
+        throw error;
+      }
     }
-
-    try {
-      // Use the AI agent to analyze changes
-      // We'll use the provider's direct text generation capability
-      const provider = (agent as any).provider;
-
-      const response = await provider.generateText(prompt, {
-        temperature: 0.3, // Lower temperature for more deterministic results
-      });
-
-      // Parse AI response
-      return this.parseAIResponse(response);
-    } catch (error) {
-      this.logger.error('Failed to get AI response:', error);
-      throw error;
-    }
-  }
-
   // buildAnalysisPrompt logic moved to ./prompts/changeset-prompt.ts
 
   /**

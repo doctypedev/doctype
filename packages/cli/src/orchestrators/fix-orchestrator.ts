@@ -17,7 +17,7 @@ import { extractAnchors, SintesiAnchor } from '@sintesi/core';
 import { Logger } from '../utils/logger';
 import { FixResult, FixOptions, FixDetail } from '../types';
 import { DriftInfo } from '../services/drift-detector';
-import { createAgentFromEnv, AIAgent, DocumentationRequest } from '../../../ai';
+import { createAIAgentsFromEnv, AIAgent, DocumentationRequest, AIAgents } from '../../../ai'; // Updated import
 import { PromptBuilder } from '../prompts/document-prompt';
 import { GitHelper } from '../utils/git-helper';
 import { existsSync, readFileSync } from 'fs';
@@ -47,27 +47,29 @@ export async function executeFixes(
   logger: Logger,
   actionLabel: string = 'Updated'
 ): Promise<FixResult> {
-  // Initialize AI Agent if API key is available
-  let aiAgent: AIAgent | null = null;
+  // Initialize AI Agents if API key is available
+  let aiAgents: AIAgents | null = null;
+  let writerAgent: AIAgent | null = null;
   let useAI = false;
 
   if (!options.noAI) {
     try {
-      aiAgent = createAgentFromEnv({ debug: options.verbose });
-      const isConnected = await aiAgent.validateConnection();
+      aiAgents = createAIAgentsFromEnv({ debug: options.verbose });
+      writerAgent = aiAgents.writer; // Use the writer agent for generation
+      const isConnected = await writerAgent.validateConnection();
 
       if (isConnected) {
         useAI = true;
-        logger.info(`Using AI provider: ${aiAgent.getProvider()}`);
+        logger.info(`Using AI provider: ${writerAgent.getProvider()} Model: ${writerAgent.getModelId()}`);
       } else {
         logger.warn('AI provider connection failed, falling back to placeholder content');
       }
-    } catch (error) {
+    } catch (error: any) { // Catch as any
       if (options.verbose) {
         const errorMsg = error instanceof Error ? error.message : String(error);
         logger.debug(`AI initialization failed: ${errorMsg}`);
       }
-      logger.info('No AI API key found, using placeholder content');
+      logger.info('No valid AI API key found or agent initialization failed: ' + error.message + ', using placeholder content');
     }
   } else {
     logger.info('AI generation disabled (--no-ai flag)');
@@ -95,7 +97,7 @@ export async function executeFixes(
       let newContent: string;
 
       // 1. Generate Content (Slow, Parallel)
-      if (useAI && aiAgent) {
+      if (useAI && writerAgent) {
         try {
           // Read context safely (read-only)
           let currentMarkdownContent = '';
@@ -123,7 +125,7 @@ export async function executeFixes(
                 ),
                 systemPrompt: PromptBuilder.buildStructuredSystemPrompt()
               };
-              const response = await aiAgent!.generateDocumentation(request);
+              const response = await writerAgent!.generateDocumentation(request);
               return response.content;
             } else {
 
@@ -139,7 +141,7 @@ export async function executeFixes(
                 ),
                 systemPrompt: PromptBuilder.buildStructuredSystemPrompt()
               };
-              const response = await aiAgent!.generateDocumentation(request);
+              const response = await writerAgent!.generateDocumentation(request);
               return response.content;
             }
           }, {

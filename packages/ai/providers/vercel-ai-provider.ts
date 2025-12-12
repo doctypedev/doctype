@@ -191,13 +191,20 @@ export class VercelAIProvider implements IAIProvider {
 
   async validateConnection(): Promise<boolean> {
     const model = this.getModel();
+    const isO1Model = this.modelConfig.modelId.startsWith('o1-');
+
     try {
       // Simple ping to validate key
       const options: any = {
         model,
         prompt: 'Hello',
-        maxTokens: 5,
       };
+
+      // o1 models do not support maxTokens in the same way (or might reject small values)
+      if (!isO1Model) {
+        options.maxTokens = 5;
+      }
+
       await generateText(options);
       return true;
     } catch (error) {
@@ -216,14 +223,23 @@ export class VercelAIProvider implements IAIProvider {
     options: { temperature?: number; maxTokens?: number } = {}
   ): Promise<string> {
     const model = this.getModel();
+    const isO1Model = this.modelConfig.modelId.startsWith('o1-');
 
     try {
       const genOptions: any = {
         model,
         prompt,
-        temperature: options.temperature ?? this.modelConfig.temperature,
-        maxTokens: options.maxTokens ?? this.modelConfig.maxTokens ?? 1000,
       };
+
+      // Only add parameters if not o1 model (which has strict parameter validation)
+      if (!isO1Model) {
+        genOptions.temperature = options.temperature ?? this.modelConfig.temperature;
+        genOptions.maxTokens = options.maxTokens ?? this.modelConfig.maxTokens ?? 1000;
+      } else {
+        // For o1, we might use maxCompletionTokens if provided, but Vercel AI SDK mapping might handle it.
+        // Safer to just omit temperature/maxTokens for now if using standard o1 reasoning.
+        // If user explicitly requests maxTokens, we could map it to maxCompletionTokens but let's keep it simple.
+      }
 
       const result = await generateText(genOptions);
       return result.text;

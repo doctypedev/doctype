@@ -5,13 +5,13 @@
  */
 
 import { Logger } from '../utils/logger';
-import { createAgentFromEnv } from '../../../ai';
 import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve, join, dirname, relative } from 'path';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { spinner } from '@clack/prompts';
 import { ChangeAnalysisService } from '../services/analysis-service';
 import { pMap } from '../utils/concurrency';
+import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
 
 export interface DocumentationOptions {
   outputDir?: string;
@@ -22,7 +22,7 @@ interface DocPlan {
   path: string;
   description: string;
   type: 'guide' | 'api' | 'config' | 'intro';
-  relevantPaths?: string[]; // New field
+  relevantPaths?: string[]; // New field for Architect suggestions
 }
 
 /**
@@ -53,7 +53,7 @@ function getAllFiles(dirPath: string, arrayOfFiles: string[] = []) {
  * Implements "Usage by Testing" by also reading associated test files.
  */
 function readRelevantContext(
-  item: DocPlan, // Pass the entire item now
+  item: DocPlan, 
   contextFiles: { path: string }[]
 ): string {
   const MAX_CONTEXT_CHARS = 25000;
@@ -135,18 +135,37 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     mkdirSync(outputDir, { recursive: true });
   }
 
-  // 1. Initialize AI
-  let aiAgent;
+  // 1. Initialize AI Agents
+  let aiAgents: AIAgents;
   try {
-    aiAgent = createAgentFromEnv({ debug: options.verbose });
-    const isConnected = await aiAgent.validateConnection();
-    if (!isConnected) {
-      logger.error('AI provider connection failed. Please check your API key.');
+    // Role-based models can be configured via sintesi.config.json or ENV vars
+    // Default planner: gpt-4o (OpenAI) / gemini-1.5-flash (Gemini)
+    // Default writer: gpt-4o-mini (OpenAI) / gemini-1.5-flash-001 (Gemini)
+    const plannerConfig: AIAgentRoleConfig = {
+      modelId: process.env.SINTESI_PLANNER_MODEL_ID || '', // Empty string to use default
+      provider: process.env.SINTESI_PLANNER_PROVIDER as any,
+    };
+    const writerConfig: AIAgentRoleConfig = {
+      modelId: process.env.SINTESI_WRITER_MODEL_ID || '', // Empty string to use default
+      provider: process.env.SINTESI_WRITER_PROVIDER as any,
+    };
+
+    aiAgents = createAIAgentsFromEnv(
+      { debug: options.verbose },
+      { planner: plannerConfig, writer: writerConfig }
+    );
+    
+    const plannerConnected = await aiAgents.planner.validateConnection();
+    const writerConnected = await aiAgents.writer.validateConnection();
+
+    if (!plannerConnected || !writerConnected) {
+      logger.error('AI provider connection failed for one or both agents. Please check your API key.');
       return;
     }
-    logger.info('Using AI provider: ' + aiAgent.getProvider());
-  } catch (error) {
-    logger.error('No valid AI API key found. Set OPENAI_API_KEY, GEMINI_API_KEY, etc.');
+    logger.info(`Using AI Planner: ${aiAgents.planner.getModelId()} (${aiAgents.planner.getProvider()})`);
+    logger.info(`Using AI Writer: ${aiAgents.writer.getModelId()} (${aiAgents.writer.getProvider()})`);
+  } catch (error: any) {
+    logger.error('No valid AI API key found or agent initialization failed: ' + error.message);
     return;
   }
 
@@ -197,7 +216,10 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   );
   
   const fileSummary = interestingFiles
-    .map(function (f) { return '- ' + f.path; }) 
+    .map(function (f) { 
+        const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
+        return '- ' + f.path + importInfo; 
+    }) 
     .join('\n');
 
   let specificContext = '';
@@ -262,18 +284,18 @@ Then, propose a list of 3-6 documentation files tailored SPECIFICALLY to that ty
 ## Output
 Return ONLY a valid JSON array.
 [
-  { 
+  {
     "path": "commands.md", 
     "description": "Reference of all CLI commands.", 
     "type": "guide",
-    "relevantPaths": ["packages/cli/src/commands/init.ts", "packages/cli/src/commands/check.ts"] 
+    "relevantPaths": ["packages/cli/src/commands/init.ts", "packages/cli/src/commands/check.ts"]
   }
 ]
 `;
 
   let plan: DocPlan[] = [];
   try {
-    let response = await aiAgent.generateText(planPrompt, {
+    let response = await aiAgents.planner.generateText(planPrompt, {
       maxTokens: 2000,
       temperature: 0.2
     });
@@ -337,7 +359,7 @@ User Instruction: Update this content to reflect recent changes/source code, fix
 `;
 
     try {
-      let content = await aiAgent.generateText(genPrompt, {
+      let content = await aiAgents.writer.generateText(genPrompt, {
         maxTokens: 4000,
         temperature: 0.4
       });
@@ -354,5 +376,6 @@ User Instruction: Update this content to reflect recent changes/source code, fix
     }
   }, 3);
 
-  logger.success(`\nDocumentation successfully generated in ${outputDir}/`);
+  logger.success(`\nDocumentation successfully generated in ${outputDir}/
+`);
 }

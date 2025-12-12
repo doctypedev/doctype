@@ -5,7 +5,7 @@
  */
 
 import { Logger } from '../utils/logger';
-import { createAgentFromEnv } from '../../../ai';
+import { createAIAgentsFromEnv, AIAgents } from '../../../ai';
 import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve } from 'path';
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
@@ -46,7 +46,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     if (gitDiff) {
       logger.info('Detected recent code changes, including in context.');
     }
-  } catch (e) {
+  } catch (e: any) { // Catch as any for now to avoid specific type issues
     logger.debug('Could not fetch git diff, skipping: ' + e);
   }
 
@@ -55,23 +55,23 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
       existingContent = readFileSync(outputPath, 'utf-8');
       isUpdate = true;
       logger.info('Found existing ' + (options.output || 'README.md') + ', checking for updates...');
-    } catch (e) {
+    } catch (e: any) { // Catch as any
       logger.warn('Could not read existing ' + (options.output || 'README.md') + ': ' + e);
     }
   }
 
-  // 1. Initialize AI
-  let aiAgent;
+  // 1. Initialize AI Agents
+  let aiAgents: AIAgents;
   try {
-    aiAgent = createAgentFromEnv({ debug: options.verbose });
-    const isConnected = await aiAgent.validateConnection();
+    aiAgents = createAIAgentsFromEnv({ debug: options.verbose });
+    const isConnected = await aiAgents.writer.validateConnection(); // Use writer agent for simple README generation
     if (!isConnected) {
       logger.error('AI provider connection failed. Please checks your API key.');
       return;
     }
-    logger.info('Using AI provider: ' + aiAgent.getProvider());
-  } catch (error) {
-    logger.error('No valid AI API key found. Set OPENAI_API_KEY, GEMINI_API_KEY, etc.');
+    logger.info('Using AI provider: ' + aiAgents.writer.getProvider() + ' Model: ' + aiAgents.writer.getModelId());
+  } catch (error: any) { // Catch as any
+    logger.error('No valid AI API key found or agent initialization failed: ' + error.message);
     return;
   }
 
@@ -102,7 +102,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
       // Clean up
       unlinkSync(smartContextPath);
     }
-  } catch (e) {
+  } catch (e: any) { // Catch as any
     logger.debug('Failed to load smart context: ' + e);
   }
 
@@ -111,7 +111,10 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
   // Format context for AI
   const fileSummary = context.files
-    .map(function (f) { return '- ' + f.path + ' (imports: ' + f.imports.length + ', imported by: ' + f.importedBy.length + ')'; })
+    .map(function (f) {
+        const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
+        return '- ' + f.path + importInfo;
+    })
     .join('\n');
 
   const packageJsonSummary = context.packageJson
@@ -174,7 +177,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   prompt += "- Return ONLY the Markdown content.\n";
 
   try {
-    let readmeContent = await aiAgent.generateText(prompt, {
+    let readmeContent = await aiAgents.writer.generateText(prompt, {
       maxTokens: 4000,
       temperature: 0.5
     });
@@ -198,7 +201,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
       logger.success('README generated at ' + Logger.path(outputPath));
     }
 
-  } catch (error) {
+  } catch (error: any) { // Catch as any
     s.stop('Generation failed');
     const msg = error instanceof Error ? error.message : String(error);
     logger.error('AI generation failed: ' + msg);

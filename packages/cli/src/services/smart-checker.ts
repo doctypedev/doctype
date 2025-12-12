@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { Logger } from '../utils/logger';
-import { createAgentFromEnv } from '../../../ai';
+import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Updated import
 import { ChangeAnalysisService } from './analysis-service';
 
 export interface SmartCheckResult {
@@ -149,9 +149,10 @@ export class SmartChecker {
         // 3. Consult AI
         try {
             this.logger.info('🤖 Asking AI if README needs updates based on recent changes...');
-            const agent = createAgentFromEnv();
+            const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: this.logger.getVerbose() });
+            const plannerAgent = aiAgents.planner;
 
-            if (!await agent.validateConnection()) {
+            if (!await plannerAgent.validateConnection()) {
                 this.logger.warn('AI connection failed. Skipping smart check.');
                 return { hasDrift: false };
             }
@@ -189,7 +190,7 @@ Return a JSON object with this structure:
 Only return the JSON.
 `;
 
-            const response = await agent.generateText(prompt, {
+            const response = await plannerAgent.generateText(prompt, {
                 temperature: 0
             });
 

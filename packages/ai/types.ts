@@ -33,6 +33,20 @@ export interface AIModel {
 }
 
 /**
+ * Configuration for a specific AI Agent role (e.g., planner, writer)
+ */
+export interface AIAgentRoleConfig {
+  /** Model ID (e.g., 'gpt-4o', 'gemini-1.5-flash', 'o3-mini') */
+  modelId: string;
+  /** Provider name (e.g., 'openai', 'gemini') */
+  provider?: AIProvider; // Optional, can be inferred from env if not set
+  /** Override default maxTokens for this role */
+  maxTokens?: number;
+  /** Override default temperature for this role */
+  temperature?: number;
+}
+
+/**
  * Request to generate documentation
  */
 export interface DocumentationRequest {

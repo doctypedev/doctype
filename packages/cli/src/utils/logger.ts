@@ -136,6 +136,13 @@ export class Logger {
   }
 
   /**
+   * Get verbose status
+   */
+  public getVerbose(): boolean {
+    return this.verbose;
+  }
+
+  /**
    * Print a banner with text
    */
   public banner(text: string): void {

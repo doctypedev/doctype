@@ -9,10 +9,21 @@ import {
   GenerateOptions,
   IAIProvider,
   AIProviderError,
+  AIAgentRoleConfig,
+  AIProvider // Import AIProvider type here
 } from './types';
 import { VercelAIProvider } from './providers/vercel-ai-provider';
 
 import { getDefaultModel } from './constants';
+
+/**
+ * Collection of AI Agent instances for different roles.
+ */
+export interface AIAgents {
+  planner: AIAgent;
+  writer: AIAgent;
+  // Add other roles here if needed, e.g., reviewer: AIAgent;
+}
 
 /**
  * AI Agent for generating documentation from code changes
@@ -82,48 +93,21 @@ export class AIAgent {
             `Retrying ${batchResult.stats.failed} failed items sequentially...`
           );
 
-          // Retry failed items sequentially
-          for (const failure of batchResult.failures) {
-            try {
-              this.log(`Retrying ${failure.symbolName} (failed validation: ${failure.errors.join(', ')})`);
-
-              // Find the original item to get the signature
-              const originalItem = items.find(item => item.symbolName === failure.symbolName);
-              if (!originalItem) {
-                this.log(`Could not find original item for ${failure.symbolName}, skipping`);
-                continue;
-              }
-
-              // We need to construct a single request here. 
-              // Since we have the prompt/systemPrompt for batch, we might need to adapt them for single request?
-              // Actually, the prompt for batch is different from single. 
-              // If batch fails, we probably can't easily fallback to single with the SAME prompt string.
-              // However, assuming the caller can handle this or this fallback logic needs to changed.
-              // For now, let's remove the fallback logic if strict agnostic is required, OR assume the caller provides a way to get single prompt?
-              // To keep it simple and agnostic: remove the complex fallback logic that depends on knowing how to build a single prompt.
-
-              this.log(`Batch retry not supported in agnostic mode for ${failure.symbolName}`);
-
-            } catch (error) {
-              this.log(`Retry failed for ${failure.symbolName}`, error);
-            }
-          }
+          // For the sake of refactor, removing complex batch retry fallback that depends on single prompt logic
+          // as it's not directly relevant to the current Model Routing task and would require more complex changes
+          // to pass single prompts or dynamically generate them here.
+          this.log(`Batch retry fallback currently not supported for ${batchResult.stats.failed} failed items.`);
         } else {
           this.log(`Batch completed successfully: ${batchResult.stats.succeeded}/${batchResult.stats.total}`);
         }
 
         return results;
-      } catch (error) {
+      } catch (error: unknown) { // Use unknown for caught errors
         this.log('Batch generation failed completely', error);
       }
     }
 
-    // Fallback: sequential generation is also hard because we don't have single prompts.
-    // So if provider doesn't support batch, or it fails, we can't easily fallback without the caller providing single prompts.
-    // For this refactor, I will just throw or return empty if batch is not supported/fails, 
-    // effectively removing the "smart" fallback that required domain knowledge (PromptBuilder).
-
-    this.log('Batch generation not supported by provider or failed');
+    this.log('Batch generation not supported by provider or failed, returning empty.');
     return [];
   }
 
@@ -134,7 +118,7 @@ export class AIAgent {
     prompt: string,
     options: { temperature?: number; maxTokens?: number } = {}
   ): Promise<string> {
-    this.log('Generating text', { promptLength: prompt.length });
+    this.log('Generating text', { promptLength: prompt.length, model: this.config.model.modelId });
 
     if (this.provider.generateText) {
       return this.executeWithRetry(() =>
@@ -142,18 +126,18 @@ export class AIAgent {
       );
     }
     
-    throw new Error(`Provider ${this.provider.provider} does not support text generation`);
+    throw new Error(`Provider ${this.config.model.provider} with model ${this.config.model.modelId} does not support text generation`);
   }
 
   /**
    * Validate the AI provider connection
    */
   async validateConnection(): Promise<boolean> {
-    this.log('Validating provider connection');
+    this.log('Validating provider connection for model: ' + this.config.model.modelId);
 
     try {
       return await this.provider.validateConnection();
-    } catch (error) {
+    } catch (error: unknown) { // Use unknown for caught errors
       this.log('Connection validation failed:', error);
       return false;
     }
@@ -168,12 +152,12 @@ export class AIAgent {
   ): Promise<T> {
     try {
       return await fn();
-    } catch (error) {
+    } catch (error: unknown) { // Use unknown for caught errors
       const isRetryable = this.isRetryableError(error);
       const hasAttemptsLeft = attempt < this.retryConfig.maxAttempts;
 
       if (isRetryable && hasAttemptsLeft) {
-        this.log(`Attempt ${attempt} failed, retrying in ${this.retryConfig.delayMs}ms...`);
+        this.log(`Attempt ${attempt} for model ${this.config.model.modelId} failed, retrying in ${this.retryConfig.delayMs}ms...`);
 
         await this.delay(this.retryConfig.delayMs);
         return this.executeWithRetry(fn, attempt + 1);
@@ -188,7 +172,7 @@ export class AIAgent {
    * Check if an error is retryable
    */
   private isRetryableError(error: unknown): boolean {
-    if ((error as AIProviderError).code) {
+    if (error instanceof AIProviderError && error.code) { // Check if it's an instance of AIProviderError
       const providerError = error as AIProviderError;
 
       // Retry on timeout, rate limit, and network errors
@@ -210,21 +194,28 @@ export class AIAgent {
    */
   private log(message: string, ...args: unknown[]): void {
     if (this.config.debug) {
-      console.log('[AIAgent]', message, ...args);
+      console.log(`[AIAgent ${this.config.model.modelId}]`, message, ...args);
     }
   }
 
   /**
    * Get the current provider name
    */
-  getProvider(): string {
-    return this.provider.provider;
+  getProvider(): AIProvider { // Use AIProvider type
+    return this.config.model.provider;
+  }
+
+  /**
+   * Get the current model ID
+   */
+  getModelId(): string {
+    return this.config.model.modelId;
   }
 
   /**
    * Get a summary of configuration
    */
-  getConfig(): { provider: string; model: string; timeout: number } {
+  getConfig(): { provider: AIProvider; model: string; timeout: number } { // Use AIProvider type
     return {
       provider: this.config.model.provider,
       model: this.config.model.modelId,
@@ -234,101 +225,141 @@ export class AIAgent {
 }
 
 /**
- * Factory function to create an AI Agent with OpenAI
+ * Internal helper to create a single AI Agent based on role configuration and ENV vars.
+ * @param roleOptions Specific options for this role, potentially overriding ENV.
+ * @param globalOptions Global options like debug flag.
  */
-export function createOpenAIAgent(
-  apiKey: string,
-  modelId: string = 'gpt-4',
-  options: {
-    maxTokens?: number;
-    temperature?: number;
-    timeout?: number;
-    debug?: boolean;
-  } = {}
+function _createSingleAgentFromEnv(
+  roleOptions: AIAgentRoleConfig,
+  globalOptions: { debug?: boolean; timeout?: number }
 ): AIAgent {
-  return new AIAgent({
-    model: {
-      provider: 'openai',
-      modelId,
-      apiKey,
-      maxTokens: options.maxTokens,
-      temperature: options.temperature,
-    },
-    timeout: options.timeout,
-    debug: options.debug,
-  });
+  const providers: Array<{ env: string; provider: AIProvider; defaultModel: string }> = [
+    { env: 'OPENAI_API_KEY', provider: 'openai', defaultModel: 'gpt-4o' },
+    { env: 'GEMINI_API_KEY', provider: 'gemini', defaultModel: 'gemini-1.5-flash' },
+    { env: 'ANTHROPIC_API_KEY', provider: 'anthropic', defaultModel: 'claude-3-5-haiku-20241022' },
+    { env: 'MISTRAL_API_KEY', provider: 'mistral', defaultModel: 'mistral-large-latest' }, // Updated Mistral default
+  ];
+
+  // Try to find a provider that has its API key set in the environment
+  let selectedProvider: { env: string; provider: AIProvider; defaultModel: string } | undefined;
+
+  // First, check if a specific provider is requested for this role (e.g., roleOptions.provider = 'gemini')
+  if (roleOptions.provider) {
+    selectedProvider = providers.find(p => p.provider === roleOptions.provider && process.env[p.env]);
+  } else {
+    // If no specific provider is requested for the role, use the first available one from the list
+    selectedProvider = providers.find(p => process.env[p.env]);
+  }
+
+  if (selectedProvider) {
+    const modelId = roleOptions.modelId || getDefaultModel(selectedProvider.provider) || selectedProvider.defaultModel;
+    return new AIAgent({
+      model: {
+        provider: selectedProvider.provider,
+        modelId: modelId,
+        apiKey: process.env[selectedProvider.env]!,
+        maxTokens: roleOptions.maxTokens,
+        temperature: roleOptions.temperature,
+      },
+      timeout: globalOptions.timeout,
+      debug: globalOptions.debug,
+    });
+  }
+
+  const specificProviderMsg = roleOptions.provider ? ` for provider '${roleOptions.provider}'` : '';
+  throw new Error(`No API key found in environment for the requested role${specificProviderMsg}. Please set relevant environment variable.`);
 }
 
 /**
- * Factory function to create an AI Agent from environment variables
+ * Factory function to create role-based AI Agents from environment variables.
+ * Planner typically uses a more capable (and potentially pricier) model for reasoning.
+ * Writer typically uses a faster, cheaper model for text generation.
+ * @returns {AIAgents} An object containing configured planner and writer AIAgent instances.
  */
-export function createAgentFromEnv(
-  options: {
-    modelId?: string;
-    maxTokens?: number;
-    temperature?: number;
-    timeout?: number;
-    debug?: boolean;
-  } = {}
-): AIAgent {
-  // Check for supported API keys
-  if (process.env.OPENAI_API_KEY) {
-    return new AIAgent({
-      model: {
-        provider: 'openai',
-        modelId: options.modelId || getDefaultModel('openai'),
-        apiKey: process.env.OPENAI_API_KEY,
-        maxTokens: options.maxTokens,
-        temperature: options.temperature,
-      },
-      timeout: options.timeout,
-      debug: options.debug,
-    });
+export function createAIAgentsFromEnv(
+  globalOptions: { debug?: boolean; timeout?: number; maxTokens?: number; temperature?: number } = {},
+  roleConfigs?: { planner?: AIAgentRoleConfig; writer?: AIAgentRoleConfig }
+): AIAgents {
+  const defaultPlannerModel = 'gpt-4o'; // OpenAI default
+  const defaultWriterModel = 'gpt-4o-mini'; // OpenAI default
+
+  let plannerAgent: AIAgent;
+  let writerAgent: AIAgent;
+
+  const currentProvider = (process.env.OPENAI_API_KEY ? 'openai' : 
+                          (process.env.GEMINI_API_KEY ? 'gemini' :
+                          (process.env.ANTHROPIC_API_KEY ? 'anthropic' :
+                          (process.env.MISTRAL_API_KEY ? 'mistral' : undefined))));
+
+  if (!currentProvider) {
+    throw new Error('No API key found in environment variables to initialize any AI provider.');
   }
 
-  if (process.env.GEMINI_API_KEY) {
-    return new AIAgent({
-      model: {
-        provider: 'gemini',
-        modelId: options.modelId || getDefaultModel('gemini'),
-        apiKey: process.env.GEMINI_API_KEY,
-        maxTokens: options.maxTokens,
-        temperature: options.temperature,
-      },
-      timeout: options.timeout,
-      debug: options.debug,
-    });
+  const getModelDefaults = (provider: AIProvider) => { // Use AIProvider type
+    switch (provider) {
+      case 'openai': return { planner: 'o3-mini', writer: 'gpt-4o-mini' };
+      case 'gemini': return { planner: 'gemini-1.5-flash', writer: 'gemini-1.5-flash-001' };
+      case 'anthropic': return { planner: 'claude-3-5-haiku-20241022', writer: 'claude-3-5-haiku-20241022' }; // Haiku as both, for now
+      case 'mistral': return { planner: 'mistral-large-latest', writer: 'mistral-small-latest' };
+      default: return { planner: defaultPlannerModel, writer: defaultWriterModel };
+    }
+  };
+
+  const modelDefaults = getModelDefaults(currentProvider);
+
+  try {
+    const plannerRoleOptions: AIAgentRoleConfig = {
+      modelId: roleConfigs?.planner?.modelId || modelDefaults.planner,
+      provider: roleConfigs?.planner?.provider || currentProvider,
+      maxTokens: roleConfigs?.planner?.maxTokens,
+      temperature: roleConfigs?.planner?.temperature,
+    };
+    plannerAgent = _createSingleAgentFromEnv(plannerRoleOptions, globalOptions);
+    console.log(`[AIAgentManager] Planner initialized with ${plannerAgent.getModelId()} (${plannerAgent.getProvider()})`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn(`[AIAgentManager] Planner failed to initialize with specified model: ${errorMessage}. Attempting to use writer model as fallback planner.`);
+    // Fallback logic: if planner fails, try to use writer model as planner
+    const fallbackPlannerRoleOptions: AIAgentRoleConfig = {
+        modelId: roleConfigs?.writer?.modelId || modelDefaults.writer,
+        provider: roleConfigs?.writer?.provider || currentProvider,
+        maxTokens: roleConfigs?.writer?.maxTokens,
+        temperature: roleConfigs?.writer?.temperature,
+    };
+    try {
+        plannerAgent = _createSingleAgentFromEnv(fallbackPlannerRoleOptions, globalOptions);
+        console.warn(`[AIAgentManager] Planner successfully initialized with fallback to writer model: ${plannerAgent.getModelId()} (${plannerAgent.getProvider()})`);
+    } catch (fallbackError: unknown) {
+        const fallbackErrorMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        throw new Error(`[AIAgentManager] Planner failed to initialize even with fallback: ${fallbackErrorMessage}`);
+    }
   }
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    return new AIAgent({
-      model: {
-        provider: 'anthropic',
-        modelId: options.modelId || 'claude-3-5-haiku-20241022',
-        apiKey: process.env.ANTHROPIC_API_KEY,
-        maxTokens: options.maxTokens,
-        temperature: options.temperature,
-      },
-      timeout: options.timeout,
-      debug: options.debug,
-    });
+  try {
+    const writerRoleOptions: AIAgentRoleConfig = {
+      modelId: roleConfigs?.writer?.modelId || modelDefaults.writer,
+      provider: roleConfigs?.writer?.provider || currentProvider,
+      maxTokens: roleConfigs?.writer?.maxTokens,
+      temperature: roleConfigs?.writer?.temperature,
+    };
+    writerAgent = _createSingleAgentFromEnv(writerRoleOptions, globalOptions);
+    console.log(`[AIAgentManager] Writer initialized with ${writerAgent.getModelId()} (${writerAgent.getProvider()})`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn(`[AIAgentManager] Writer failed to initialize with specified model: ${errorMessage}`);
+    // Fallback logic: if writer fails, and planner successfully initialized, use planner as writer
+    if (plannerAgent) {
+        writerAgent = plannerAgent; // Use the already initialized planner as writer
+        console.warn(`[AIAgentManager] Writer successfully initialized with fallback to planner model: ${writerAgent.getModelId()} (${writerAgent.getProvider()})`);
+    } else {
+        throw new Error(`[AIAgentManager] Writer failed to initialize and no planner agent available for fallback: ${errorMessage}`);
+    }
   }
 
-  if (process.env.MISTRAL_API_KEY) {
-    return new AIAgent({
-      model: {
-        provider: 'mistral',
-        modelId: options.modelId || 'ministral-8b-latest',
-        apiKey: process.env.MISTRAL_API_KEY,
-        maxTokens: options.maxTokens,
-        temperature: options.temperature,
-      },
-      timeout: options.timeout,
-      debug: options.debug,
-    });
+  // Ensure both agents are initialized
+  if (!plannerAgent || !writerAgent) {
+    throw new Error("Failed to initialize both planner and writer AI agents.");
   }
 
-  throw new Error(
-    'No API key found. Please set OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, or MISTRAL_API_KEY environment variable.'
-  );
+  return { planner: plannerAgent, writer: writerAgent };
 }
