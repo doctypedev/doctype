@@ -1,3 +1,10 @@
+---
+title: Recipes
+description: Practical examples and use cases for the Sintesi CLI tool.
+icon: 🍳
+order: 30
+---
+
 # Recipes for Using sintesi-monorepo-root CLI Tool
 
 This document provides practical examples and use cases to demonstrate how to effectively use the CLI tool within the `sintesi-monorepo-root` project. The CLI tool is designed to streamline various development tasks, including building, testing, linting, and generating documentation.

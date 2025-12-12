@@ -1,3 +1,10 @@
+---
+title: CLI Commands
+description: Comprehensive reference for all available Sintesi CLI commands.
+icon: ⌨️
+order: 20
+---
+
 # CLI Commands Reference for sintesi-monorepo-root
 
 This document provides a comprehensive reference for all available CLI commands in the `sintesi-monorepo-root` project. The commands are designed to facilitate various tasks within the monorepo, enhancing development efficiency and project management.
@@ -10,7 +17,7 @@ The `check` command verifies that documentation is in sync with code by detectin
 
 #### Usage
 ```bash
-npm run check
+sintesi check
 ```
 
 #### Description
@@ -23,7 +30,7 @@ npm run check
 
 #### Usage Examples
 ```bash
-npm run check -- --verbose --base main
+sintesi check -- --verbose --base main
 ```
 
 ---
@@ -34,7 +41,7 @@ The `readme` command generates or updates the README file for the project.
 
 #### Usage
 ```bash
-npm run readme
+sintesi readme
 ```
 
 #### Description
@@ -49,7 +56,7 @@ npm run readme
 
 #### Usage Examples
 ```bash
-npm run readme -- --output README.md --force
+sintesi readme -- --output README.md --force
 ```
 
 ---
@@ -60,7 +67,7 @@ The `changeset` command generates changesets from code changes using AI.
 
 #### Usage
 ```bash
-npm run changeset
+sintesi changeset
 ```
 
 #### Description
@@ -75,10 +82,11 @@ npm run changeset
 - `--no-ai`: Disables AI usage for version type and description.
 - `--interactive`: Enables interactive package selection.
 - `--verbose`: Provides detailed output during the changeset generation process.
+- `--forceFetch`: Fetches from the specified base branch when true.
 
 #### Usage Examples
 ```bash
-npm run changeset -- --base main --staged-only
+sintesi changeset -- --base main --staged-only
 ```
 
 ---
@@ -89,7 +97,7 @@ The `documentation` command automates the generation of project documentation ba
 
 #### Usage
 ```bash
-npm run documentation
+sintesi documentation
 ```
 
 #### Description
@@ -102,7 +110,7 @@ npm run documentation
 
 #### Usage Examples
 ```bash
-npm run documentation -- --output-dir docs --verbose
+sintesi documentation -- --output-dir docs --verbose
 ```
 
 ---

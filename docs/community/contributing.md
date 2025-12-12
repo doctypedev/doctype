@@ -1,3 +1,10 @@
+---
+title: Contributing
+description: Guidelines for contributing to the Sintesi project.
+icon: 🤝
+order: 40
+---
+
 # Contributing to sintesi-monorepo-root
 
 Thank you for your interest in contributing to the **sintesi-monorepo-root** project! We welcome contributions from the community and appreciate your efforts in helping us improve the project. This document outlines the guidelines for contributing, including code standards and the pull request process.
@@ -78,8 +85,6 @@ If you encounter any issues or bugs, please report them by following these steps
 
 ## Additional Resources
 
-- [Project Documentation](./docs)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Contribution Guidelines](CONTRIBUTING.md)
+- [Project Documentation](/)
 
 Thank you for your contributions to **sintesi-monorepo-root**! Together, we can make this project better.

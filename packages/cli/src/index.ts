@@ -76,6 +76,11 @@ yargs(hideBin(process.argv))
           type: 'string',
           description: 'Output directory (default: docs)',
         })
+        .option('site', {
+          type: 'boolean',
+          description: 'Generate site-ready structure (VitePress friendly)',
+          default: false,
+        })
         .option('verbose', {
           type: 'boolean',
           description: 'Enable verbose logging',
@@ -86,6 +91,7 @@ yargs(hideBin(process.argv))
       const options: DocumentationOptions = {
         outputDir: argv['output-dir'] as string,
         verbose: argv.verbose as boolean,
+        site: argv.site as boolean,
       };
 
       await documentationCommand(options);

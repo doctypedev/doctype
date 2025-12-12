@@ -5,18 +5,19 @@
  */
 
 import { Logger } from '../utils/logger';
-import { getProjectContext, ProjectContext } from '@sintesi/core';
+import { ProjectContext } from '@sintesi/core';
 import { resolve, join, dirname, relative } from 'path';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { spinner } from '@clack/prompts';
-import { ChangeAnalysisService } from '../services/analysis-service';
-import { SmartChecker } from '../services/smart-checker';
 import { pMap } from '../utils/concurrency';
-import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
+import { GenerationContextService } from '../services/generation-context';
+import { ReviewService } from '../services/review-service';
+import { execSync } from 'child_process';
 
 export interface DocumentationOptions {
   outputDir?: string;
   verbose?: boolean;
+  site?: boolean;
 }
 
 interface DocPlan {
@@ -24,6 +25,7 @@ interface DocPlan {
   description: string;
   type: 'guide' | 'api' | 'config' | 'intro';
   relevantPaths?: string[]; // New field for Architect suggestions
+  originalPath?: string; // New field to indicate if this doc is a refactored version of an existing file
 }
 
 /**
@@ -53,55 +55,95 @@ function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
  * Reads the content of relevant files to provide context to the LLM.
  * Implements "Usage by Testing" by also reading associated test files.
  */
+/**
+ * Reads the content of relevant files to provide context to the LLM.
+ * Uses the Project Context dependency graph to find related files (imports)
+ * and includes associated tests.
+ */
 function readRelevantContext(
   item: DocPlan,
-  contextFiles: { path: string }[]
+  context: ProjectContext
 ): string {
-  const MAX_CONTEXT_CHARS = 25000;
+  const MAX_CONTEXT_CHARS = 30000;
   let content = '';
   let chars = 0;
 
+  // 1. Identify Target Files (Seeds)
   let targetFiles: string[] = [];
 
-  // Prioritize relevantPaths provided by the Architect
   if (item.relevantPaths && item.relevantPaths.length > 0) {
-    targetFiles = item.relevantPaths.filter(rp => existsSync(rp)); // Ensure path exists
+    targetFiles = item.relevantPaths.filter(rp => existsSync(rp));
   } else {
-    // Fallback to heuristic-based filtering if Architect didn't provide specific paths
+    // Fallback Heuristics to find seeds if planner didn't provide paths
     const lowerPath = item.path.toLowerCase();
     const lowerDesc = item.description.toLowerCase();
 
     if (lowerPath.includes('command') || lowerDesc.includes('cli')) {
-      targetFiles = contextFiles
-        .filter(f => f.path.includes('commands/') || f.path.includes('cli/') || f.path.includes('bin/'))
+      targetFiles = context.files
+        .filter(f => f.path.includes('commands/') || f.path.includes('cli/'))
         .map(f => f.path);
     } else if (lowerPath.includes('routing') || lowerDesc.includes('architecture')) {
-      targetFiles = contextFiles
+      targetFiles = context.files
         .filter(f => f.path.includes('routes') || f.path.includes('router') || f.path.includes('pages/'))
         .map(f => f.path);
-    } else if (lowerPath.includes('api') || lowerDesc.includes('endpoints')) {
-      targetFiles = contextFiles
-        .filter(f => f.path.includes('api/') || f.path.includes('controllers/'))
-        .map(f => f.path);
     } else {
-      // Fallback: Use "interesting" files like main entry points
-      targetFiles = contextFiles
-        .filter(f => f.path.endsWith('index.ts') || f.path.endsWith('main.ts') || f.path.endsWith('app.ts'))
-        .slice(0, 5)
+      // General Fallback
+      targetFiles = context.files
+        .filter(f => f.path.endsWith('index.ts') || f.path.endsWith('main.ts'))
+        .slice(0, 3)
         .map(f => f.path);
     }
   }
 
-  // Read content
-  for (const filePath of targetFiles) {
+  // 2. Expand Context using Dependency Graph (1 level deep)
+  const expandedFiles = new Set<string>(targetFiles);
+  for (const seedPath of targetFiles) {
+    const fileNode = context.files.find(f => f.path === seedPath);
+    if (fileNode && fileNode.imports) {
+      for (const importPath of fileNode.imports) {
+        // Resolve import path to absolute path
+        // Note: imports might be relative './foo' or aliases '@/'
+        try {
+          // Attempt simple relative resolution first
+          if (importPath.startsWith('.')) {
+            const absoluteImport = resolve(dirname(seedPath), importPath);
+            // Try to find this file in our project context (ignoring extension mismatches)
+            const resolvedNode = context.files.find(f => {
+              const fNoExt = f.path.replace(/\.[^.]+$/, '');
+              const impNoExt = absoluteImport.replace(/\.[^.]+$/, '');
+              return fNoExt === impNoExt;
+            });
+
+            if (resolvedNode) {
+              expandedFiles.add(resolvedNode.path);
+            }
+          }
+        } catch (e) {
+          // Ignore resolution errors
+        }
+      }
+    }
+  }
+
+  // 3. Read Content
+  const sortedFiles = Array.from(expandedFiles).sort(); // Sort for deterministic order
+
+  for (const filePath of sortedFiles) {
     if (chars >= MAX_CONTEXT_CHARS) break;
 
     try {
-      const fileContent = readFileSync(filePath, 'utf-8');
-      content += `\n\n--- FILE: ${filePath} ---\n${fileContent.substring(0, 5000)}`;
-      chars += Math.min(fileContent.length, 5000);
+      if (!existsSync(filePath)) continue;
 
-      // Usage by Testing: Look for adjacent test files
+      const fileContent = readFileSync(filePath, 'utf-8');
+      const isSeed = targetFiles.includes(filePath);
+
+      // If it's a seed file (direct relevance), read more. If it's an imported dependency, read less (signatures ideally, but text for now).
+      const limit = isSeed ? 6000 : 2000;
+
+      content += `\n\n--- FILE: ${filePath} ---\n${fileContent.substring(0, limit)}`;
+      chars += Math.min(fileContent.length, limit);
+
+      // 4. Associated Tests (Usage Examples)
       const testCandidates = [
         filePath.replace(/\.ts$/, '.test.ts'),
         filePath.replace(/\.ts$/, '.spec.ts'),
@@ -113,7 +155,7 @@ function readRelevantContext(
           const testContent = readFileSync(testPath, 'utf-8');
           content += `\n\n--- ASSOCIATED TEST (Usage Example): ${testPath} ---\n${testContent.substring(0, 3000)}`;
           chars += Math.min(testContent.length, 3000);
-          break; // Found one test file, that's enough
+          break;
         }
       }
     } catch (e) {
@@ -129,17 +171,12 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   logger.header('📚 Sintesi Documentation - Intelligent Doc Generation');
 
   const cwd = process.cwd();
+  const contextService = new GenerationContextService(logger, cwd);
+  const reviewService = new ReviewService(logger);
 
-  // 0. Smart Check (Optimization)
-  // Determine if we should skip generation based on heuristics
-  logger.info('Performing smart check (Code Changes)...');
-  const smartChecker = new SmartChecker(logger, cwd);
-  const hasChanges = await smartChecker.hasRelevantCodeChanges();
-
-  if (!hasChanges) {
-    logger.success('No relevant code changes detected (heuristic check). Documentation is likely up to date.');
-    return;
-  }
+  // 0. Smart Check
+  const hasChanges = await contextService.performSmartCheck();
+  if (!hasChanges) return;
 
   const outputDir = resolve(cwd, options.outputDir || 'docs');
 
@@ -149,37 +186,8 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   }
 
   // 1. Initialize AI Agents
-  let aiAgents: AIAgents;
-  try {
-    // Default planner: gpt-4o (OpenAI) / gemini-1.5-flash (Gemini)
-    // Default writer: gpt-4o-mini (OpenAI) / gemini-1.5-flash-001 (Gemini)
-    const plannerConfig: AIAgentRoleConfig = {
-      modelId: process.env.SINTESI_PLANNER_MODEL_ID || '', // Empty string to use default
-      provider: process.env.SINTESI_PLANNER_PROVIDER as any,
-    };
-    const writerConfig: AIAgentRoleConfig = {
-      modelId: process.env.SINTESI_WRITER_MODEL_ID || '', // Empty string to use default
-      provider: process.env.SINTESI_WRITER_PROVIDER as any,
-    };
-
-    aiAgents = createAIAgentsFromEnv(
-      { debug: options.verbose },
-      { planner: plannerConfig, writer: writerConfig }
-    );
-
-    const plannerConnected = await aiAgents.planner.validateConnection();
-    const writerConnected = await aiAgents.writer.validateConnection();
-
-    if (!plannerConnected || !writerConnected) {
-      logger.error('AI provider connection failed for one or both agents. Please check your API key.');
-      return;
-    }
-    logger.info(`Using AI Planner: ${aiAgents.planner.getModelId()} (${aiAgents.planner.getProvider()})`);
-    logger.info(`Using AI Writer: ${aiAgents.writer.getModelId()} (${aiAgents.writer.getProvider()})`);
-  } catch (error: any) {
-    logger.error('No valid AI API key found or agent initialization failed: ' + error.message);
-    return;
-  }
+  const aiAgents = await contextService.getAIAgents(options.verbose || false);
+  if (!aiAgents) return;
 
   // 2. Get Project Context & Changes
   const s = spinner();
@@ -189,23 +197,9 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   let gitDiff = '';
 
   try {
-    // Structural Context
-    context = getProjectContext(cwd);
-
-    // Recent Changes Context
-    const analysisService = new ChangeAnalysisService(logger);
-    const analysis = await analysisService.analyze({
-      fallbackToLastCommit: true,
-      includeSymbols: false,
-      stagedOnly: false
-    });
-
-    // Optimization: Increased diff limit for better context
+    const analysis = await contextService.analyzeProject();
+    context = analysis.context;
     gitDiff = analysis.gitDiff;
-    if (gitDiff.length > 15000) {
-      gitDiff = gitDiff.substring(0, 15000) + '\n... (truncated)';
-    }
-
     s.stop('Analyzed ' + context.files.length + ' files');
   } catch (error) {
     s.stop('Analysis failed');
@@ -235,17 +229,41 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     .join('\n');
 
   let specificContext = '';
-  // 1. CLI Commands Detection
-  const commandFiles = context.files.filter(f => f.path.includes('commands/') || f.path.includes('cli/'));
-  if (commandFiles.length > 0) {
-    specificContext += `\n## Detected CLI Commands:\n${commandFiles.map(f => `- ${f.path}`).join('\n')}\n`;
+
+  // Use Service to detect CLI config
+  const cliConfig = contextService.detectCliConfig(context);
+
+  if (cliConfig.relevantCommands && cliConfig.relevantCommands.length > 0) {
+    specificContext += `\n## Detected CLI Commands:\n${cliConfig.relevantCommands.map(c => `- ${c}`).join('\n')}\n`;
+
+    if (cliConfig.relevantCommands.length > 0) {
+      specificContext += `\n> **VERIFIED AVAILABLE COMMANDS**: [${cliConfig.relevantCommands.join(', ')}]\n`;
+      specificContext += `\n> **INSTRUCTION**: Strictly limit documentation to these verified commands. Ignore references to deleted commands (like 'fix') in changelogs.\n`;
+    }
+
+    if (cliConfig.binName) {
+      specificContext += `\n> NOTE: This project exports a CLI binary named "${cliConfig.binName}".\n> The detected commands above are likely executed as: ${cliConfig.binName} <command>\n`;
+    }
+    if (cliConfig.packageName) {
+      specificContext += `\n> NOTE: The official package name is "${cliConfig.packageName}".\n`;
+    }
   }
+
   // 2. Web Routes Detection
   const routeFiles = context.files.filter(f =>
     f.path.includes('routes') || f.path.includes('routing') || f.path.match(/app\/.*page\.(tsx|vue|js)/)
   );
   if (routeFiles.length > 0) {
     specificContext += `\n## Detected Routes / Pages:\n${routeFiles.slice(0, 20).map(f => `- ${f.path}`).join('\n')}\n`;
+  }
+
+  // 3. Tech Stack Detection
+  const techStack = contextService.detectTechStack(context);
+  if (techStack.frameworks.length || techStack.libraries.length) {
+    specificContext += `\n## Detected Tech Stack:\n`;
+    if (techStack.frameworks.length) specificContext += `- Frameworks: ${techStack.frameworks.join(', ')}\n`;
+    if (techStack.libraries.length) specificContext += `- Libraries: ${techStack.libraries.join(', ')}\n`;
+    if (techStack.infrastructure.length) specificContext += `- Infrastructure: ${techStack.infrastructure.join(', ')}\n`;
   }
 
   const packageJsonSummary = context.packageJson
@@ -289,6 +307,27 @@ Then, propose a list of 3-6 documentation files tailored SPECIFICALLY to that ty
 3. **Backend / API**: MUST have "endpoints.md", "authentication.md".
 4. **Library / SDK**: MUST have "usage.md", "api-reference.md".
 
+${options.site ? `
+## SITE MODE ENABLED (VitePress)
+- **Structure**: Group files into folders for a better sidebar (e.g., 'guide/installation.md', 'reference/commands.md').
+- **Index**: Ensure there is a 'index.md' or 'intro.md' as entry point.
+
+## Existing Flat Documentation for Reorganization
+${existingDocsList.map(p => `- ${p}`).join('\n')}
+
+**Instruction for SITE MODE:**
+When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installation.md') is conceptually similar or a direct migration of an existing flat file (e.g., 'installation.md'), include the 'originalPath' field in the JSON object like this:
+\`\`\`json
+{
+  "path": "guide/installation.md",
+  "description": "How to install the project",
+  "type": "guide",
+  "originalPath": "installation.md" // Path relative to outputDir
+}
+\`\`\`
+This indicates that the content for 'guide/installation.md' should be sourced from 'installation.md' (if it exists) and then updated.
+` : ''}
+
 ## Rules
 - **User-Centric**: Document *how to use it*.
 - **Smart Updates**: Reuse existing files if relevant.
@@ -300,7 +339,7 @@ Return ONLY a valid JSON array.
     "path": "commands.md", 
     "description": "Reference of all CLI commands.", 
     "type": "guide",
-    "relevantPaths": ["packages/cli/src/commands/init.ts", "packages/cli/src/commands/check.ts"]
+    "relevantPaths": ["packages/cli/src/commands/check.ts", "packages/cli/src/commands/readme.ts"]
   }
 ]
 `;
@@ -326,17 +365,23 @@ Return ONLY a valid JSON array.
 
   await pMap(plan, async (item) => {
     const fullPath = join(outputDir, item.path);
-    const isUpdate = existsSync(fullPath);
-    let existingContent = '';
+    let currentContent = '';
 
-    if (isUpdate) {
-      existingContent = readFileSync(fullPath, 'utf-8');
+    // Check if the target file already exists OR if there's an originalPath to migrate from
+    if (existsSync(fullPath)) {
+      currentContent = readFileSync(fullPath, 'utf-8');
+    } else if (options.site && item.originalPath) {
+      const originalFullPath = join(outputDir, item.originalPath);
+      if (existsSync(originalFullPath)) {
+        currentContent = readFileSync(originalFullPath, 'utf-8');
+        logger.debug(`Migrating content from ${item.originalPath} to ${item.path}`);
+      }
     }
 
     logger.info(`> Processing ${item.path}...`);
 
     // KEY IMPROVEMENT: Fetch ACTUAL CONTENT of relevant files to prevent "Blind Generation"
-    const detailedSourceContext = readRelevantContext(item, context.files);
+    const detailedSourceContext = readRelevantContext(item, context);
 
     const genPrompt = `
 You are writing technical documentation.
@@ -360,17 +405,24 @@ ${packageJsonSummary}
 Recent Changes (Git Diff):
 ${gitDiff || 'None'}
 
-${isUpdate ? `## Existing Content (UPDATE THIS)
-${existingContent}
+${currentContent ? `## Existing Content (UPDATE THIS)
+${currentContent}
 
 User Instruction: Update this content to reflect recent changes/source code.
 IMPORTANT:
 1. **PRESERVE STYLE**: Keep the same tone, language, and formatting as the existing content.
-2. **MINIMAL DIFF**: Do NOT rephrase existing sentences unless they are factually incorrect. ONLY add new info or remove obsolete info.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
+2. **MINIMAL DIFF**: Do NOT rephrase existing sentences unless they are factually incorrect. ONLY add new info or remove obsolete info. Ensure this content is integrated into the new structure.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
 
 ## Rules
 - Return ONLY the Markdown content.
 - **NO HALLUCINATIONS**: Only document commands/flags/props you see in the "Source Code Context" or Git Diff.
+- **NO DEAD LINKS**: Do NOT link to files like 'CODE_OF_CONDUCT.md' or 'CONTRIBUTING.md' unless you are absolutely sure they exist in the file list. Use absolute paths (starting with '/') for internal documentation links (e.g., '/guide/installation.md').
+${options.site ? `
+- **VITEPRESS MODE**:
+  1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number, use a sensible default if not clear from context, e.g., 100 for general order, 10 for key items).
+  2. **Mermaid**: If explaining a flow/process, use a \`\`\`mermaid\`\`\` block.
+  3. **Components**: Use <Callout type="info"> text </Callout> for notes if appropriate.
+` : ''}
 `;
 
     try {
@@ -383,6 +435,12 @@ IMPORTANT:
       if (content.startsWith('```markdown')) content = content.replace(/^```markdown\s*/, '').replace(/```$/, '');
       else if (content.startsWith('```')) content = content.replace(/^```\s*/, '').replace(/```$/, '');
 
+      // 4b. PHASE 2.5: The Reviewer (Critique & Refine)
+      if (aiAgents.reviewer) {
+        // Use shared ReviewService
+        content = await reviewService.reviewAndRefine(content, item.path, item.description, aiAgents);
+      }
+
       mkdirSync(dirname(fullPath), { recursive: true });
       writeFileSync(fullPath, content);
       logger.success(`✔ Wrote ${item.path}`);
@@ -390,6 +448,26 @@ IMPORTANT:
       logger.error(`✖ Failed ${item.path}: ${e}`);
     }
   }, 3);
+
+  // 5. PHASE 3: Post-processing (Site Generation)
+  if (options.site) {
+    logger.info('\n🏗️  Building Site Structure...');
+    try {
+      const scriptPath = resolve(cwd, 'docs/scripts/generateSidebar.ts');
+      if (existsSync(scriptPath)) {
+        // Try to run it via tsx or ts-node if available, otherwise suggest it
+        // Since we are in the CLI context, we can import the logic if we structured it as a library,
+        // but here we will try to execute it as a separate process or just log.
+        // Actually, we can just run it using npx tsx
+        logger.info('Running generateSidebar script...');
+        execSync(`npx tsx ${scriptPath}`, { stdio: 'inherit', cwd });
+      } else {
+        logger.warn('⚠️  Could not find docs/scripts/generateSidebar.ts to auto-generate sidebar.');
+      }
+    } catch (e) {
+      logger.error('Failed to generate sidebar: ' + e);
+    }
+  }
 
   logger.success(`\nDocumentation successfully generated in ${outputDir}/
 `);

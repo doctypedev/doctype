@@ -1,18 +1,9 @@
-/**
- * Doctype Custom Theme
- * Color Scheme:
- * - Main Background: Black (#000000)
- * - Primary: White (#FFFFFF)
- * - Secondary: Electric Blue/Cyan (#00BFFF - #0066FF)
- * - Secondary Text: Gray (#CCCCCC / #A9A9A9)
- */
-
 :root {
   /* Brand Colors */
-  --vp-c-brand-1: #00BFFF; /* Electric Blue/Cyan */
-  --vp-c-brand-2: #0099FF;
-  --vp-c-brand-3: #0066FF; /* Brilliant Blue */
-  --vp-c-brand-soft: rgba(0, 191, 255, 0.14);
+  --vp-c-brand-1: #ff6666; /* Softer Red - Better for text/reading */
+  --vp-c-brand-2: #ff3131; /* Main Brand Red - Vibrant for accents */
+  --vp-c-brand-3: #cc0000; /* Deep Red - for depth/active states */
+  --vp-c-brand-soft: rgba(255, 49, 49, 0.16);
 
   /* Background Colors - Force Dark Theme */
   --vp-c-bg: #000000; /* Black */
@@ -22,19 +13,19 @@
 
   /* Text Colors */
   --vp-c-text-1: #FFFFFF; /* White - Primary text */
-  --vp-c-text-2: #CCCCCC; /* Light Gray - Secondary text */
-  --vp-c-text-3: #A9A9A9; /* Dark Gray - Tertiary text */
+  --vp-c-text-2: #e0e0e0; /* Lighter Gray - Improved contrast */
+  --vp-c-text-3: #a0a0a0; /* Medium Gray */
 
   /* Border Colors */
-  --vp-c-border: #2a2a2a;
-  --vp-c-divider: #1a1a1a;
-  --vp-c-gutter: #0a0a0a;
+  --vp-c-border: #333333;
+  --vp-c-divider: #222222;
+  --vp-c-gutter: #111111;
 
   /* Component specific */
   --vp-home-hero-name-color: #FFFFFF;
-  --vp-home-hero-name-background: linear-gradient(135deg, #00BFFF 0%, #0066FF 100%);
-  --vp-button-brand-bg: #00BFFF;
-  --vp-button-brand-hover-bg: #0066FF;
+  --vp-home-hero-name-background: linear-gradient(135deg, #ff6666 0%, #ff3131 50%, #cc0000 100%);
+  --vp-button-brand-bg: #ff3131;
+  --vp-button-brand-hover-bg: #ff6666;
   --vp-button-brand-text: #000000;
 
   /* Code blocks */
@@ -66,7 +57,7 @@ body {
 /* Custom styling for the home page title */
 .VPHero .name {
   color: #FFFFFF !important;
-  background: linear-gradient(135deg, #00BFFF 0%, #0066FF 100%);
+  background: var(--vp-home-hero-name-background);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -77,13 +68,20 @@ body {
   color: #CCCCCC !important;
 }
 
+/* Hide theme switch to force dark mode (Desktop & Mobile) */
+.VPNavBarAppearance,
+.VPNavScreenAppearance {
+  display: none !important;
+}
+
 /* Links */
 a {
-  color: #00BFFF;
+  color: var(--vp-c-brand-1);
+  transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #0066FF;
+  color: var(--vp-c-brand-2);
 }
 
 /* Ensure sidebar and nav are black */

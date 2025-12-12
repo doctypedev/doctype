@@ -1,3 +1,10 @@
+---
+title: Architecture Overview
+description: 
+icon: 🚀
+order: 10
+---
+
 # Architecture Overview of sintesi-monorepo-root
 
 ## Introduction

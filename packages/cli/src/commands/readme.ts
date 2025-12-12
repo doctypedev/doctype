@@ -5,13 +5,12 @@
  */
 
 import { Logger } from '../utils/logger';
-import { createAIAgentsFromEnv, AIAgents } from '../../../ai';
-import { getProjectContext, ProjectContext } from '@sintesi/core';
+import { ProjectContext } from '@sintesi/core';
 import { resolve } from 'path';
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { spinner } from '@clack/prompts';
-import { ChangeAnalysisService } from '../services/analysis-service';
-import { SmartChecker } from '../services/smart-checker';
+import { GenerationContextService } from '../services/generation-context';
+import { ReviewService } from '../services/review-service';
 
 export interface ReadmeOptions {
   output?: string;
@@ -24,43 +23,42 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   logger.header('✨ Sintesi Readme - Project Context Generation');
 
   const cwd = process.cwd();
+  const contextService = new GenerationContextService(logger, cwd);
+  const reviewService = new ReviewService(logger);
 
-  // 0. Smart Check (Optimization)
-  // Determine if we should skip generation based on heuristics
-  logger.info('Performing smart check (Code Changes)...');
-  const smartChecker = new SmartChecker(logger, cwd);
-  const hasChanges = await smartChecker.hasRelevantCodeChanges();
-
-  if (!hasChanges && !options.force) {
-    logger.success('No relevant code changes detected (heuristic check). README is likely up to date.');
-    return;
-  }
+  // 0. Smart Check
+  const hasChanges = await contextService.performSmartCheck(options.force);
+  if (!hasChanges) return;
 
   const outputPath = resolve(cwd, options.output || 'README.md');
   let existingContent = '';
   let isUpdate = false;
+
+  // 1. Initialize AI Agents
+  // Use writer agent for simple README generation
+  const aiAgents = await contextService.getAIAgents(options.verbose || false);
+  if (!aiAgents) return;
+
+  // 2. Get Project Context & Chanegs
+  const s = spinner();
+  s.start('Analyzing project structure...');
+
+  let context: ProjectContext;
   let gitDiff = '';
 
-  // 0. Get Git Diff (Context about recent changes)
   try {
-    const analysisService = new ChangeAnalysisService(logger);
-    const analysis = await analysisService.analyze({
-      fallbackToLastCommit: true, // Auto handles checking HEAD if no changes
-      includeSymbols: false, // We just need diff for general context
-      stagedOnly: false
-    });
-
+    const analysis = await contextService.analyzeProject();
+    context = analysis.context;
     gitDiff = analysis.gitDiff;
+    s.stop('Analyzed ' + context.files.length + ' files');
+  } catch (error) {
+    s.stop('Analysis failed');
+    logger.error('Failed to analyze project: ' + error);
+    return;
+  }
 
-    if (gitDiff.length > 5000) {
-      gitDiff = gitDiff.substring(0, 5000) + '\n... (truncated)';
-    }
-
-    if (gitDiff) {
-      logger.info('Detected recent code changes, including in context.');
-    }
-  } catch (e: any) { // Catch as any for now to avoid specific type issues
-    logger.debug('Could not fetch git diff, skipping: ' + e);
+  if (gitDiff) {
+    logger.info('Detected recent code changes, including in context.');
   }
 
   if (existsSync(outputPath)) {
@@ -71,35 +69,6 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     } catch (e: any) { // Catch as any
       logger.warn('Could not read existing ' + (options.output || 'README.md') + ': ' + e);
     }
-  }
-
-  // 1. Initialize AI Agents
-  let aiAgents: AIAgents;
-  try {
-    aiAgents = createAIAgentsFromEnv({ debug: options.verbose });
-    const isConnected = await aiAgents.writer.validateConnection(); // Use writer agent for simple README generation
-    if (!isConnected) {
-      logger.error('AI provider connection failed. Please checks your API key.');
-      return;
-    }
-    logger.info('Using AI provider: ' + aiAgents.writer.getProvider() + ' Model: ' + aiAgents.writer.getModelId());
-  } catch (error: any) { // Catch as any
-    logger.error('No valid AI API key found or agent initialization failed: ' + error.message);
-    return;
-  }
-
-  // 2. Get Project Context
-  const s = spinner();
-  s.start('Analyzing project structure...');
-
-  let context: ProjectContext;
-  try {
-    context = getProjectContext(cwd);
-    s.stop('Analyzed ' + context.files.length + ' files');
-  } catch (error) {
-    s.stop('Analysis failed');
-    logger.error('Failed to analyze project: ' + error);
-    return;
   }
 
   // 2.5 Check for Smart Context (from check --smart)
@@ -130,18 +99,19 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     })
     .join('\n');
 
-  const packageJsonSummary = context.packageJson
-    ? JSON.stringify(context.packageJson, null, 2)
-    : 'No package.json found';
+  // Strict Command Whitelisting via Service
+  const cliConfig = contextService.detectCliConfig(context);
+  const techStack = contextService.detectTechStack(context);
+
+  // Use Service to generate context prompt (centralized)
+  const sharedContextPrompt = contextService.generateContextPrompt(context, gitDiff, cliConfig, techStack);
 
   let prompt = '';
 
   prompt += "You are an expert technical writer. Your task is to " + (isUpdate ? "update and improve the" : "write a comprehensive") + " README.md for a software project.\n\n";
   prompt += "Here is the context of the project:\n\n";
 
-  prompt += "## Package.json\n```json\n" + packageJsonSummary + "\n```\n\n";
-
-  prompt += "## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n" + (gitDiff || 'No recent uncommitted changes detected.') + "\n```\n\n";
+  prompt += sharedContextPrompt;
 
   if (smartSuggestion) {
     prompt += "## Specific Suggestion (IMPORTANT)\n" + "A previous analysis identified a specific issue to address:\n> " + smartSuggestion + "\n\nPlease ensure this suggestion is addressed in your update.\n\n";
@@ -203,6 +173,11 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
       readmeContent = readmeContent.replace(/^```\s*/, '').replace(/```$/, '');
     }
     readmeContent = readmeContent.trim();
+
+    // 3.5 Review Phase
+    if (aiAgents.reviewer) {
+      readmeContent = await reviewService.reviewAndRefine(readmeContent, outputPath, 'Project README', aiAgents);
+    }
 
     s.stop('Generation complete');
 

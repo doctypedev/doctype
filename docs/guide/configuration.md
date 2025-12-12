@@ -1,3 +1,10 @@
+---
+title: Configuration Guide
+description: Comprehensive instructions on how to configure the Sintesi CLI tool.
+icon: ⚙️
+order: 10
+---
+
 # Configuration Guide for sintesi-monorepo-root CLI Tool
 
 ## Introduction
@@ -130,4 +137,4 @@ This command will generate the README file, skipping the generation if no releva
 
 Configuring the CLI tool for the `sintesi-monorepo-root` project is straightforward. By using the provided scripts and environment configurations, you can streamline your development, testing, and production workflows. For further assistance, refer to the project's documentation or reach out to the development team.
 
-For any issues or feature requests, please consult the [Changelog](changelog.md) for recent updates or file an issue in the project's repository.
+For any issues or feature requests, please consult GitHub for recent updates or file an issue in the project's repository.

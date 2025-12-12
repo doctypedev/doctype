@@ -67,15 +67,53 @@ function extractNumericPrefix(filename: string): number {
 }
 
 /**
- * Converts a filename to a human-readable title
- * @param filename - The filename to convert
- * @returns A cleaned-up title
- * @example
- * fileToTitle('01. getting-started.md') // returns 'getting-started'
- * fileToTitle('advanced-topics.md') // returns 'advanced-topics'
+ * Extracts the title from the YAML frontmatter of a markdown file.
+ * @param filePath - The full path to the markdown file
+ * @returns The title found in frontmatter, or null if not found
  */
-function fileToTitle(filename: string): string {
-  return path.basename(filename, '.md').replace(/^(\d+\.\s*)/, '');
+function extractTitleFromFrontmatter(filePath: string): string | null {
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    // Match simple yaml frontmatter: --- \n title: "My Title" \n ---
+    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    
+    if (match && match[1]) {
+      const frontmatter = match[1];
+      const titleMatch = frontmatter.match(/^title:\s*(["']?)(.*?)\1$/m);
+      if (titleMatch && titleMatch[2]) {
+        return titleMatch[2].trim();
+      }
+    }
+  } catch (e) {
+    // Ignore read errors, fallback to filename
+  }
+  return null;
+}
+
+/**
+ * Converts a filename to a human-readable title, preferring frontmatter if available.
+ * @param filename - The filename to convert
+ * @param fullPath - The full path to the file (optional, for reading frontmatter)
+ * @returns A cleaned-up title
+ */
+function fileToTitle(filename: string, fullPath?: string): string {
+  // 1. Try to get title from frontmatter
+  if (fullPath) {
+    const frontmatterTitle = extractTitleFromFrontmatter(fullPath);
+    if (frontmatterTitle) {
+      return frontmatterTitle;
+    }
+  }
+
+  // 2. Fallback: Generate from filename
+  // Remove extension and numeric prefixes (e.g. "01. ")
+  const base = path.basename(filename, '.md').replace(/^(\d+\.\s*)/, '');
+  
+  // Replace dashes/underscores with spaces and capitalize words
+  return base
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
 /**
@@ -116,8 +154,10 @@ function sortSidebarItems(items: SidebarItem[], sortByPrefix: boolean): SidebarI
   if (!sortByPrefix) return items;
 
   return [...items].sort((a, b) => {
-    const prefixA = extractNumericPrefix(a.text);
-    const prefixB = extractNumericPrefix(b.text);
+    // Try to sort by "order" in frontmatter if available? 
+    // For now, keep filename prefix logic as it's simple and explicit in filenames.
+    const prefixA = extractNumericPrefix(path.basename(a.link)); // link is relative path, basename gets filename
+    const prefixB = extractNumericPrefix(path.basename(b.link));
 
     // If both have numeric prefixes, sort by them
     if (prefixA !== Infinity && prefixB !== Infinity) {
@@ -128,7 +168,7 @@ function sortSidebarItems(items: SidebarItem[], sortByPrefix: boolean): SidebarI
     if (prefixA !== Infinity) return -1;
     if (prefixB !== Infinity) return 1;
 
-    // Otherwise, sort alphabetically
+    // Otherwise, sort alphabetically by text
     return a.text.localeCompare(b.text);
   });
 }
@@ -183,6 +223,7 @@ function buildSidebarStructure(config: SidebarConfig): SidebarStructure {
     const parts = file.split(path.sep);
     const directory = parts.length > 1 ? parts[0] : '';
     const fileName = parts[parts.length - 1];
+    const fullPath = path.join(config.docsRoot, file);
 
     // Link path relative to site root (e.g., '/guide/install')
     const filePath = '/' + file.replace(/\.md$/, '');
@@ -199,7 +240,7 @@ function buildSidebarStructure(config: SidebarConfig): SidebarStructure {
     // Add the file as an item to the corresponding group
     const group = groupsMap.get(directory)!;
     group.items.push({
-      text: fileToTitle(fileName),
+      text: fileToTitle(fileName, fullPath),
       link: filePath,
     });
   });

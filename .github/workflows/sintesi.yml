@@ -60,7 +60,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Runs internally a smart check. If no changes, it skips generation.
-          node packages/cli/dist/cli/src/index.js documentation --output-dir docs --verbose
+          node packages/cli/dist/cli/src/index.js documentation --output-dir docs --verbose --site
 
       - name: Check for any changes
         id: git_status
