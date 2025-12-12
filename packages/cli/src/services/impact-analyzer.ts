@@ -1,3 +1,4 @@
+
 import { Logger } from '../utils/logger';
 import { AIAgents } from '../../../ai';
 
@@ -13,21 +14,21 @@ export class ImpactAnalyzer {
         docType: 'readme' | 'documentation',
         aiAgents: AIAgents,
         force: boolean = false
-    ): Promise<boolean> {
-        if (!gitDiff) return true; // No diff info? Assume we proceed or let downstream handle it.
+    ): Promise<{ shouldProceed: boolean; reason?: string }> {
+        if (!gitDiff) return { shouldProceed: true, reason: 'No git diff provided (or forced).' }; // No diff info? Assume we proceed or let downstream handle it.
 
         const impact = await this.shouldUpdateDocs(gitDiff, docType, aiAgents);
 
         if (!impact.update && !force) {
             this.logger.success(`✨ Impact Analysis: No relevant changes detected. Skipping generation.`);
             this.logger.info(`   Reason: ${impact.reason}`);
-            return false; // Skip
+            return { shouldProceed: false, reason: impact.reason }; // Skip
         } else if (impact.update) {
             this.logger.info(`✨ Impact Analysis: Update required.`);
             this.logger.info(`   Reason: ${impact.reason}`);
         }
 
-        return true; // Proceed
+        return { shouldProceed: true, reason: impact.reason }; // Proceed
     }
 
     /**
@@ -137,7 +138,7 @@ Return a JSON object:
             if (!chunk.trim()) continue;
 
             // Check the first line for filename
-            const firstLine = chunk.split('\n')[0];
+            const firstLine = chunk.split('\\n')[0];
 
             // Filter patterns
             if (
@@ -154,6 +155,6 @@ Return a JSON object:
             keptChunks.push('diff --git ' + chunk);
         }
 
-        return keptChunks.join('\n');
+        return keptChunks.join('\\n');
     }
 }

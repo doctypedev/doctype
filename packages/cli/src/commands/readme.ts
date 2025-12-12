@@ -64,9 +64,8 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     if (aiAgents) {
       const { ImpactAnalyzer } = await import('../services/impact-analyzer');
       const impactAnalyzer = new ImpactAnalyzer(logger);
-      const shouldProceed = await impactAnalyzer.checkWithLogging(gitDiff, 'readme', aiAgents, options.force);
-
-      if (!shouldProceed) return;
+      const impactResult = await impactAnalyzer.checkWithLogging(gitDiff, 'readme', aiAgents);
+      if (!impactResult.shouldProceed) return;
     }
   }
 

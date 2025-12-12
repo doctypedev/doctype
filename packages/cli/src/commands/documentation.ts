@@ -208,9 +208,16 @@ export async function documentationCommand(options: DocumentationOptions): Promi
       const impactAnalyzer = new ImpactAnalyzer(logger);
       // For docs, we treat 'site' mode as potentially force-like or needing structural updates, 
       // but for now let's apply the same logic. If semantic check fails, we skip.
-      const shouldProceed = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, options.site);
+      const impactResult = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, options.site);
 
-      if (!shouldProceed) return;
+      if (!impactResult.shouldProceed) return;
+
+      // Capture the reason for the planner
+      if (impactResult.reason) {
+        // HACK: Pass reason via a temporary variable or just append to gitDiff for the planner context?
+        // Let's prepend it to gitDiff so it's prominent in the "Recent Changes" context.
+        gitDiff = `> **IMPACT ANALYSIS SUMMARY**: ${impactResult.reason}\n\n${gitDiff}`;
+      }
     }
   } catch (error) {
     s.stop('Analysis failed');
@@ -337,7 +344,13 @@ ${existingDocsSummary}
 
 ## Task
 Analyze the project "DNA" to determine its TYPE.
-Then, propose a list of 3-6 documentation files tailored SPECIFICALLY to that type.
+Then, propose a list of documentation files tailored SPECIFICALLY to that type.
+
+> **IMPORTANT**:
+> - **ONLY** propose files that need creation or updates based on the "Recent Changes" and "Impact Analysis Summary".
+> - **DO NOT** feel matched to propose 3-6 files. If only 1 file needs update, propose 1 file.
+> - **DO NOT** halluncinate features. If the git diff is about a "typo fix", do not propose "New Feature Guide".
+
 
 ${strategyInstructions}
 
