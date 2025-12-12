@@ -90,6 +90,8 @@ If you need to customize the CLI tool further, you can create a `.env` file in t
 # .env file example
 NODE_ENV=development
 API_URL=https://api.example.com
+OPENAI_API_KEY=sk-your-openai-api-key-here
+# GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
 ### Accessing Environment Variables
