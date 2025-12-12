@@ -103,6 +103,12 @@ To automate the generation and maintenance of project documentation, you can use
    npx sintesi check --verbose
    ```
 
+   You can specify a custom map location with:
+
+   ```bash
+   npx sintesi check --map ./path/to/sintesi-map.json
+   ```
+
 - **Fix Outdated Documentation**
 
    To update documentation when drift is detected, use:
@@ -115,6 +121,18 @@ To automate the generation and maintenance of project documentation, you can use
 
    ```bash
    npx sintesi fix --dry-run
+   ```
+
+   To auto-commit changes to git, use:
+
+   ```bash
+   npx sintesi fix --auto-commit
+   ```
+
+   To use placeholder content instead of AI, run:
+
+   ```bash
+   npx sintesi fix --no-ai
    ```
 
 - **Generate a README File**

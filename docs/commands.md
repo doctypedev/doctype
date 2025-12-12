@@ -40,10 +40,11 @@ npm run readme
 #### Description
 - Creates or updates the README file based on the current project context.
 - Integrates recent code changes and suggestions from previous checks.
+- Skips generation if no relevant code changes are detected, unless forced.
 
 #### Options
 - `--output <path>`: Specifies the output path for the README file (default is `README.md`).
-- `--force`: Forces an update even if the README already exists.
+- `--force`: Forces an update even if no relevant code changes are detected.
 - `--verbose`: Provides detailed output during the generation process.
 
 #### Usage Examples
@@ -93,11 +94,16 @@ npm run documentation
 
 #### Description
 - Analyzes the project structure and generates documentation files.
-- Ensures that documentation is up-to-date with the latest changes in the codebase.
+- Skips generation if no relevant code changes are detected.
 
 #### Options
-- `--output-dir <path>`: Specifies the output directory for the generated documentation.
+- `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
 - `--verbose`: Provides detailed output during the documentation process.
+
+#### Usage Examples
+```bash
+npm run documentation -- --output-dir docs --verbose
+```
 
 ---
 

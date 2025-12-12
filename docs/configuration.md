@@ -105,8 +105,8 @@ const apiUrl = process.env.API_URL;
 The following commands are available in the `packages/cli/src/commands` directory:
 
 - **check**: Performs checks on the codebase using smart drift detection.
-- **readme**: Generates or updates the README file.
-- **documentation**: Automates the generation of documentation.
+- **readme**: Generates or updates the README file, incorporating smart checks to skip generation if no relevant changes are detected.
+- **documentation**: Automates the generation of documentation, also utilizing smart checks to skip generation if no relevant changes are detected.
 
 ### Usage Examples
 
@@ -117,6 +117,14 @@ npx sintesi documentation --output-dir docs --verbose
 ```
 
 This command will generate documentation based on the configuration settings.
+
+To generate or update the README file, you can run:
+
+```bash
+npx sintesi readme --output README.md --verbose
+```
+
+This command will generate the README file, skipping the generation if no relevant code changes are detected.
 
 ## Conclusion
 

@@ -12,13 +12,13 @@
 
 > **Stop chasing documentation drift. Let AI keep your docs in perfect sync with your code.**
 
-Sintesi automatically detects when your code changes and updates your documentation using AI. No more outdated docs. No more manual rewrites. Just accurate, always-current documentation.
+Sintesi automatically detects code changes and updates your documentation using AI. No more outdated docs. No more manual rewrites. Just accurate, always-current documentation.
 
 ---
 
 ## Why Sintesi?
 
-**The Problem:** You change a function signature. Your documentation becomes outdated. Your team wastes time debugging with incorrect information. Sound familiar?
+**The Problem:** You change a function signature, and your documentation becomes outdated. Your team wastes time debugging with incorrect information. Sound familiar?
 
 **The Solution:** Sintesi detects code changes automatically and regenerates documentation using a Large Language Model. Your docs stay in sync, and your team remains productive.
 
@@ -177,15 +177,19 @@ const token = await login('user@example.com', 'securePassword123');
 
 ## New Features
 
-### CLI Command Refactor
+### CLI Command Enhancements
 
-Recent changes have simplified the CLI commands. The following commands have been **removed**:
-- `init`
-- `fix`
-- `generate`
-- `menu`
+Recent changes have integrated **smart checks** in both the documentation and README commands. This allows Sintesi to skip generation when no relevant code changes are detected.
 
-The `check` command now defaults to using smart drift detection.
+### Updated Commands
+
+#### `sintesi readme`
+
+Generate a README file based on your project structure, now enhanced with smart checks to avoid unnecessary regeneration.
+
+#### `sintesi documentation`
+
+This command now also performs smart checks, ensuring documentation is only generated when relevant changes exist.
 
 ---
 
