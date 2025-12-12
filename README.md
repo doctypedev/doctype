@@ -72,6 +72,19 @@ Never merge undocumented code again.
 
 ---
 
+## 🛠️ CLI Commands
+
+### `sintesi readme`
+Generate a README instantly based on your project structure.
+
+### `sintesi documentation`
+Generate full documentation for your project. Use the `--site` flag to create a complete documentation website.
+
+### Strategy Selection
+The `sintesi documentation` command now dynamically selects a documentation generation strategy based on the presence of existing documentation. If existing docs are detected, it will respect the current structure and avoid duplication. If no existing docs are found, it will suggest a new documentation structure.
+
+---
+
 ## Contributing
 
 We love contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).

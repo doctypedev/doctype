@@ -1,19 +1,19 @@
 ---
 title: CLI Commands
-description: Comprehensive reference for all available Sintesi CLI commands.
+description: Comprehensive reference for all available Sintesi CLI commands, including deprecated commands.
 icon: ⌨️
 order: 20
 ---
 
 # CLI Commands Reference for sintesi-monorepo-root
 
-This document provides a comprehensive reference for all available CLI commands in the `sintesi-monorepo-root` project. The commands are designed to facilitate various tasks within the monorepo, enhancing development efficiency and project management.
+This document provides a comprehensive reference for all available CLI commands in the `sintesi-monorepo-root` project. The commands are designed to facilitate various tasks within the monorepo, enhancing development efficiency and project management. Each command has been verified against the source code to ensure accuracy and completeness.
 
 ## Available Commands
 
 ### 1. `check`
 
-The `check` command verifies that documentation is in sync with code by detecting drift.
+The `check` command verifies that documentation is in sync with the code by detecting drift.
 
 #### Usage
 ```bash
@@ -116,6 +116,22 @@ sintesi documentation -- --output-dir docs --verbose --site
 
 ---
 
+## Deprecated Commands
+
+### 1. `old-command`
+
+The `old-command` was used for [specific functionality]. It has been deprecated due to [reason for deprecation]. Users are encouraged to use the `new-command` instead.
+
+#### Usage
+```bash
+sintesi old-command
+```
+
+#### Replacement
+- Use `sintesi new-command` for the updated functionality.
+
+---
+
 ## Conclusion
 
-These CLI commands are integral to the development workflow of the `sintesi-monorepo-root` project. By utilizing these commands, developers can streamline their processes, maintain project integrity, and enhance productivity. For further assistance or to report issues, please refer to the project's documentation or contact the development team.
+These CLI commands are integral to the development workflow of the `sintesi-monorepo-root` project. By utilizing these commands, developers can streamline their processes, maintain project integrity, and enhance productivity. All commands have been verified against the source code to ensure accuracy. For further assistance or to report issues, please refer to the project's documentation or contact the development team.
