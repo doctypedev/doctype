@@ -72,6 +72,16 @@ Never merge undocumented code again.
 
 ---
 
+## 📜 New Features
+
+### Impact Analysis
+Sintesi now includes an **ImpactAnalyzer** that performs semantic checks before generating documentation. This feature helps ensure that documentation updates are only made when necessary, based on recent code changes.
+
+### New Flags
+New flags such as `hasExistingDocs` and `strategyInstructions` have been added to adjust the documentation strategy during generation.
+
+---
+
 ## Contributing
 
 We love contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).
