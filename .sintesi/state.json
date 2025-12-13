@@ -1,0 +1,12 @@
+{
+  "timestamp": 1765642826706,
+  "readme": {
+    "hasDrift": true,
+    "reason": "Recent changes introduced enhanced drift detection through impact analysis for the documentation site, new options (such as --no-strict and --verbose) for the 'check' command, and CI workflow updates that are not documented in the current README.",
+    "suggestion": "Update the README to document the new impact analysis feature and explain the additional CLI flags/options for 'sintesi check', along with guidelines for CI integration."
+  },
+  "documentation": {
+    "hasDrift": true,
+    "reason": "The changes introduce new features such as AI-based drift detection and impact analysis, enhancements to README generation, and new execution steps in the CI workflow. These are significant updates that affect end-user functionality and documentation commands."
+  }
+}

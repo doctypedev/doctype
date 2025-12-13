@@ -61,6 +61,18 @@ We believe in eating our own dog food. This repository's documentation is mainta
 👉 **[Read the Architecture Guide](./docs/architecture.md)**
 👉 **[CLI Reference](./docs/reference/commands.md)**
 
+## 🛠️ CLI Commands
+
+### `sintesi check`
+
+- **Description:** Runs a smart check to detect drift between your code and documentation. This command now integrates AI-based drift detection and impact analysis.
+- **Options:**
+  - `--no-strict`: Allows the command to run without failing the build if drift is detected, enabling subsequent steps to address it.
+
+### `sintesi readme`
+
+- **Description:** Generates or updates the README file based on the current state of your code and previous checks.
+
 ---
 
 ## Contributing
