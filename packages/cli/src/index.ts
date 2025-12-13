@@ -76,7 +76,12 @@ yargs(hideBin(process.argv))
           type: 'string',
           description: 'Output directory (default: docs)',
         })
-
+        .option('force', {
+          alias: 'f',
+          type: 'boolean',
+          description: 'Force full regeneration (ignores existing state)',
+          default: false,
+        })
         .option('verbose', {
           type: 'boolean',
           description: 'Enable verbose logging',
@@ -87,6 +92,7 @@ yargs(hideBin(process.argv))
       const options: DocumentationOptions = {
         outputDir: argv['output-dir'] as string,
         verbose: argv.verbose as boolean,
+        force: argv.force as boolean,
       };
 
       await documentationCommand(options);
