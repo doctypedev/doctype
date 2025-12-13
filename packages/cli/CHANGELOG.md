@@ -1,5 +1,33 @@
 # @sintesi/sintesi
 
+## 0.14.0
+
+### Minor Changes
+
+- 5b9cc1f: 🚀 **New Architecture & Reviewer Agent**
+  - **New AI Roles**: Added `Reviewer` and `Researcher` agents. The CLI now performs a self-review of generated documentation using the Reviewer agent to fix hallucinations before saving.
+  - **Service Layer**: Introduced `GenerationContextService` for better context awareness (detects CLI binary names, tech stacks, and relevant imports) and `ReviewService`.
+  - **Site Mode**: Added `--site` flag to `documentation` command to generate structured guides ready for VitePress/Starlight.
+  - **Rebranding**: Project updated to "Sintesi".
+
+- f90d2f7: - Introduce ImpactAnalyzer to perform semantic checks before generating docs
+  - Add new flags like hasExistingDocs and strategyInstructions to adjust documentation strategy
+  - Update prompts and instructions for documentation and readme commands
+- a3ca30e: 🚀 **Default Site Structure**: The `documentation` command now generates organized, static-site friendly file structures (e.g., for VitePress) by default, grouping files into logical folders like `guide/` and `reference/`. The `--site` flag has been removed.
+
+  🐛 **Fix Drift Recursion**: Updated `SmartChecker` to ignore changes to `README.md` itself during drift analysis. This prevents CI infinite loops where documentation updates triggered false positive code changes.
+
+- c2e6ada: - Add strategy selection instructions based on existing documentation
+  - Introduce new flags hasExistingDocs and strategyInstructions in documentation command
+  - Update installation guide directory name for clarity
+
+### Patch Changes
+
+- f2d475d: - Remove automatic sidebar generation via executing generateSidebar script
+  - Update --site behavior to log guidance for VitePress configuration
+- Updated dependencies [5b9cc1f]
+  - @sintesi/core@0.14.0
+
 ## 0.13.0
 
 ### Minor Changes
