@@ -107,11 +107,10 @@ sintesi documentation
 #### Options
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
 - `--verbose`: Provides detailed output during the documentation process.
-- `--site`: Logs guidance for VitePress configuration.
 
 #### Usage Examples
 ```bash
-sintesi documentation -- --output-dir docs --verbose --site
+sintesi documentation -- --output-dir docs --verbose
 ```
 
 ---
