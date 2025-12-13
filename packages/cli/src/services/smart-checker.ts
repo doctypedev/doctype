@@ -34,6 +34,8 @@ export class SmartChecker {
             // Ignore lockfiles and internal configs
             if (file.includes('lock.yaml') || file.includes('lock.json') || file.includes('lock')) return false;
             if (file.includes('.gitignore') || file.includes('.editorconfig')) return false;
+            // Ignore Changelogs and Changesets (Version bumps)
+            if (file.includes('CHANGELOG.md') || file.includes('.changeset/')) return false;
 
             // Focus on source code (TS/JS/Rust) and existing docs and configs
             return file.endsWith('.ts') ||
@@ -44,17 +46,16 @@ export class SmartChecker {
         });
 
         // 2. Critical Path "Always Check"
-        // If the file is in a critical directory (like commands or routes), we analyze it regardless of specific keywords
-        // because behavior changes in these files often impact documentation.
+        // If the file is in a critical directory (like commands or routes), we analyze it regardless of specific keywords.
+        // NOTE: We removed package.json/Cargo.toml from here to avoid triggering on simple version bumps. 
+        // We rely on content heuristics (below) to catch "dependencies" or "scripts" changes.
         const isCriticalChange = relevantFiles.some(file =>
             file.includes('/commands/') ||
-            file.includes('/routes/') ||
-            file.endsWith('package.json') ||
-            file.endsWith('Cargo.toml')
+            file.includes('/routes/')
         );
 
         if (isCriticalChange) {
-            this.logger.debug('Critical file changed (commands/routes/config). Skipping keyword heuristics and forcing AI check.');
+            this.logger.debug('Critical file changed (commands/routes). Skipping keyword heuristics and forcing AI check.');
             return true;
         }
 
@@ -77,6 +78,7 @@ export class SmartChecker {
             /"bin":/,    // package.json bin
             /"scripts":/, // package.json scripts
             /"dependencies":/, // package.json dependencies
+            /"peerDependencies":/, // package.json peerDependencies
 
             // Rust
             /pub\s+(struct|enum|fn|mod|trait|impl|const|static|type)/, // Public Rust items
@@ -84,7 +86,6 @@ export class SmartChecker {
             /#\[derive\(.*Parser.*\)\]/, // Clap Parser
             /#\[derive\(.*Subcommand.*\)\]/, // Clap Subcommand
             /#\[command/, // Clap command attribute
-            /\[package\]/, // Cargo.toml package (version bumps)
             /\[dependencies\]/ // Cargo.toml dependencies
         ];
 
