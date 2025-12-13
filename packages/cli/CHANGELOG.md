@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.16.2
+
+### Patch Changes
+
+- 816c0ff: Ignore changeset files when checking documentation drift
+  - @sintesi/core@0.16.2
+
 ## 0.16.1
 
 ### Patch Changes
