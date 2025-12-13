@@ -1,5 +1,17 @@
 # @sintesi/sintesi
 
+## 0.15.0
+
+### Minor Changes
+
+- 510f4b5: - Integrate AI-based drift detection and impact analysis in both check and documentation commands
+  - Enhance README generation with smart context and pipeline state validation
+  - Add new execution steps in the CI workflow
+
+### Patch Changes
+
+- @sintesi/core@0.15.0
+
 ## 0.14.0
 
 ### Minor Changes
