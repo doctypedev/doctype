@@ -156,16 +156,6 @@ export class SmartChecker {
                 return { hasDrift: false };
             }
 
-            // Optimization: Deterministic Pre-filter
-            if (!this.shouldAnalyzeWithAI(changedFiles, gitDiff)) {
-                return { hasDrift: false };
-            }
-
-            // Truncate to avoid token limits
-            if (gitDiff.length > 8000) {
-                gitDiff = gitDiff.substring(0, 8000) + '\n... (truncated)';
-            }
-
             // FILTER: Remove README.md changes from the diff to prevent self-triggering
             // Using shared utility for consistent logic
             gitDiff = filterGitDiff(gitDiff, ['README.md']);
@@ -173,6 +163,17 @@ export class SmartChecker {
             if (!gitDiff.trim()) {
                 this.logger.debug('No code changes detected (after filtering README changes).');
                 return { hasDrift: false };
+            }
+
+            // Optimization: Deterministic Pre-filter
+            // We pass the ALREADY FILTERED diff here, so keywords in README.md don't trigger the AI check.
+            if (!this.shouldAnalyzeWithAI(changedFiles, gitDiff)) {
+                return { hasDrift: false };
+            }
+
+            // Truncate to avoid token limits
+            if (gitDiff.length > 8000) {
+                gitDiff = gitDiff.substring(0, 8000) + '\n... (truncated)';
             }
         } catch (error) {
             this.logger.warn('Failed to get changes: ' + error);

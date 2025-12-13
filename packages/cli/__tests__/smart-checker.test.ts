@@ -103,7 +103,7 @@ describe('SmartChecker', () => {
         // Mock AnalysisService
         const mockAnalysisService = {
             analyze: vi.fn().mockResolvedValue({
-                gitDiff: '+export class NewFeature {}',
+                gitDiff: 'diff --git a/src/code.ts b/src/code.ts\nindex abc..def 100644\n--- a/src/code.ts\n+++ b/src/code.ts\n@@ -1,1 +1,1 @@\n+export class NewFeature {}',
                 changedFiles: ['src/code.ts'],
                 symbolChanges: [],
                 totalChanges: 1
@@ -148,6 +148,29 @@ describe('SmartChecker', () => {
 
         expect(result.hasDrift).toBe(false);
         // AI should NOT be called because the diff is effectively empty after filtering README.md
+        expect(vi.mocked(createAIAgentsFromEnv)).not.toHaveBeenCalled();
+    });
+
+    it('should ignore README changes even if they contain meaningful keywords (pre-filtering check)', async () => {
+        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? true : false);
+
+        // Mock AnalysisService to return diff in README.md with keyword "dependencies" which is a trigger word
+        const mockAnalysisService = {
+            analyze: vi.fn().mockResolvedValue({
+                gitDiff: 'diff --git a/README.md b/README.md\n+ Check your "dependencies" in package.json',
+                changedFiles: ['README.md'],
+                symbolChanges: [],
+                totalChanges: 1
+            })
+        };
+        vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
+
+        smartChecker = new SmartChecker(logger, '/mock/root');
+
+        const result = await smartChecker.checkReadme();
+
+        expect(result.hasDrift).toBe(false);
+        // AI should NOT be called. If pre-filtering failed, "dependencies" keyword would trigger AI.
         expect(vi.mocked(createAIAgentsFromEnv)).not.toHaveBeenCalled();
     });
 });
