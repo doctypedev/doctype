@@ -1,6 +1,7 @@
 
 import { Logger } from '../utils/logger';
 import { AIAgents } from '../../../ai';
+import { filterGitDiff } from '../utils/diff-utils';
 
 export class ImpactAnalyzer {
     constructor(private logger: Logger) { }
@@ -45,7 +46,12 @@ export class ImpactAnalyzer {
         }
 
         // 1. Clean the diff (remove lockfiles, noise)
-        const cleanDiff = this.cleanDiff(gitDiff);
+        const exclusions: string[] = [];
+        if (docType === 'readme') {
+            exclusions.push('README.md');
+        }
+
+        const cleanDiff = filterGitDiff(gitDiff, exclusions);
 
         // 2. Safety Check: Truncation Risk
         // If the cleaned diff is still massive, we risk truncating critical changes.
@@ -122,39 +128,5 @@ Return a JSON object:
         }
     }
 
-    /**
-     * Filters out noisy files from the git diff to save tokens and improve focus.
-     */
-    private cleanDiff(fullDiff: string): string {
-        // Simple line-based filtering or chunk-based filtering.
-        // Git diffs usually look like:
-        // diff --git a/foo.ts b/foo.ts
-        // ... content ...
 
-        const chunks = fullDiff.split('diff --git ');
-        const keptChunks: string[] = [];
-
-        for (const chunk of chunks) {
-            if (!chunk.trim()) continue;
-
-            // Check the first line for filename
-            const firstLine = chunk.split('\n')[0];
-
-            // Filter patterns
-            if (
-                firstLine.includes('package-lock.json') ||
-                firstLine.includes('pnpm-lock.yaml') ||
-                firstLine.includes('yarn.lock') ||
-                firstLine.includes('.map') ||
-                firstLine.includes('.snap') ||
-                firstLine.includes('.DS_Store')
-            ) {
-                continue;
-            }
-
-            keptChunks.push('diff --git ' + chunk);
-        }
-
-        return keptChunks.join('\n');
-    }
 }

@@ -7,20 +7,20 @@
 [![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Documentation that lives and evolves with your code.**
+> **The intelligent documentation engine.**
 
-Sintesi is the intelligent documentation engine for modern engineering teams. It stops documentation drift by automatically detecting code changes and using AI to keep your docs perfectly in sync.
+Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
 
 ---
 
-## ⚡️ The "Zero Drift" Promise
+## ⚡️ Why Sintesi?
 
-**You write code. Sintesi writes the docs.**
+Traditional docs rot. Sintesi keeps them fresh.
 
-- **Automatic Sync**: Detects changes in your codebase instantly.
-- **AI-Powered**: Generates professional, context-aware documentation.
-- **VitePress Ready**: Builds beautiful documentation sites with a single command.
-- **CI/CD Native**: Blocks PRs if documentation is outdated.
+-   **🛡️ Drift Protection:** Detects inconsistencies between code and docs before you merge.
+-   **🕵️ Context-Aware:** Reads your actual source code to write specific, accurate documentation.
+-   **🤖 Multi-Agent:** Uses specialized agents (Planner, Writer, Reviewer) to produce high-quality content.
+-   **📦 Monorepo Native:** Designed for complex workspaces from day one.
 
 ## 🚀 Quick Start
 
@@ -29,46 +29,37 @@ Sintesi is the intelligent documentation engine for modern engineering teams. It
     npm install -g @sintesi/sintesi
     ```
 
-2.  **Generate a README instantly**
-    Don't have a README? Let Sintesi inspect your code and write one for you.
+2.  **Generate Documentation**
+    Don't have docs? Let Sintesi inspect your code and create a living documentation site.
+    ```bash
+    sintesi documentation
+    ```
+    Or just a README:
     ```bash
     sintesi readme
     ```
 
-3.  **Generate Full Docs Site**
-    Ready for a full website?
+3.  **Verify Integrity**
+    Run this in your CI/CD. If the code changed but docs didn't, this returns exit code 1.
     ```bash
-    sintesi documentation --site
+    sintesi check
     ```
+
+## 🧠 How it works
+
+Sintesi is not just a generator; it is a full **documentation lifecycle manager**.
+
+1.  **Analyze:** It scans your project structure and reads key files to understand the "DNA" of your codebase.
+2.  **Plan:** An AI Architect designs a documentation structure tailored to your project type.
+3.  **Generate:** Specialized agents write comprehensive documentation, ensuring accuracy by reading actual source code.
+4.  **Verify:** The `check` command ensures your documentation stays in sync with your latest code changes.
 
 ## 📚 Documentation
 
-We believe in eating our own dog food. Our entire documentation is generated and maintained by Sintesi itself.
+We believe in eating our own dog food. This repository's documentation is maintained by Sintesi.
 
-👉 **[Read the Full Documentation](./docs/index.md)**
-
-- **[Installation Guide](./docs/guide/configuration.md)**
-- **[CLI Commands Reference](./docs/reference/commands.md)**
-- **[Recipes & Workflows](./docs/guide/recipes.md)**
-
-## ✨ Key Features
-
-### 📄 Instant README
-Starting a new project? `sintesi readme` scans your file structure, `package.json`, and source code to generate a comprehensive, professional `README.md` in seconds. It even detects recent git changes to keep it updated.
-
-### 🧠 Smart Context
-Sintesi doesn't just read files; it understands your project architecture. It analyzes imports, exports, and dependencies to write documentation that explains *why*, not just *what*.
-
-### 🎨 Site Mode
-Turn your repository into a full-fledged documentation website.
-`sintesi documentation --site` organizes your content into guides, references, and API docs, complete with:
-- **Manual Sidebar Configuration** guidance for VitePress.
-- **Mermaid Diagrams** for flows.
-- **Rich Frontmatter** for SEO and metadata.
-
-### 🛡️ Drift Protection
-Never merge undocumented code again.
-`sintesi check` verifies that every exported function, class, and component has up-to-date documentation matching its current signature.
+👉 **[Read the Architecture Guide](./docs/architecture.md)**
+👉 **[CLI Reference](./docs/reference/commands.md)**
 
 ---
 
@@ -78,4 +69,4 @@ We love contributions! Please check out our [Contributing Guide](./docs/communit
 
 ## License
 
-MIT © [Alessio Pelliccione](https://github.com/alessiopelliccione)
+MIT © [Doctypedev](https://github.com/doctypedev)

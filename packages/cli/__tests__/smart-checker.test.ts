@@ -13,7 +13,7 @@ vi.mock('path');
 
 // Global mock for '../../ai' - just mock the function, implementation will be in beforeEach
 vi.mock('../../ai', () => ({
-    createAIAgentsFromEnv: vi.fn(), 
+    createAIAgentsFromEnv: vi.fn(),
 }));
 
 describe('SmartChecker', () => {
@@ -117,7 +117,7 @@ describe('SmartChecker', () => {
             reason: 'Missing docs',
             suggestion: 'Add docs'
         }));
-        
+
         smartChecker = new SmartChecker(logger, '/mock/root'); // Re-instantiate to get fresh mocks for analysisService
         const result = await smartChecker.checkReadme();
 
@@ -126,5 +126,28 @@ describe('SmartChecker', () => {
         expect(vi.mocked(createAIAgentsFromEnv)).toHaveBeenCalledTimes(1);
         expect(vi.mocked(mockPlannerAgent.validateConnection)).toHaveBeenCalledTimes(1);
         expect(vi.mocked(mockPlannerAgent.generateText)).toHaveBeenCalledTimes(1);
+    });
+
+    it('should ignore changes to README.md itself (self-trigger prevention)', async () => {
+        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? true : false);
+
+        // Mock AnalysisService to return diff ONLY in README.md
+        const mockAnalysisService = {
+            analyze: vi.fn().mockResolvedValue({
+                gitDiff: 'diff --git a/README.md b/README.md\n+ New text',
+                changedFiles: ['README.md'],
+                symbolChanges: [],
+                totalChanges: 1
+            })
+        };
+        vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
+
+        smartChecker = new SmartChecker(logger, '/mock/root');
+
+        const result = await smartChecker.checkReadme();
+
+        expect(result.hasDrift).toBe(false);
+        // AI should NOT be called because the diff is effectively empty after filtering README.md
+        expect(vi.mocked(createAIAgentsFromEnv)).not.toHaveBeenCalled();
     });
 });

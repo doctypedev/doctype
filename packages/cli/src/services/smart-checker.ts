@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { Logger } from '../utils/logger';
 import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Updated import
 import { ChangeAnalysisService } from './analysis-service';
+import { filterGitDiff } from '../utils/diff-utils';
 
 export interface SmartCheckResult {
     hasDrift: boolean;
@@ -163,6 +164,15 @@ export class SmartChecker {
             // Truncate to avoid token limits
             if (gitDiff.length > 8000) {
                 gitDiff = gitDiff.substring(0, 8000) + '\n... (truncated)';
+            }
+
+            // FILTER: Remove README.md changes from the diff to prevent self-triggering
+            // Using shared utility for consistent logic
+            gitDiff = filterGitDiff(gitDiff, ['README.md']);
+
+            if (!gitDiff.trim()) {
+                this.logger.debug('No code changes detected (after filtering README changes).');
+                return { hasDrift: false };
             }
         } catch (error) {
             this.logger.warn('Failed to get changes: ' + error);
