@@ -44,7 +44,7 @@ Traditional docs rot. Sintesi keeps them fresh.
     ```bash
     sintesi check
     ```
-    The `check` command now performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage.
+    The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage.
 
 ## 🧠 How it works
 
